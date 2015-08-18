@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<!-- Generated 17-ago-2015 14:50:32 by Hibernate Tools 3.6.0 -->
+<hibernate-mapping>
+    <class name="mx.avanti.siract.business.entity.Planestudio" table="planestudio" catalog="siract">
+        <id name="pesid" type="java.lang.Integer">
+            <column name="PESid" />
+            <generator class="identity" />
+        </id>
+        <many-to-one name="programaeducativo" class="mx.avanti.siract.business.entity.Programaeducativo" fetch="select">
+            <column name="ProgramaEducativo_PEDid" />
+        </many-to-one>
+        <property name="pesvigenciaPlan" type="string">
+            <column name="PESvigenciaPlan" length="6" not-null="true" />
+        </property>
+        <property name="pescreditosObligatorios" type="int">
+            <column name="PEScreditosObligatorios" not-null="true" />
+        </property>
+        <property name="pescreditosOptativos" type="int">
+            <column name="PEScreditosOptativos" not-null="true" />
+        </property>
+        <property name="pestotalCreditos" type="int">
+            <column name="PEStotalCreditos" not-null="true" />
+        </property>
+        <set name="areaconocimientos" table="areaconocimiento" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="PlanEstudio_PESid" />
+            </key>
+            <one-to-many class="mx.avanti.siract.business.entity.Areaconocimiento" />
+        </set>
+        <set name="grupos" table="grupo" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="PlanEstudio_PESid" />
+            </key>
+            <one-to-many class="mx.avanti.siract.business.entity.Grupo" />
+        </set>
+    </class>
+</hibernate-mapping>

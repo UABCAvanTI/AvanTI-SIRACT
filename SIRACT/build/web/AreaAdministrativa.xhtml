@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+--> 
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                template="/Template/MasterTemplate.xhtml">
+    <ui:define name="contenido">
+        <f:view contentType="text/html">      
+            <h:head>
+                <h:outputStylesheet name="Style_botones.css" library="css"/>
+
+                <f:facet name="first">
+                    <meta content='text/html; charset=UTF-8' http-equiv="Content-Type"/>
+                    <title>Área administrativa</title> 
+                </f:facet>
+            </h:head>
+            <h:body onload="#{areaAdministrativaBeanUI.filtrado()}">
+                <h:form id="formAreaAd" >
+                    <p:fieldset legend="Área Administrativa"> 
+                     <p:growl id="growl" showDetail="true" life="10000"/>      
+                     <p:commandButton id="showAltaButton" 
+                                         image="btnAU" oncomplete="dlg.show();"
+                                         title="Agregar"
+                                         iconPos="center" 
+                                         actionListener="#{areaAdministrativaBeanUI.nuevo}"
+                                         update="capdlg"/>
+                     <p:commandButton id="showEliminarButton"  image="btnEU"      
+                                      title="#{areaAdministrativaBeanUI.tooltip(2)}"                        
+                                      disabled="#{areaAdministrativaBeanUI.deshabilitarMenu()}"
+                                      actionListener="#{areaAdministrativaBeanUI.eliminar}"
+                                         oncomplete="dlg.show();" 
+                                         iconPos="center" 
+                                         update="capdlg"/>
+                     <p:commandButton id="showModificarButton"  image="btnMU"  
+                                      title="#{areaAdministrativaBeanUI.tooltip(3)}"                                      
+                                      disabled="#{areaAdministrativaBeanUI.deshabilitarMenu()}"
+                                      actionListener="#{areaAdministrativaBeanUI.modificar}"
+                                         oncomplete="dlg.show();" 
+                                         iconPos="center" 
+                                         update="capdlg"/> 
+                    <br/><br/>
+                     <div id="selecPE" style="display: inline-block">
+                            <p:outputLabel value="Seleccione un programa educativo " 
+                                           style="margin-top: 40%;"
+                                           rendered="#{areaAdministrativaBeanUI.areaAdministrativaHelper.ocultarPE}"/><br/>                                                       
+                            <p:selectOneMenu value="#{areaAdministrativaBeanUI.areaAdministrativaHelper.programaEducativo.pedid}"
+                                             style="width: 100%"
+                                             rendered="#{areaAdministrativaBeanUI.areaAdministrativaHelper.ocultarPE}"> 
+                                <p:ajax event="valueChange" update="areaad" listener="#{areaAdministrativaBeanUI.filtrado()}"></p:ajax>
+                                
+                                <f:selectItem itemLabel="--Seleccionar todos--" itemValue="#{0}"/>
+                                <f:selectItems value="#{areaAdministrativaBeanUI.areaAdministrativaHelper.listaPEdlg}"                                          
+                                               var="pe"
+                                               itemLabel="#{pe.pednombre}"
+                                               itemValue="#{pe.pedid}"/>   
+                            </p:selectOneMenu>
+                        </div>   
+                     
+                    <div id="divFiltro" style="text-align: right;">       
+                            <p:outputLabel style="font-size: 19px" value="B&#250;squeda especifica de área administrativa "/>
+
+                            <p:inputText id="filtro" 
+                                         value="#{areaAdministrativaBeanUI.busqueda}" 
+                                         autocomplete="off"
+                                         label="filtrado">
+                                <p:ajax event="keyup"  listener="#{areaAdministrativaBeanUI.filtrado()}" 
+                                        update="areaad" />
+                            </p:inputText>
+                        </div>
+                    <p:dataTable id="areaad" var="Areaadministrativa" 
+                                 value="#{areaAdministrativaBeanUI.listaFiltrada}"
+                                 rowKey="#{Areaadministrativa.aadid}"
+                                 selection="#{areaAdministrativaBeanUI.areaAdministrativaHelper.listaSeleccion}"
+                                     rows="10"
+                                     rowsPerPageTemplate="5,10,15,20"
+                                     paginator="true"                              
+                                     rowSelectMode="add"
+                                     selectionMode="checkbox"
+                                     widgetVar="stest"                                 
+                                     paginatorTemplate="{CurrentPageReport}
+                                     {FirstPageLink} {PreviousPageLink} {PageLinks} 
+                                     {NextPageLink} {LastPageLink} 
+                                     {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="({currentPage} de {totalPages})"
+                                     emptyMessage="No se han encontrado registros">
+                            
+                             <p:ajax event="rowSelect" update="areaad,:formAreaAd:showEliminarButton,:formAreaAd:showModificarButton">
+                            </p:ajax>                        
+                            <p:ajax event="rowUnselect"  update=":formAreaAd:showEliminarButton,:formAreaAd:showModificarButton">
+
+                            </p:ajax>                        
+                            <p:ajax event="rowUnselectCheckbox" update=":formAreaAd:showEliminarButton,:formAreaAd:showModificarButton"></p:ajax>
+                            <p:ajax event="rowSelectCheckbox" update=":formAreaAd:showEliminarButton,:formAreaAd:showModificarButton"></p:ajax>
+                            <p:ajax event="toggleSelect" update=":formAreaAd:showEliminarButton,:formAreaAd:showModificarButton"></p:ajax>
+
+                            <p:column  selectionMode="multiple" style="width:16px;text-align:center">                               
+                            </p:column>
+                            
+                            <p:column headerText="Programa educativo">  
+                                <h:outputText value="#{Areaadministrativa.programaeducativo.pednombre}" />  
+                            </p:column>                                                    
+                            
+                            <p:column headerText="Área Administrativa">  
+                                <h:outputText value="#{Areaadministrativa.aadnombre}" />  
+                            </p:column>
+                        </p:dataTable> 
+
+                     <p:dialog id="capdlg" header="#{areaAdministrativaBeanUI.cabecera}" widgetVar="dlg" draggable="false" resizable="false" showEffect="fade" hideEffect="explode" modal="true">
+                        
+                         <p:ajax event="close" update=":formAreaAd:areaad, :formAreaAd:showEliminarButton, :formAreaAd:showModificarButton, :formAreaAd:cap" listener="#{areaAdministrativaBeanUI.limpiarSeleccion()}"/>
+    
+                         <p:outputLabel id="lblSeleccionados" rendered="#{areaAdministrativaBeanUI.mostrarSeleccionAreasAD()}" value="Seleccione el registro a visualizar "></p:outputLabel>
+                         <p:selectOneMenu id="seleccionados" 
+                                          value="#{areaAdministrativaBeanUI.areaAdministrativaHelper.seleccionAreaad.aadid}"                                                    
+                                             rendered="#{areaAdministrativaBeanUI.mostrarSeleccionAreasAD()}"> 
+                             <p:ajax event="valueChange" update="cap" listener="#{areaAdministrativaBeanUI.areaAdministrativaHelper.seleccionarRegistro()}"></p:ajax>
+                                
+                             <f:selectItems value="#{areaAdministrativaBeanUI.areaAdministrativaHelper.listaSeleccion}"                                             
+                                               var="aad" 
+                                               itemLabel="#{aad.aadnombre}"
+                                               itemValue="#{aad.aadid}"/>   
+                            
+                         </p:selectOneMenu>
+                            <p:panelGrid id="cap" style="margin-top: 20px; position: relative"> 
+                                
+                                <p:row rendered="#{areaAdministrativaBeanUI.areaAdministrativaHelper.ocultarPE}">
+                                    <p:column style="font-weight: bold;">Programa Educativo:</p:column>  
+                                    <p:column colspan="2" style="font-weight: bold;">
+                                        <p:selectOneMenu id="areape" filter="true"
+                                                         filterFunction="startsWith"
+                                                         value="#{areaAdministrativaBeanUI.areaAdministrativaHelper.areaAdministrativa.programaeducativo.pedid}"
+                                                         disabled="#{areaAdministrativaBeanUI.deshabilitar}">                                       
+                                            <f:selectItem itemLabel="Seleccione Programa Educativo" itemValue="#{0}"/>
+                                            <f:selectItems value="#{areaAdministrativaBeanUI.areaAdministrativaHelper.listaPEdlg}"                                             
+                                                           var="pe"
+                                                           itemLabel="#{pe.pednombre}"
+                                                           itemValue="#{pe.pedid}"/>                                        
+
+                                        </p:selectOneMenu>
+                                    </p:column>                                  
+                                </p:row>
+                                
+                                <p:row>  
+                                    <p:column style="font-weight: bold;">Nombre de Área Administrativa</p:column>  
+                                    <p:column style="font-weight: bold;">
+                                        <p:inputText id="nombrearea" 
+                                                     disabled="#{areaAdministrativaBeanUI.deshabilitar}"
+                                                     value="#{areaAdministrativaBeanUI.areaAdministrativaHelper.areaAdministrativa.aadnombre}" >
+                                        </p:inputText>
+                                        <pe:keyFilter for="nombrearea" regEx="/[0-9A-Za-z ]/" />                                    
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+
+                                </p:row>
+                            </p:panelGrid>
+                            <br/>
+                            <div align="center">
+                                <p:commandButton value="Aceptar" image="btnGuardar" 
+                                                 action="#{areaAdministrativaBeanUI.onClickSubmit()}"
+                                                 update="cap,:formAreaAd:areaad,:formAreaAd:growl">
+                                </p:commandButton>
+
+                                <p:commandButton value="Cancelar" image="btnCancelar"                                             
+                                                 oncomplete="dlg.hide()" 
+                                                 update="cap">
+                                    <p:ajax event="click" update=":formAreaAd:areaad,:formAreaAd:showEliminarButton,:formAreaAd:showModificarButton" ></p:ajax>
+                                </p:commandButton>
+                            </div>
+                        </p:dialog>
+
+                    </p:fieldset> 
+                </h:form>  
+                <p:confirmDialog id="confirmacionId" showEffect="fade" hideEffect="explode" 
+                                 widgetVar="confirmacion" header="Confirmación"
+                                 message="#{areaAdministrativaBeanUI.mensajeConfirmacion}"
+                                 severity="alert" appendToBody="true">
+                    <h:form>
+                        <div align="center">
+                            <p:commandButton value="Aceptar" action="#{areaAdministrativaBeanUI.Confirmacion()}"                                             
+                                         icon="ui-icon-check"
+                                         oncomplete="dlg.show()"
+                                         update=":formAreaAd:growl,:formAreaAd:areaad,:formAreaAd:capdlg,:formAreaAd:cap, :formAreaAd:showEliminarButton,:formAreaAd:showModificarButton">
+                            <p:ajax event="click" update=":formAreaAd:lblSeleccionados"/>
+
+                        </p:commandButton>
+                        <p:commandButton value="Cancelar" oncomplete="confirmacion.hide()"
+                                         rendered="#{areaAdministrativaBeanUI.renderCancelar}"
+                                         icon="ui-icon-close" update=":formAreaAd:areaad"/>
+                        </div>
+                    </h:form>  
+                </p:confirmDialog> 
+            </h:body>
+        </f:view>
+    </ui:define>
+</ui:composition>

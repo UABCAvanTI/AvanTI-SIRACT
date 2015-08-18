@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<!-- Generated 17-ago-2015 14:50:32 by Hibernate Tools 3.6.0 -->
+<hibernate-mapping>
+    <class name="mx.avanti.siract.business.entity.Coordinadorareaadministrativa" table="coordinadorareaadministrativa" catalog="siract">
+        <composite-id name="id" class="mx.avanti.siract.business.entity.CoordinadorareaadministrativaId">
+            <key-property name="profesorProid" type="int">
+                <column name="Profesor_PROid" />
+            </key-property>
+            <key-property name="unidadAprendizajeUapid" type="int">
+                <column name="UnidadAprendizaje_UAPid" />
+            </key-property>
+        </composite-id>
+        <many-to-one name="unidadaprendizaje" class="mx.avanti.siract.business.entity.Unidadaprendizaje" update="false" insert="false" fetch="select">
+            <column name="UnidadAprendizaje_UAPid" not-null="true" />
+        </many-to-one>
+        <many-to-one name="profesor" class="mx.avanti.siract.business.entity.Profesor" update="false" insert="false" fetch="select">
+            <column name="Profesor_PROid" not-null="true" />
+        </many-to-one>
+        <many-to-one name="areaadministrativa" class="mx.avanti.siract.business.entity.Areaadministrativa" fetch="select">
+            <column name="AreaAdministrativa_AADid" not-null="true" />
+        </many-to-one>
+    </class>
+</hibernate-mapping>

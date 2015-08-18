@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui" 
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+    <meta http-equiv="Expires" content="0" /> 
+    <meta http-equiv="Pragma" content="no-cache" />
+
+    <script type="text/javascript">
+        if (history.forward(1)) {
+            location.replace(history.forward(1));
+        }
+    </script>
+    <f:view contentType="text/html">
+        <h:head>
+            <h:outputStylesheet name="Login.css" library="css"/>
+            <f:facet name="SIRACT">
+                <meta content='text/html; charset=UTF-8' http-equiv="Content-Type"/>
+                <h:outputText value="SIRACT | Sistema de Autentificación"/>
+            </f:facet>
+            <title>SIRACT</title>
+            <link href="#{appBean.baseUrl}"/>
+        </h:head>
+    </f:view>
+
+    <h:body>
+        <p:growl id="growl" showDetail="true" life="3000" />
+        <h:form id="fromLogin">
+            <p:panel style="box-shadow: 0px -5px 0px 0px #F1A733;" 
+                     header="Sistema de Reporte de Avance de Contenido Temático (SIRACT)" styleClass="PanelTL">
+                <h:graphicImage library="imagenes" name="uabc.png" styleClass="Logo" title="SIRACT"/>
+                <p:panel header="Iniciar Sesión" styleClass="PanelGLogin">
+                    <h:panelGrid columns="4" cellpadding="5">
+                        <h:outputLabel for="username" value="Usuario" />
+                        <p:inputText id="username" value="#{loginBean.usuario.usuusuario}" required="true" label="username" />@uabc.edu.mx
+                        <h:outputText />
+                        <h:outputLabel for="password" value="Contraseña" />
+                        <p:password id="password" value="#{loginBean.usuario.usucontrasenia}" required="true" label="password" />
+
+                        <f:facet name="footer">
+                            <p:commandButton id="loginButton" value="Aceptar" update=":growl" actionListener="#{loginBean.login(event)}" oncomplete="handleLoginRequest(xhr, status, args)" />
+                        </f:facet>  
+                    </h:panelGrid>
+                </p:panel>
+            </p:panel>
+        </h:form>
+        <script type="text/javascript">
+            function handleLoginRequest(xhr, status, args) {
+                if (args.validationFailed || !args.loggedIn) {
+                    jQuery('fromLogin').effect("shake", {time: 3}, 100);
+                }
+                else {
+                    location.href = args.ruta;
+                }
+            }
+        </script>
+    </h:body>
+</html>

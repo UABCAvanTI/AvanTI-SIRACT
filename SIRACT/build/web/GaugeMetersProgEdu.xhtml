@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+    <h:head>
+        <title>SIRACT - Reportes de programas educativos</title>
+        <script language="JavaScript" type="text/javascript">
+            function redireccionar()
+            {
+                location.href="http://localhost:8085/Siract_reportes/faces/newreport.xhtml";
+            }
+        </script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    </h:head>
+    <h:body>
+        <h:form id="forma">
+            <p:commandButton value="Generar" actionListener="#{filtrosBeanUI.mostrarProgEd()}" id="btnSemaforo" update=":forma: panel_semaforo table1 "></p:commandButton>
+            <p:panel widgetVar="panelGauge" id="panel_semaforo" rendered="#{filtrosBeanUI.mostrarBar}">
+                <center><h:outputText value="Ingenieria"/></center>
+                <!--<p:panelGrid columns="2">-->
+                <p:dataTable var="var" value="#{filtrosBeanUI.semProgEd}" id="table1" > 
+                    <p:column>
+                        <p:meterGaugeChart rendered="#{filtrosBeanUI.mostrarBar}" rendererType="value" value="#{var.model1}" style="height:250px" 
+                        seriesColors="F00000,F00000,F7FE2E,00FF00" label="#{var.programa}" showTickLabels="true" labelHeightAdjust="90" intervalOuterRadius="100"/>
+                    </p:column>
+                </p:dataTable> 
+               <!--</p:panelGrid> -->
+            </p:panel>
+            <p:commandButton value="Exportar reporte"></p:commandButton>
+            <p:commandButton value="Regresar" onclick="redireccionar()" ></p:commandButton>
+        </h:form>
+    </h:body>
+</html>

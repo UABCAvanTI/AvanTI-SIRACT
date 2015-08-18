@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/Template/MasterTemplate.xhtml">
+    <ui:define name="contenido">
+        <f:view contentType="text/html">
+            <h:head>
+                <h:outputStylesheet name="Style_botones.css" library="css"/>
+                <f:facet name="first">
+                    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+                    <title>Rol</title>
+                </f:facet>
+                <script type="text/javascript">
+                    function inputLimiter(e, allow) {
+                        var AllowableCharacters = '';
+
+                        if (allow === 'Letters') {
+                            AllowableCharacters = ' ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+                        }
+
+                        var k = document.all ? parseInt(e.keyCode) : parseInt(e.which);
+                        if (k !== 13 || k !== 8 || k !== 0) {
+                            if ((e.ctrlKey === false) || (e.altKey === false)) {
+                                return (AllowableCharacters.indexOf(String.fromCharCode(k)) !== -1);
+                            } else {
+                                return true;
+                            }
+                        } else {
+                            return true;
+                        }
+                    }
+                </script>
+            </h:head>
+            <h:body onload="#{rolesBeanUI.refrescarForma()}">
+                <h:form id="frmRoles" onkeypress="return event.keyCode !== 13" rendered="#{loginBean.tienePermiso}">
+                    <p:growl widgetVar="mensaje" id="msgs" showDetail="false" sticky="true" />
+                    <p:fieldset legend="Administración de Roles">
+                        <p:commandButton id="showAltaButton" ajax="true" process="@this" image="btnAU" actionListener="#{rolesBeanUI.nuevo()}" oncomplete="dlg.show();"  iconPos="center"  update="capRoles" />
+                        <p:commandButton id="showEliminarButton" disabled="#{rolesBeanUI.modEl}"  image="btnEU"  actionListener="#{rolesBeanUI.eliminar()}" oncomplete="dlg.show();" iconPos="center" update="capRoles" />
+                        <p:commandButton id="showMostrarButton" disabled="#{rolesBeanUI.modEl}" image="btnMU" actionListener="#{rolesBeanUI.modificar()}" oncomplete="dlg.show();" iconPos="center" update="capRoles, :frmRoles:rol" />
+
+                        <h:outputText style="margin-left: 55%" value="Búsqueda específica de roles: " />
+                        <p:inputText id="globalFilter" value="#{rolesBeanUI.busqueda}" style="width:150px" placeholder="Buscar">
+                            <p:ajax event="keyup"  listener="#{rolesBeanUI.filtrado()}" 
+                                    update="tbRoles" />
+                        </p:inputText>
+                        <!--                                Tabla general de los roles                                        -->
+                        <p:dataTable id="tbRoles"
+                                     var="rol"
+                                     selection="#{rolesBeanUI.rolObj}"
+                                     value="#{rolesBeanUI.listaFiltrada}"
+                                     rowKey="#{rol.rolid}"
+                                     selectionMode="single" 
+                                     widgetVar="rolSelected"
+                                     rowIndexVar="rolIdTable"
+                                     rows="8"
+                                     paginator="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15" rendered="true">
+                            <p:ajax event="rowSelect" listener="#{rolesBeanUI.onRowSelect}" update=":frmRoles:rol,:frmRoles:showEliminarButton,:frmRoles:showMostrarButton"  />
+                            <p:ajax event="rowSelect" listener="#{rolesBeanUI.onRowSelect}" update=":frmRoles:perm" />                               
+
+                            <p:ajax event="rowUnselect" listener="#{rolesBeanUI.noRowUnselect}" update=":frmRoles:rol,:frmRoles:showEliminarButton,:frmRoles:showMostrarButton"  />
+                            <p:ajax event="rowUnselect" listener="#{rolesBeanUI.noRowUnselect}" update=":frmRoles:perm" />              
+
+                            <p:column headerText="Roles" width="50%">
+                                <h:outputText value="#{rol.roltipo}"/>
+                            </p:column>
+                            <p:column headerText="Permisos" width="50%">
+                                <p:outputLabel value="#{rolesBeanUI.permStrList(rol)}" />
+                                <p:commandButton ajax="true" process="@this" onclick="arbol.show();
+                                        statusDialog.show();
+                                        rolSelected.selectRow(#{rolIdTable})" style="#{rolesBeanUI.boton};height: 20px;margin-top: 0px;margin-bottom: 0px"  id="obsPanel" type="button" icon="ui-icon-extlink">
+                                    <p:ajax event="click" update=":frmRoles:arbolPermS,:frmRoles:tbRoles,:frmRoles:showEliminarButton,:frmRoles:showMostrarButton"/>
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+
+                        <p:dialog id="dlgArbol" style="margin-top: 5%;" modal="true" widgetVar="arbol"  header="Rol: Permisos" >
+
+                            <h:outputText value="Permisos:" style="padding-right: 15px;padding-left: 15px;padding-bottom: 5px;padding-top: 5px;font-size: large;font-weight: bolder;background-color: #52a412;-webkit-border-radius: 5px 5px 5px 5px;
+                                          border-radius: 5px 5px 5px 5px;color: white;border-color:  #F1A733;border: 5px"/>
+                            <p:tree dynamic="true" id="arbolPermS" style="margin-top: 10px;border-color: #52a412;max-height: 300px; max-width: 700px!important;overflow-y:scroll" animate="true" value="#{rolesBeanUI.getRoot()}" var="node">
+                                <p:treeNode>
+                                    <h:outputText style="white-space: pre-line" value="#{node}&#10;"/>
+                                </p:treeNode>
+                            </p:tree>
+                        </p:dialog>
+                        
+                        
+                        <p:dialog id="capRoles" header="#{rolesBeanUI.header}" widgetVar="dlg" modal="true">
+                            <p:panelGrid style="margin-top: 20px; position: relative" id="pG">
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="Rol: "/>
+                                    </p:column>
+                                    <p:column>
+                                        <p:inputText id="rol" maxlength="40"  onkeypress="return inputLimiter(event, 'Letters')" disabled="#{rolesBeanUI.deshabilitar}" value="#{rolesBeanUI.rolObj.roltipo}" >
+
+                                        </p:inputText>
+                                    </p:column>
+
+                                    <p:column>
+                                        <p:selectCheckboxMenu  id="perm" value="#{rolesBeanUI.listaPermisosSelected}"  immediate="true" disabled="#{rolesBeanUI.deshabilitar}"  rendered="true" label="Permisos" filter="true" filterMatchMode="startsWith" style="width: 220px; margin-top: 20px;">                                         
+                                            <f:selectItems value="#{rolesBeanUI.listPermisos}" />
+                                        </p:selectCheckboxMenu>      
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
+
+
+                            <p:commandButton process="@(this)" ajax="true" value="Aceptar" onclick="statusDialog.show()"  action="#{rolesBeanUI.onClick()}" update="tbRoles,:frmRoles:msgs"  image="btnGuardar">
+                                <p:ajax update=":frmRoles:tbRoles" resetValues="true" />
+                            </p:commandButton>
+
+
+                            <p:commandButton value="Cancelar" image="btnCancelar" onclick="#{rolesBeanUI.resetForm()};
+                                    statusDialog.show()"  update=":frmRoles:tbRoles" oncomplete="dlg.hide();window.location.replace(window.location.href='Roles.xhtml');"> 
+                                <p:ajax update=":frmRoles:tbRoles" resetValues="true" />
+                            </p:commandButton>
+                        </p:dialog>
+                    </p:fieldset>
+                </h:form>
+
+                <p:dialog appendTo="@(body)" widgetVar="statusDialog" modal="true" draggable="false" showHeader="false">
+                    <p:graphicImage library="imagenes" name="gif-load.gif" />
+                </p:dialog>
+                <p:confirmDialog id="confirmdlgID" showEffect="fade" hideEffect="explode" 
+                                 widgetVar="confirmdlg" header="Confirmación"
+                                 message="¿Está seguro de eliminar el registro?"
+                                 severity="alert">        
+                    <h:form id="elFrm">
+                        <!--<p:growl widgetVar="message" id="msgsElim" showDetail="true" sticky="true" />-->
+
+                        <p:commandButton actionListener="#{rolesBeanUI.eliminarConfirm()}" ajax="false" onclick="window.location.replace(window.location.href = 'Roles.xhtml');"  value="Si" styleClass="ui-confirmdialog-yes" image="btnAceptar"  >
+
+                        </p:commandButton>
+                        <p:commandButton value="No" onclick="confirmdlg.hide()" type="button" styleClass="ui-confirmdialog-no" image="btnCancelar">
+                        </p:commandButton>
+                    </h:form>
+                </p:confirmDialog>
+                <h:form rendered="#{loginBean.formano}">
+                    <center><h1>No tienes permisos para ver esto</h1></center>
+
+                </h:form>
+            </h:body>
+        </f:view>
+    </ui:define>
+</ui:composition>

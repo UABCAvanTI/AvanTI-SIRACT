@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                template="/Template/MasterTemplate.xhtml">
+    <ui:define name="contenido">
+        <f:view contentType="text/html">   
+
+            <h:head>
+                <h:outputStylesheet name="Style_botones.css" library="css"/>
+                <f:facet name="first">
+                    <meta content='text/html; charset=UTF-8' http-equiv="Content-Type"/>
+                    <title>Asignar Grupos, Unidad de Aprendizaje y Profesor</title> 
+                </f:facet>
+            </h:head>
+            <h:body onload="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.filtro()}"> 
+                <h:form id="frmAGUAP" rendered="#{loginBean.tienePermiso}">
+
+                    <p:fieldset legend="Asignación de Grupos, Unidad de Aprendizaje y Profesores">
+                        <p:growl id="growl" showDetail="true" life="10000"/>
+                        <p:commandButton id="showAltaButton" title="Agregar" 
+                                         image="btnAU"  oncomplete="dlg.show();" 
+                                         iconPos="center" update="capdlg"
+                                         actionListener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.nuevo}"/>
+                        <p:commandButton id="showEliminarButton" 
+                                         title="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.toolTip(1)}" 
+                                         disabled="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.botonesModElim()}"
+                                         image="btnEU"  oncomplete="dlg.show();" 
+                                         iconPos="center" update="capdlg"
+                                         actionListener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.eliminar()}"/>
+                        <p:commandButton id="showModificarButton" 
+                                         title="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.toolTip(2)}" 
+                                         disabled="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.botonesModElim()}"
+                                         image="btnMU"  oncomplete="dlg.show();" 
+                                         iconPos="center" update="capdlg"
+                                         actionListener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.modificar()}"/>
+                        
+                        <br/><br/>
+
+
+                        <div id="divFiltro" style="text-align: right;">
+                            <p:outputLabel style="font-size: 19px" value="Busqueda especifica de AGUAP"/>
+                            
+                            <p:inputText id="filtro"
+                                         value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.busqueda}"
+                                         autocomplete="off"
+                                         label="filtrado">
+                                <p:ajax event="keyup" listener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.filtro()}"
+                                        update="asignar"/>
+                            </p:inputText>
+                            <pe:keyFilter for="filtro" mask="alphanumeric"/>                                           
+                        </div>          
+                        
+                        <p:dataTable id="asignar" var="asignacion"
+                                     value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.listaFiltrada}"
+                                     rowKey="#{asignacion.uipid}"
+                                     selection="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.listaAGUAPSeleccionada}"                                     
+                                     rows="10" 
+                                     rowsPerPageTemplate="5,10,15,20"
+                                     paginator="true" 
+                                     rowSelectMode="add"
+                                     selectionMode="checkbox"                                                                        
+                                     paginatorTemplate="{CurrentPageReport}  
+                                     {FirstPageLink} {PreviousPageLink} {PageLinks} 
+                                     {NextPageLink} {LastPageLink} 
+                                     {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="({currentPage} de {totalPages})"
+                                     emptyMessage="No se encontraron registros a mostrar">
+                            <p:ajax event="rowSelect" update=":frmAGUAP:showEliminarButton, :frmAGUAP:showModificarButton"/>
+                            <p:ajax event="rowUnselect" update=":frmAGUAP:showEliminarButton, :frmAGUAP:showModificarButton"/>
+                            <p:ajax event="rowSelectCheckbox" update=":frmAGUAP:showEliminarButton, :frmAGUAP:showModificarButton"/>
+                            <p:ajax event="rowUnselectCheckbox" update=":frmAGUAP:showEliminarButton, :frmAGUAP:showModificarButton"/>
+                            <p:ajax event="toggleSelect" update=":frmAGUAP:showEliminarButton, :frmAGUAP:showModificarButton"/>
+
+                            <p:column selectionMode="multiple" 
+                                      style="width: 1%; text-align: center">
+                                
+                            </p:column>
+                            <p:column headerText="Grupo">
+                                <h:outputText value="#{asignacion.grupo.gponumero}" />
+                            </p:column>
+                            <p:column headerText="Clave Unidad de Aprendizaje">
+                                <h:outputText value="#{asignacion.unidadaprendizaje.uapclave}" />
+                            </p:column>
+                            <p:column headerText="Unidad de Aprendizaje">
+                                <h:outputText value="#{asignacion.unidadaprendizaje.uapnombre}" />
+                            </p:column>
+                            <p:column headerText="Tipo">
+                                <h:outputText value="#{asignacion.uiptipoSubgrupo}" />                              
+                            </p:column>
+                                <p:column headerText="Subgrupo">
+                                    <h:outputText value="#{asignacion.uipsubgrupo}" />
+                                </p:column>                              
+                            <p:column headerText="No. Empleado">
+                                <h:outputText value="#{asignacion.profesor.pronumeroEmpleado}" />
+                            </p:column>
+                            <p:column headerText="Profesor">
+                                <h:outputText value="#{asignacion.profesor.pronombre} #{asignacion.profesor.proapellidoPaterno} #{asignacion.profesor.proapellidoMaterno}" />
+                            </p:column>
+                        </p:dataTable>                        
+                        
+                        
+                        
+                        
+                        
+                        <p:dialog id="capdlg" header="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.header}" widgetVar="dlg" 
+                                  resizable="false" showEffect="fade" 
+                                  hideEffect="explode" modal="true"
+                                  draggable="false">
+                            <p:ajax event="close" update=":frmAGUAP:asignar, :frmAGUAP:showEliminarButton, :frmAGUAP:showModificarButton, :frmAGUAP:cap" listener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.limpiarSeleccion()}"/>
+                                    
+                            <div id="selecs">
+                                <p:outputLabel rendered="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.mostrarSeleccionAGUAP()}"
+                                               value="--Seleccione un registro para desplegar datos--"
+                                               style="margin-right: 2%; margin-top: 20%;"/>
+                                <p:selectOneMenu id="seleccionados"
+                                                 value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.selecAGUAP.uipid}"
+                                                 rendered="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.mostrarSeleccionAGUAP()}"
+                                                 style="width: 600px">
+                                    
+                                    <p:ajax event="valueChange" update="cap" 
+                                            listener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.cargaDeListas()}"/>                                    
+                                    
+                                    <p:ajax event="valueChange" update="cap" 
+                                            listener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.seleccionarRegistro()}"/>
+                                    
+                                    <p:ajax event="valueChange" update="cap" 
+                                            listener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.filtrarListas()}"/>                                    
+                                    
+                                    <f:selectItems value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.listaAGUAPSeleccionada}"
+                                                   var="aguap"
+                                                   itemLabel="#{aguap.grupo.gponumero} - #{aguap.unidadaprendizaje.uapnombre} - #{aguap.uiptipoSubgrupo} - #{aguap.profesor.pronombre}"
+                                                   itemValue="#{aguap.uipid}" />
+                                </p:selectOneMenu>
+                            </div>
+                                    
+                            <p:panelGrid id="cap" style="margin-top:20px; position: relative">
+                                
+                                <p:row>
+                                    <p:column><p:outputLabel value="Programa Educativo"/></p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="PE"
+                                                         value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.programaEducativo.pedid}"
+                                                         filter="true"
+                                                         filterMatchMode="contains"
+                                                         disabled="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.deshabilitar}">
+                                        <f:selectItem itemLabel="--Seleccione un Programa Educativo--" itemValue="#{0}"/>
+                                        <f:selectItems value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.listaPE}"
+                                                       var="pe"
+                                                       itemLabel="#{pe.pedclave} - #{pe.pednombre}" 
+                                                       itemValue="#{pe.pedid}"/>
+                                        <p:ajax event="valueChange" update="cap" listener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.filtrarPlanYProfPorPE()}" />
+                                        </p:selectOneMenu>                                        
+                                    </p:column>
+                                </p:row>
+                                
+                                <p:row>
+                                    <p:column><p:outputLabel value="Plan de Estudios"/></p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="Plan"
+                                                         value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.planEstudio.pesid}"
+                                                         filter="true"
+                                                         filterMatchMode="contains"
+                                                         disabled="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.deshabilitar}">
+                                            <f:selectItem itemLabel="--Seleccione un Plan de Estudios--" itemValue="#{0}"/>
+                                            <f:selectItems value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.listaPlan}"
+                                                           var="plan"
+                                                           itemLabel="#{plan.pesvigenciaPlan}"
+                                                           itemValue="#{plan.pesid}" />
+                                            <p:ajax event="valueChange" update="cap" listener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.filtrarAreaYGpoPorPlan()}" />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>                                  
+                                
+                                <p:row>
+                                    <p:column><p:outputLabel value="Area de Conocimiento"/></p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="Area"
+                                                         value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.areaConocimiento.acoid}"
+                                                         filter="true"
+                                                         filterMatchMode="contains"
+                                                         disabled="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.deshabilitar}">
+                                            <f:selectItem itemLabel="--Seleccione un Area de Conocimiento--" itemValue="#{0}"/>
+                                            <f:selectItems value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.listaAC}"
+                                                           var="ac"
+                                                           itemLabel="#{ac.acoclave} - #{ac.aconombre}"
+                                                           itemValue="#{ac.acoid}" />
+                                            <p:ajax event="valueChange" update="cap" listener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.filtrarUAPorArea()}" />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                                              
+                                
+                                <p:row>
+                                    <p:column><p:outputLabel value="Unidad de Aprendizaje"/></p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="nombreUniApre" 
+                                                         value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.unidadApren.uapid}" 
+                                                         filter="true" 
+                                                         filterMatchMode="contains" 
+                                                         disabled="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.deshabilitar}">
+                                            <f:selectItem itemLabel="--Seleccione una Unidad de Aprendizaje--" itemValue="#{0}" />
+                                            <f:selectItems value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.listaUA}" 
+                                                           var="uniAprendizaje"
+                                                           itemLabel="#{uniAprendizaje.uapclave} - #{uniAprendizaje.uapnombre}"
+                                                           itemValue="#{uniAprendizaje.uapid}"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                
+                                <p:row>
+                                    <p:column><p:outputLabel value="Profesor"/></p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="prof" 
+                                                         value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.profesor.proid}"
+                                                         filter="true"
+                                                         filterMatchMode="contains"
+                                                         disabled="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.deshabilitar}">
+                                            <f:selectItem itemLabel="--Seleccione un Profesor--" itemValue="#{0}" />
+                                            <f:selectItems value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.listaProfesor}" 
+                                                           var="profe"
+                                                           itemLabel="#{profe.pronumeroEmpleado} - #{profe.pronombre} #{profe.proapellidoPaterno} #{profe.proapellidoMaterno}"
+                                                           itemValue="#{profe.proid}"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+
+                                <p:row>
+                                    <p:column><p:outputLabel value="Grupo"/></p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="gruposList" 
+                                                         value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.grupo.gpoid}"
+                                                         disabled="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.deshabilitar}">
+                                            <f:selectItem itemLabel="--Seleccione un Grupo--" itemValue="#{0}" />
+                                            <f:selectItems value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.listaGrupo}" 
+                                                           var="grupo"
+                                                           itemLabel="#{grupo.gponumero}"
+                                                           itemValue="#{grupo.gpoid}"/>
+
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                    
+                                <p:row>
+                                    <p:column><p:outputLabel value="Tipo"/></p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="tipo" 
+                                                         value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.AGUAP.uiptipoSubgrupo}" 
+                                                         disabled="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.deshabilitar}">
+                                            <f:selectItem itemLabel="--Seleccione el Tipo--" itemValue="#{0}" />
+                                            <f:selectItem itemLabel="C" itemValue="C" />
+                                            <f:selectItem itemLabel="L" itemValue="L" />
+                                            <f:selectItem itemLabel="T" itemValue="T" />
+                                            <f:selectItem itemLabel="P" itemValue="P" />
+                                            <f:selectItem itemLabel="CL" itemValue="CL" />
+                                            <p:ajax event="valueChange" update="numSubgrupo" 
+                                                    listener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.tipoTieneSubgrupo()}"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+
+                                    <p:column><p:outputLabel value="Subgrupo"/></p:column>
+                                    <p:column>
+                                        <p:inputText id="numSubgrupo" 
+                                                     value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.AGUAP.uipsubgrupo}"                                                     
+                                                     disabled="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.deshabilitarSubgrupo}"
+                                                     maxlength="1">
+                                        <p:ajax event="keyup" update="tipo"
+                                                listener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.subgrupoTieneTipo()}"/>  
+                                        <pe:keyFilter for="numSubgrupo" regEx="/[0-4]/"/>
+                                        </p:inputText>
+
+                                        <pe:keyFilter for="numSubgrupo" regEx="/[0-4]/"/>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
+                            
+                            <p:commandButton value="Aceptar" image="btnGuardar" 
+                                              
+                                             actionListener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.onClickSubmit()}" 
+                                             update=":frmAGUAP:growl, cap, :frmAGUAP:asignar, :frmAGUAP:seleccionados">
+                            </p:commandButton>     
+                                    
+                            <p:commandButton value="Cancelar" image="btnCancelar" 
+                                             oncomplete="dlg.hide()" 
+                                             update=":frmAGUAP:asignar, :frmAGUAP:seleccionados, :frmAGUAP:capdlg">
+                                <p:ajax event="click" 
+                                        update=":frmAGUAP:asignar, :frmAGUAP:showEliminarButton, :frmAGUAP:showModificarButton, :frmAGUAP:cap, :frmAGUAP:seleccionados" 
+                                        listener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.limpiarSeleccion()}" />
+                            </p:commandButton>
+                        </p:dialog>                                                                                             
+                    </p:fieldset>
+
+                </h:form>
+                
+                <p:confirmDialog id="confirmdlgId" showEffect="fade" hideEffect="explode" 
+                                widgetVar="confirmdlg" header="Confirmación"
+                                message="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.mensajeConfirm}"
+                                severity="alert" appendTo="@(body)">
+                   <h:form>
+                       <p:commandButton value="Aceptar" action="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.confirmacionAceptada()}"                          
+                                            icon="ui-icon-check"
+                                            update=":frmAGUAP:growl,:frmAGUAP:asignar, :frmAGUAP:cap, :frmAGUAP:seleccionados, :frmAGUAP:capdlg">
+                           <p:ajax event="click" update=":frmAGUAP:showEliminarButton, :frmAGUAP:showModificarButton, :frmAGUAP:seleccionados, :frmAGUAP:cap, :frmAGUAP:asignar"/>
+                           
+                       </p:commandButton>
+                        <p:commandButton value="Cancelar" oncomplete="confirmdlg.hide()"
+                                            icon="ui-icon-close"/>
+                   </h:form>  
+                </p:confirmDialog>   
+                
+                
+                <h:form rendered="#{loginBean.formano}">
+                    <center><h1>No tienes permisos para ver esto</h1></center>
+
+                </h:form>
+            </h:body>
+        </f:view>
+    </ui:define>
+</ui:composition>

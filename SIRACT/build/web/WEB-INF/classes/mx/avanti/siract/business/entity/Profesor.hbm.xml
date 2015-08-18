@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<!-- Generated 17-ago-2015 14:50:32 by Hibernate Tools 3.6.0 -->
+<hibernate-mapping>
+    <class name="mx.avanti.siract.business.entity.Profesor" table="profesor" catalog="siract">
+        <id name="proid" type="java.lang.Integer">
+            <column name="PROid" />
+            <generator class="identity" />
+        </id>
+        <many-to-one name="usuario" class="mx.avanti.siract.business.entity.Usuario" fetch="select">
+            <column name="Usuario_USUid" not-null="true" />
+        </many-to-one>
+        <property name="pronumeroEmpleado" type="int">
+            <column name="PROnumeroEmpleado" not-null="true" />
+        </property>
+        <property name="pronombre" type="string">
+            <column name="PROnombre" length="45" not-null="true" />
+        </property>
+        <property name="proapellidoPaterno" type="string">
+            <column name="PROapellidoPaterno" length="45" not-null="true" />
+        </property>
+        <property name="proapellidoMaterno" type="string">
+            <column name="PROapellidoMaterno" length="45" not-null="true" />
+        </property>
+        <property name="prorfc" type="string">
+            <column name="PROrfc" length="25" not-null="true" />
+        </property>
+        <set name="coordinadorareaadministrativas" table="coordinadorareaadministrativa" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="Profesor_PROid" not-null="true" />
+            </key>
+            <one-to-many class="mx.avanti.siract.business.entity.Coordinadorareaadministrativa" />
+        </set>
+        <set name="programaeducativos" table="responsableprogramaeducativo" inverse="false" lazy="true" fetch="select">
+            <key>
+                <column name="Profesor_PROid" not-null="true" />
+            </key>
+            <many-to-many entity-name="mx.avanti.siract.business.entity.Programaeducativo">
+                <column name="ProgramaEducativo_PEDid" not-null="true" />
+            </many-to-many>
+        </set>
+        <set name="areaconocimientos" table="coordinadorarea" inverse="false" lazy="true" fetch="select">
+            <key>
+                <column name="Profesor_PROid" not-null="true" />
+            </key>
+            <many-to-many entity-name="mx.avanti.siract.business.entity.Areaconocimiento">
+                <column name="AreaConocimiento_ACOid" not-null="true" />
+            </many-to-many>
+        </set>
+        <set name="programaeducativos_1" table="profesor_pertenece_programaeducativo" inverse="false" lazy="true" fetch="select">
+            <key>
+                <column name="Profesor_PROid" not-null="true" />
+            </key>
+            <many-to-many entity-name="mx.avanti.siract.business.entity.Programaeducativo">
+                <column name="ProgramaEducativo_PEDid" not-null="true" />
+            </many-to-many>
+        </set>
+        <set name="unidadaprendizajeImparteProfesors" table="unidadaprendizaje_imparte_profesor" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="Profesor_PROid" not-null="true" />
+            </key>
+            <one-to-many class="mx.avanti.siract.business.entity.UnidadaprendizajeImparteProfesor" />
+        </set>
+        <set name="unidadacademicas" table="profesor_pertenece_unidadacademica" inverse="false" lazy="true" fetch="select">
+            <key>
+                <column name="Profesor_PROid" not-null="true" />
+            </key>
+            <many-to-many entity-name="mx.avanti.siract.business.entity.Unidadacademica">
+                <column name="UnidadAcademica_UACid" not-null="true" />
+            </many-to-many>
+        </set>
+    </class>
+</hibernate-mapping>

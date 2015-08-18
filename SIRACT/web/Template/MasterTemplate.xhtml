@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html" 
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">   
+    <meta http-equiv="Expires" content="0" /> 
+    <meta http-equiv="Pragma" content="no-cache" />
+
+    <script type="text/javascript">
+        if (history.forward(1)) {
+            location.replace(history.forward(1));
+        }
+    </script>
+    <f:view contentType="text/html" >
+        <h:head>
+            <f:facet name="first">
+                <meta content='text/html; charset=UTF-8' http-equiv="Content-Type"/>   
+                <mate title=""/>
+                <meta http-equiv="Content-type" content="text/html; charset=UTF-8"/>
+                <meta http-equiv="pragma" content="nocache"/>
+                <meta http-equiv="cache-control" content="no-cache"/>
+                <meta http-equiv="expires" content="0"/> 
+                <title>SIRACT</title>
+            </f:facet>
+            <h:outputStylesheet name="Style.css" library="css"/>
+        </h:head>
+        <h:body>
+            <p:panelGrid columns="1" id="panelgrid" >
+                <h:panelGroup id="anteencabezado">
+                    <ui:include src="AnteEncabezado.xhtml" />
+                </h:panelGroup >
+                <h:panelGroup  id="encabezado" >
+                    <h:panelGroup><ui:include src="Encabezado.xhtml"/><p:outputLabel value="Usuario:" style="font-weight: bold; margin-left: 75%;"/><p:spacer/><p:spacer/><p:spacer/>
+                        <p:spacer/><p:spacer/><p:spacer/><p:spacer/><p:spacer/><p:spacer/><p:outputLabel value="#{loginBean.usuario.usuusuario}@uabc.edu.mx"/></h:panelGroup>
+
+                </h:panelGroup> 
+
+                <h:panelGroup>
+                    <ui:include src="MenuTemplate.xhtml"/>
+                </h:panelGroup>  
+                <!--<h:form id="mainForm" prependId="false" >-->
+                <p:scrollPanel mode="native" id="contenido">           
+
+                    <ui:insert name="contenido" />
+
+                </p:scrollPanel>
+                <!--</h:form>-->   
+                <h:panelGroup>
+                    <ui:include src="Pie.xhtml"/>
+                </h:panelGroup>
+            </p:panelGrid>
+        </h:body>
+    </f:view>
+</html>

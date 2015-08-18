@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:p="http://primefaces.org/ui">
+    <f:view contentType="text/html">
+        <h:head>
+            <h:outputStylesheet name="Style.css" library="css"/>
+        </h:head>
+        <!--<p:commandButton  image="../imagenes/go-home.png"/> | <p:commandButton value="Cerrar sesión"  icon="ui-icon-circle-close"/>-->
+        <!--<p:commandLink value="Inicio"/> | <p:commandLink value="Cerrar sesión"/>-->
+        <h:body>
+            <h:form  onkeydown="return false;" style="margin-left: 60%">
+                <h:graphicImage library="imagenes" name="go-home.png" styleClass="logocasa" title="SIRACT-casa"/><p:commandLink value="Inicio" action="#{loginBean.index()}"/> <p:outputLabel value=" | " rendered="#{loginBean.cambioUsuario()}" /> <h:graphicImage library="imagenes" name="user-group.png" title="SIRACT-casa" rendered="#{loginBean.cambioUsuario()}"/>
+
+
+                <p:selectOneMenu style="width: 35%"  id="r"  value="#{loginBean.rolMenu}" effect="fold" rendered="#{loginBean.selectRol}" maxlength="0" editable="true"  label="-- Seleccione otro rol -- " >
+                    
+                    <f:selectItems itemLabel="#{loginBean.rolMenu}" value="#{loginBean.roles}"/>
+                    <p:ajax event="valueChange" oncomplete="window.location.replace(window.location.href='index.xhtml');"  listener="#{loginBean.onClickSubmitPermiso2()}"/>
+                    
+                </p:selectOneMenu>
+<!--                <p:commandButton value="Seleccionar"   icon="ui-icon-check" rendered="#{loginBean.selectRol}"/>-->
+                <h:graphicImage library="imagenes" name="cerrarsesion.png" styleClass="logocerrarsesion" title="SIRACT-cerrarsesion"/><p:commandLink value="Cerrar sesión" actionListener="#{loginBean.logout()}" oncomplete="handleLoginRequest(xhr, status, args)"/>
+
+            </h:form>     
+        </h:body>
+
+    </f:view>
+    <script type="text/javascript">
+        function handleLoginRequest(xhr, status, args) {
+            if (args.loggerOut) {
+                location.href = args.ruta;
+            }
+        }
+    </script>
+</html>
