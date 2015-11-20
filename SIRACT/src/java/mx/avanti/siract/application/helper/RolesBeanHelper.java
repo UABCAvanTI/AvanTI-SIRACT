@@ -90,12 +90,12 @@ public class RolesBeanHelper implements Serializable {
     public List<Rol> filtrado(String busqueda) {
         busqueda = busqueda.toLowerCase();
         listaFiltrada = rolDelegate.getRol();
-
-        if (busqueda.trim().length() > 0) {
+        String[] buscar = busqueda.split(" ");
+        if (busqueda.trim().length() > 0 && buscar.length >= 1) {
             listaFiltrada.clear();
             for (Rol rolB : rolDelegate.getRol()) {
                 String rolTipo = rolB.getRoltipo().toLowerCase();
-                if (rolTipo.startsWith(busqueda)) {
+                if (rolTipo.contains(busqueda)) {
                     System.out.println(">>>>>>>>>>>>>>>Rol:" + rolB.getRoltipo());
                     if (!listaFiltrada.contains(rolB)) {
                         listaFiltrada.add(rolB);
@@ -114,7 +114,19 @@ public class RolesBeanHelper implements Serializable {
 
             }
 
+//        } else {
+//            listaFiltrada.clear();
+//            for (String b : buscar) {
+//                for (Rol rolB : rolDelegate.getRol()) {
+//                    if (b.startsWith()) {
+//                        if (!listaFiltrada.contains(rolB)) {
+//                            listaFiltrada.add(rolB);
+//                        }
+//                    }
+//                }
+//            }
         }
+
         return listaFiltrada;
     }
 
@@ -133,7 +145,7 @@ public class RolesBeanHelper implements Serializable {
     public void setSpDel(SubPermisoDelegate spDel) {
         this.spDel = spDel;
     }
-    
+
     public Rol getRol() {
         return rol;
     }

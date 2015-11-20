@@ -14,6 +14,7 @@ import mx.avanti.siract.business.entity.Planestudio;
 import mx.avanti.siract.business.entity.Unidadaprendizaje;
 import mx.avanti.siract.business.entity.Programaeducativo;
 import mx.avanti.siract.business.entity.UnidadaprendizajeImparteProfesor;
+import mx.avanti.siract.business.entity.Reporteavancecontenidotematico;
 import mx.avanti.siract.business.services.ServiceFacadeLocator;
 
 /**
@@ -159,6 +160,18 @@ public class AsignarGrupoUnidadAprendizajeProfesorDelegate implements Serializab
 
     public void setListaProgramaEducativo(List<Programaeducativo> listaProgramaEducativo) {
         this.listaProgramaEducativo = listaProgramaEducativo;
+    }
+
+    public List<UnidadaprendizajeImparteProfesor> getAsignacionPorGPO(int idGrupo) {
+        return ServiceFacadeLocator.getFacadeUnidadaprendisajeimparteprofesor().getAsignacionPorGPO(idGrupo);
+    }
+    
+//    public List<UnidadaprendizajeImparteProfesor> getReporteUAIP(int idUAIP){
+//        return ServiceFacadeLocator.getFacadeReporteavancecontenidotematico().getimparteProfesorByUnidadAprendisaje(idUAIP);
+//    }
+    
+    public List<Reporteavancecontenidotematico> getReporteUAIP(int idUAIP){
+        return ServiceFacadeLocator.getFacadeReporteavancecontenidotematico().getReportesAvanceByUinidadimparte(idUAIP);
     }
 
 }

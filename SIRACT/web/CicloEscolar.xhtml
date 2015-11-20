@@ -19,7 +19,10 @@
             </h:head>
 
             <!--            <h:body>-->
-            <h:body onload="#{capturaCicloEscolarBeanUI.filtrado()}"> 
+            <h:body onload="#{capturaCicloEscolarBeanUI.filtrado()}" onkeydown="if (event.keyCode == 13) {
+                                event.preventDefault();
+                                return false;
+                            }"> 
 
                 <h:form id="frmCicloEscolar" rendered="#{loginBean.tienePermiso}"> 
                     <p:panel>
@@ -31,19 +34,22 @@
                                               image="btnAU"
                                               oncomplete="dlg.show();" 
                                               iconPos="center" 
+                                              rendered="#{loginBean.permisoAlta}"
                                               actionListener="#{capturaCicloEscolarBeanUI.nuevo}" 
                                               update="capdlg" style="font-weight: bold;"/>
                             <p:commandButton disabled="#{capturaCicloEscolarBeanUI.botonesModElim()}" 
                                              title="#{capturaCicloEscolarBeanUI.toolTip(1)}" 
                                              id="showEliminarButton" image="btnEU" oncomplete="dlg.show();" 
                                              iconPos="center"
+                                             rendered="#{loginBean.permisoBaja}"
                                              actionListener="#{capturaCicloEscolarBeanUI.eliminar()}"
                                              update="capdlg" style="font-weight: bold;"/>
 
 
                             <p:commandButton  disabled="#{capturaCicloEscolarBeanUI.botonesModElim()}" 
                                               title="#{capturaCicloEscolarBeanUI.toolTip(2)}"
-                                              id="showMostrarButton"  image="btnMU"  oncomplete="dlg.show();" 
+                                              id="showMostrarButton"  image="btnMU"  oncomplete="dlg.show();"
+                                              rendered="#{loginBean.permisoModificar}" 
                                               iconPos="center" actionListener="#{capturaCicloEscolarBeanUI.modificar}"
                                               update="capdlg" style="font-weight: bold;"/> 
                             
@@ -173,7 +179,7 @@
                                  hideEffect="explode" 
                                  widgetVar="confirmdlg" 
                                  header="Confirmación"
-                                 message="#{capturaCicloEscolarBeanUI.mensajeConfirm}"
+                                 message="¿Está seguro de eliminar el registro?"
                                  severity="alert"
                                  appendToBody="true" 
                                  style="font-weight: bold;">

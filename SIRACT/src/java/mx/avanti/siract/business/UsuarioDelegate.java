@@ -105,6 +105,10 @@ public class UsuarioDelegate implements Serializable{
         return ServiceFacadeLocator.getFacadeUsuario().getUsuario(id);
     }
 
+  
+    public List<Usuario> findUsuarioByRol(int rolid){
+        return ServiceFacadeLocator.getFacadeUsuario().getUsuariobyRol(rolid);
+    }
 
-    
+
 }

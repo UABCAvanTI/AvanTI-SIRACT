@@ -22,7 +22,10 @@ and open the template in the editor.
                 <title>Programa educativo</title> 
             </f:facet>
         </h:head>
-        <h:body onload="#{programaEducativoBeanUI.filtrado()}" >
+        <h:body onload="#{programaEducativoBeanUI.filtrado()}" onkeydown="if (event.keyCode == 13) {
+                                event.preventDefault();
+                                return false;
+                            }">
             <h:form id="formProg" rendered="#{loginBean.tienePermiso}">
                 <p:fieldset legend="Programa educativo"> 
                 <p:growl id="growl" showDetail="true" life="10000"/>   
@@ -83,7 +86,7 @@ and open the template in the editor.
                             </p:selectOneMenu>
                     </div>
                     <div id="divFiltro" style="text-align: right;">       
-                            <p:outputLabel style="font-size: 19px" value="Búsqueda especifica de programa educativo "/>
+                            <p:outputLabel style="font-size: 19px" value="Búsqueda específica de programa educativo "/>
 
                             <p:inputText id="filtro" 
                                          value="#{programaEducativoBeanUI.busqueda}" 
@@ -145,8 +148,8 @@ and open the template in the editor.
                     <p:ajax event="close" update=":formProg:edu,:formProg:showEliminarButton,:formProg:showModificarButton,:formProg:cap"
                             listener="#{programaEducativoBeanUI.limpiarSeleccion()}"/>
                     
-                    
-                    <div id="selecs" aling="center">
+                    <h:panelGroup id="selecs" rendered="#{programaEducativoBeanUI.mostrarSeleccionPe()}" >
+                    <!--<div id="selecs" aling="center">-->
                         <p:outputLabel rendered="#{programaEducativoBeanUI.mostrarSeleccionPe()}"
                                        value="Seleccione el registro a visualizar "></p:outputLabel>
                             <p:selectOneMenu id="seleccionados" 
@@ -161,7 +164,7 @@ and open the template in the editor.
                                                itemValue="#{pro.pedid}"/>                                             
 
                             </p:selectOneMenu>
-                    </div>
+                    </h:panelGroup>
                         <p:panelGrid id="cap" style="margin-top: 20px; position: relative"> 
 
                             <p:row rendered="#{programaEducativoBeanUI.renderUA}">
@@ -261,7 +264,7 @@ and open the template in the editor.
                                          action="#{programaEducativoBeanUI.confirmacionAceptada()}"                                             
                                          icon="ui-icon-check"
                                          style="font-weight: bold;  margin-left: 50px;"
-                                         update=":formProg:growl,:formProg:edu,:formProg:capdlg,:formProg:seleccionados,:formProg:cap"
+                                         update=":formProg:growl,:formProg:edu,:formProg:seleccionados,:formProg:cap,:formProg:showEliminarButton,:formProg:showModificarButton,:formProg:selecs"
                                          >
                             
                          <p:ajax event="click" 

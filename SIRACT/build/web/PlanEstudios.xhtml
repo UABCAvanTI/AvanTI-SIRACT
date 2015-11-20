@@ -35,6 +35,7 @@ and open the template in the editor.
                                          title="Agregar"
                                          iconPos="center" 
                                          actionListener="#{planEstudioBeanUI.nuevo}"
+                                     rendered="#{loginBean.permisoAlta}"
                                          update="capdlg"/>
                         <p:commandButton id="showEliminarButton"  image="btnEU"                                         
                                          title="#{planEstudioBeanUI.tooltip(2)}"                                         
@@ -42,6 +43,7 @@ and open the template in the editor.
                                          iconPos="center" 
                                          disabled="#{planEstudioBeanUI.deshabilitarMenu()}"
                                          actionListener="#{planEstudioBeanUI.eliminar}"
+                                         rendered="#{loginBean.permisoBaja}"
                                          update="capdlg"/>
                         <p:commandButton id="showModificarButton"  image="btnMU"                                                                           
                                          title="#{planEstudioBeanUI.tooltip(3)}"
@@ -49,6 +51,7 @@ and open the template in the editor.
                                          iconPos="center" 
                                          disabled="#{planEstudioBeanUI.deshabilitarMenu()}"
                                          actionListener="#{planEstudioBeanUI.modificar}"
+                                         rendered="#{loginBean.permisoModificar}"
                                          update="capdlg"/> 
                         <br/><br/>
                         <div id="selecPE" style="display: inline-block; width: 23%">
@@ -69,7 +72,7 @@ and open the template in the editor.
                           
                         
                         <div id="divFiltro" style="text-align: right;">       
-                            <p:outputLabel style="font-size: 19px" value="Búsqueda especifica por Plan de Estudio: "/>
+                            <p:outputLabel style="font-size: 19px" value="Búsqueda especifica de Plan de Estudio: "/>
 
                             <p:inputText id="filtro" 
                                          value="#{planEstudioBeanUI.busqueda}" 
@@ -121,13 +124,13 @@ and open the template in the editor.
                             <p:column headerText="Plan de estudios">  
                                 <h:outputText value="#{planEstudio.pesvigenciaPlan}" />  
                             </p:column>  
-                            <p:column headerText="Creditos obligatorios">  
+                            <p:column headerText="Créditos obligatorios">  
                                 <h:outputText value="#{planEstudio.pescreditosObligatorios}" />  
                             </p:column>
-                            <p:column headerText="Creditos optativos">  
+                            <p:column headerText="Créditos optativos">  
                                 <h:outputText value="#{planEstudio.pescreditosOptativos}" />  
                             </p:column>
-                            <p:column headerText="Total de creditos">  
+                            <p:column headerText="Total de créditos">  
                                 <h:outputText value="#{planEstudio.pestotalCreditos}" />  
                             </p:column>
                         </p:dataTable> 
@@ -154,7 +157,7 @@ and open the template in the editor.
                                 <p:row>  
                                     <p:column style="font-weight: bold;">Programa Educativo:</p:column>  
                                     <p:column  style="font-weight: bold;">
-                                        <p:selectOneMenu id="programaeducativo" value="#{planEstudioBeanUI.planEstudioBeanHelper.programaeducativo.pedid}">  
+                                        <p:selectOneMenu id="programaeducativo" disabled="#{planEstudioBeanUI.deshabilitar}" value="#{planEstudioBeanUI.planEstudioBeanHelper.programaeducativo.pedid}">  
                                             <f:selectItem itemLabel="--Seleccione el programa educativo--" itemValue="#{0}" />  
                                             <f:selectItems value="#{programaEducativoBeanUI.programaEducativoBeanHelper.programaEducativoDelegate.listaProgramaEducativo}" 
                                                            var="prog"
@@ -189,29 +192,29 @@ and open the template in the editor.
                                 </p:row>
 
                                 <p:row>  
-                                    <p:column style="font-weight: bold;">Creditos Obligatorios:</p:column>  
+                                    <p:column style="font-weight: bold;">Créditos Obligatorios:</p:column>  
                                     <p:column style="font-weight: bold;">
                                         <p:inputText id="profnom" maxlength="3"
                                                      disabled="#{planEstudioBeanUI.deshabilitar}"
                                                      value="#{planEstudioBeanUI.planEstudioBeanHelper.planEstudio.pescreditosObligatorios}" >
-                                        <p:ajax event="keydown"  listener="#{planEstudioBeanUI.horasCompletas()}" update="profrfc"/>
+                                        <p:ajax event="keydown"  listener="#{planEstudioBeanUI.horasCompletas()}" update="profam"/>
                                         <p:ajax event="keydown"  update="profam"/>
                                         </p:inputText>
                                         <pe:keyFilter for="profnom" regEx="/[0-9 ]/"/>                                  
                                     </p:column>
 
-                                    <p:column style="font-weight: bold;">Creditos Optativos:</p:column>  
+                                    <p:column style="font-weight: bold;">Créditos Optativos:</p:column>  
                                     <p:column style="font-weight: bold;">
                                         <p:inputText id="profap" maxlength="3"
-                                                     disabled="#{profesorBeanUI.deshabilitar}"
+                                                     disabled="#{planEstudioBeanUI.deshabilitar}"
                                                      value="#{planEstudioBeanUI.planEstudioBeanHelper.planEstudio.pescreditosOptativos}">
-                                            <p:ajax event="keydown"  listener="#{planEstudioBeanUI.horasCompletas()}" update="profrfc"/>
+                                            <p:ajax event="keydown"  listener="#{planEstudioBeanUI.horasCompletas()}" update="profam"/>
                                             <p:ajax event="keydown"  update="profam"/>
                                         </p:inputText>
                                         <pe:keyFilter for="profap" regEx="/[0-9 ]/"/>
                                     </p:column>
 
-                                    <p:column style="font-weight: bold;">Total Creditos:</p:column>  
+                                    <p:column style="font-weight: bold;">Total Créditos:</p:column>  
                                     <p:column style="font-weight: bold;">
                                         <p:inputText id="profam" 
                                                      disabled="#{true}"
@@ -250,15 +253,18 @@ and open the template in the editor.
                                  severity="alert" appendToBody="true">
                     <h:form>
                         <div align="center">
-                        <p:commandButton value="Aceptar" action="#{planEstudioBeanUI.Confirmacion()}"                                             
+                            <p:commandButton value="Aceptar" action="#{planEstudioBeanUI.Confirmacion()}"                                             
                                          icon="ui-icon-check"
                                          oncomplete="dlg.show()"
+                                         rendered="#{planEstudioBeanUI.renderAceptar}"
                                          update=":frmProfesor:growl,:frmProfesor:prof,:frmProfesor:capdlg,:frmProfesor:cap">
-                            <p:ajax event="click" update=":frmProfesor:lblSeleccionados"/>
+                            <p:ajax event="click" update=":frmProfesor:lblSeleccionados"
+                                    />
 
                         </p:commandButton>
-                        <p:commandButton value="Cancelar" oncomplete="confirmacion.hide()"
-                                         icon="ui-icon-close" update=":frmProfesor:prof"/>
+                            <p:commandButton value="#{planEstudioBeanUI.nomBotonConfirmDlg}" oncomplete="confirmacion.hide()"
+                                             icon="#{planEstudioBeanUI.iconoConfirmDlg}" update=":frmProfesor:growl,:frmProfesor:prof,:frmProfesor:capdlg,:frmProfesor:cap"
+                                         />
                         </div>
                     </h:form>  
                 </p:confirmDialog>  

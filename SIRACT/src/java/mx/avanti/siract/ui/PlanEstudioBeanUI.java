@@ -16,6 +16,7 @@ import javax.faces.context.FacesContext;
 import mx.avanti.siract.application.helper.PlanEstudioBeanHelper;
 import mx.avanti.siract.business.entity.Planestudio;
 import mx.avanti.siract.business.entity.Programaeducativo;
+import mx.avanti.siract.business.entity.Rol;
 import org.primefaces.context.RequestContext;
 
 /**
@@ -37,6 +38,34 @@ public class PlanEstudioBeanUI implements Serializable{
     private String MensajeVal = "";
     private String mensajeConfirmacion="";
     private int x=0;
+    private String renderAceptar="";
+    private String nomBotonConfirmDlg="";
+    private String iconoConfirmDlg="";
+
+    public String getIconoConfirmDlg() {
+        return iconoConfirmDlg;
+    }
+
+    public void setIconoConfirmDlg(String iconoConfirmDlg) {
+        this.iconoConfirmDlg = iconoConfirmDlg;
+    }
+    
+    public String getNomBotonConfirmDlg() {
+        return nomBotonConfirmDlg;
+    }
+
+    public void setNomBotonConfirmDlg(String nomBotonConfirmDlg) {
+        this.nomBotonConfirmDlg = nomBotonConfirmDlg;
+    }
+    
+    public String getRenderAceptar() {
+        return renderAceptar;
+    }
+
+    public void setRenderAceptar(String renderAceptar) {
+        this.renderAceptar = renderAceptar;
+    }
+  
 
     public String getMensajeConfirmacion() {
         return mensajeConfirmacion;
@@ -123,9 +152,9 @@ public class PlanEstudioBeanUI implements Serializable{
     public void postConstructor() {
 //        profesorBeanHelper.setListaRol(loginBean.Obtenerrol(loginBean.getUsuario().getUsuid()));
         planEstudioBeanHelper.setRolSeleccionado(loginBean.getSeleccionado());
-        planEstudioBeanHelper.setUsuario(loginBean.getUsuario());
+        planEstudioBeanHelper.setUsuario(loginBean.getLogueado());
         System.out.println("rol desde el BeanUI: " + loginBean.getSeleccionado());
-        System.out.println("id del usuario desde login " + loginBean.getUsuario().getUsuid());
+        System.out.println("id del usuario desde login " + loginBean.getLogueado().getUsuid());
     }
    
     public String header(int i) {
@@ -209,7 +238,7 @@ public class PlanEstudioBeanUI implements Serializable{
     public void Confirmacion() {
         if (deshabilitar.equals("true")) {
             FacesContext context = FacesContext.getCurrentInstance();
-            context.addMessage(null, new FacesMessage("Eliminando", "Se elimino; correctamente"));
+            context.addMessage(null, new FacesMessage("","Se eliminó correctamente"));
 
             planEstudioBeanHelper.eliminarDeLista(planEstudioBeanHelper.getPlanEstudio().getPesid());
             planEstudioBeanHelper.getPlanEstudioDelegate().eliminarPlanEstudio(planEstudioBeanHelper.getPlanEstudio());
@@ -228,7 +257,7 @@ public class PlanEstudioBeanUI implements Serializable{
         } else {
             planEstudioBeanHelper.getPlanEstudioDelegate().agregarPlanEstudio(planEstudioBeanHelper.getPlanEstudio());
             FacesContext context = FacesContext.getCurrentInstance();
-            context.addMessage(null, new FacesMessage("Modificación", "Se guardo; correctamente"));
+            context.addMessage(null, new FacesMessage("","Se guardó correctamente"));
             RequestContext.getCurrentInstance().execute("confirmacion.hide();");
         }
         filtrado();
@@ -286,7 +315,7 @@ public class PlanEstudioBeanUI implements Serializable{
                         planEstudioBeanHelper.setProgramaeducativo(new Programaeducativo());
 
                         FacesContext context = FacesContext.getCurrentInstance();
-                        context.addMessage(null, new FacesMessage("Alta", "Se guardo; correctamente"));
+                        context.addMessage(null, new FacesMessage("","Se guardó correctamente"));
                         System.out.println("Despues de enviar mensaje de se guardo");
                     } else {
                         setMensajeConfirmacion();
@@ -313,7 +342,7 @@ public class PlanEstudioBeanUI implements Serializable{
                         //profesorBeanHelper.getProfesor().setProgramaeducativos(setPE);
                         //profesorBeanHelper.getProfesorDeleagate().agregarProfesor(profesorBeanHelper.getProfesor());
                         FacesContext context = FacesContext.getCurrentInstance();
-                        context.addMessage(null, new FacesMessage("Modificación", "Se guardo; correctamente"));
+                        context.addMessage(null, new FacesMessage("","Se guardó correctamente"));
 
                         planEstudioBeanHelper.seleccionarRegistro();
                         RequestContext.getCurrentInstance().update("frmProfesor:seleccionados");
@@ -326,7 +355,7 @@ public class PlanEstudioBeanUI implements Serializable{
 //                    filtrado1();
                 } else {
 
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "El Plan de Estudio ligado al Programa Educativo ya existe" );
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "El plan de estudio ligado al Programa Educativo ya existe" );
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                 }
             }
@@ -335,6 +364,12 @@ public class PlanEstudioBeanUI implements Serializable{
         return "";
     }
     public void filtrado(){
+        List<Rol> list = null;
+        list = loginBean.Obtenerrol(loginBean.getLogueado().getUsuid());
+        String seleccionado=loginBean.getSeleccionado();
+        System.out.println(seleccionado+"ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ");
+        String catalogo="Administración de plan de estudios";
+        loginBean.TienePermiso(list, seleccionado, catalogo);
         listaFiltrada = planEstudioBeanHelper.filtrado("Nombre", busqueda);
     }
     
@@ -388,32 +423,48 @@ public class PlanEstudioBeanUI implements Serializable{
             if(planEstudioBeanHelper.getPlanEstudioDelegate().getPlanAsignadoGrupo(planEstudioBeanHelper.getPlanEstudio().getPesid()).size() > 0){
                 asignado=true;
                 
+                //nomBotonConfirmDlg="Aceptar";
                 if(planEstudioBeanHelper.getPlanEstudioDelegate().getPlanAsignadoAreaConocimiento(planEstudioBeanHelper.getPlanEstudio().getPesid()).size() > 0){
-                    mensajeConfirmacion="El plan de estudio ya esta asignado a un grupo y a una area de conocimiento ¿Desea continuar?";
+                    mensajeConfirmacion="El plan de estudio ya esta asignado a un grupo y a una area de conocimiento";
                     x=10;
+                    nomBotonConfirmDlg="Aceptar";
+                    renderAceptar="false";
+                    iconoConfirmDlg="ui-icon-check";
                 }
                 else{
-                    mensajeConfirmacion="El plan de estudio ya esta asignado a un grupo ¿Deseas continuar?";
+                    mensajeConfirmacion="El plan de estudio ya esta asignado a un grupo";
                     x=10;
+                    nomBotonConfirmDlg="Aceptar";
+                    renderAceptar="false";
+                    iconoConfirmDlg="ui-icon-check";
                 }
             }
             else{
               if(planEstudioBeanHelper.getPlanEstudioDelegate().getPlanAsignadoAreaConocimiento(planEstudioBeanHelper.getPlanEstudio().getPesid()).size() > 0){
-                    mensajeConfirmacion="El plan de estudio ya esta asignado a un area de conocimiento ¿Desea Continnuar?";
+                    mensajeConfirmacion="El plan de estudio ya esta asignado a un area de conocimiento";
                     x=10;
+                    renderAceptar="false";
+                    nomBotonConfirmDlg="Aceptar";
+                    iconoConfirmDlg="ui-icon-check";
               }
               else{
-                   mensajeConfirmacion="Esta seguro de eliminar este registro";
+                   mensajeConfirmacion="Está seguro de eliminar este registro";
+                   nomBotonConfirmDlg="Cancelar";
+                   iconoConfirmDlg="ui-icon-close";
+                   renderAceptar="true";
                    x=0;
               }                
             }
         }
         else{
+            renderAceptar="true";
+            nomBotonConfirmDlg="Cancelar";
+            iconoConfirmDlg="ui-icon-close";
             if(planEstudioBeanHelper.getPlanEstudioDelegate().getPlanAsignadoGrupo(planEstudioBeanHelper.getPlanEstudio().getPesid()).size() > 0){
                 asignado=true;
                 
                if(planEstudioBeanHelper.getPlanEstudioDelegate().getPlanAsignadoAreaConocimiento(planEstudioBeanHelper.getPlanEstudio().getPesid()).size() > 0){
-                   mensajeConfirmacion="El plan de estudio ya esta asignado a un grupo y a un area de conocimiento ¿Desea continnuar?";
+                   mensajeConfirmacion="El plan de estudio ya esta asignado a un grupo y a un area de conocimiento ¿Desea continuar?";
                    x=10;
                }
                else{
@@ -423,27 +474,27 @@ public class PlanEstudioBeanUI implements Serializable{
             }
             else{
                if(planEstudioBeanHelper.getPlanEstudioDelegate().getPlanAsignadoAreaConocimiento(planEstudioBeanHelper.getPlanEstudio().getPesid()).size() > 0){
-                    mensajeConfirmacion="El plan de estudio ya esta asignado a un area de conocimiento ¿Desea Continnuar?";
+                    mensajeConfirmacion="El plan de estudio ya esta asignado a un area de conocimiento ¿Desea Continuar?";
                     x=10;
                }
                else{
-                   mensajeConfirmacion="Esta seguro de eliminar este registro";
+                   mensajeConfirmacion="Está seguro de eliminar este registro";
                    x=0;
                }
             }       
         }
         
        
-           if(planEstudioBeanHelper.getPlanEstudioDelegate().getPlanAsignadoAreaConocimiento(planEstudioBeanHelper.getPlanEstudio().getPesid()).size() > 0){
-                if(asignado==true){
-                    mensajeConfirmacion="El plan de estudio ya esta asignado a un grupo y a un area de conocimiento ¿Desea Continnuar?";
-                    x=10;
-                }
-                else{
-                    mensajeConfirmacion="El plan de estudio ya esta asignado a un area de conocimiento ¿Desea continuar?";
-                    x=10;
-                }
-        }
+//           if(planEstudioBeanHelper.getPlanEstudioDelegate().getPlanAsignadoAreaConocimiento(planEstudioBeanHelper.getPlanEstudio().getPesid()).size() > 0){
+//                if(asignado==true){
+//                    mensajeConfirmacion="El plan de estudio ya esta asignado a un grupo y a un area de conocimiento ¿Desea Continuar?";
+//                    x=10;
+//                }
+//                else{
+//                    mensajeConfirmacion="El plan de estudio ya esta asignado a un area de conocimiento ¿Desea continuar?";
+//                    x=10;
+//                }
+//        }
        
         RequestContext.getCurrentInstance().update("confirmacionId");
 }
@@ -476,5 +527,5 @@ public class PlanEstudioBeanUI implements Serializable{
 //"                                            return false;\n" +
 //"                                            ");
     }
-  
+    
 }

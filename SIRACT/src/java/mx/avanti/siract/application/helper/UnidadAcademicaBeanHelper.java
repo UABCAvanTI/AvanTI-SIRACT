@@ -320,7 +320,7 @@ public class UnidadAcademicaBeanHelper implements Serializable{
         Mensaje = "";
         for (Unidadacademica uac : unidadAcademicaDelegate.getListaUnidadAcademica()) {
             String clave=Integer.toString(uac.getUacclave()); 
-            if (clave.endsWith(ua2)) {
+            if (clave.equals(ua2)) {
                 ban = false;
                 break;
             } else {

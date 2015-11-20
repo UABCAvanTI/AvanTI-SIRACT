@@ -28,6 +28,7 @@ import mx.avanti.siract.application.helper.SemaforoProgEd;
 import mx.avanti.siract.business.CatalogoReportesDelegate;
 import mx.avanti.siract.business.EsperadosDelegate;
 import mx.avanti.siract.business.ProgramaEducativoDelegate;
+import mx.avanti.siract.business.entity.Areaadministrativa;
 import mx.avanti.siract.business.entity.Areaconocimiento;
 import mx.avanti.siract.business.entity.Catalogoreportes;
 import mx.avanti.siract.business.entity.Cicloescolar;
@@ -39,6 +40,7 @@ import mx.avanti.siract.business.entity.Rol;
 import mx.avanti.siract.business.entity.Unidadacademica;
 import mx.avanti.siract.business.entity.Unidadaprendizaje;
 import mx.avanti.siract.business.entity.Usuario;
+import mx.avanti.siract.ui.LoginBean;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
@@ -107,13 +109,14 @@ public class FiltrosBeanUI implements Serializable{
     private boolean mostrarBar = false;
     private boolean mostrarLine = false;
     private boolean mostrarPie = false;
-    private boolean mostrarGauge = true;
+    private boolean mostrarGauge = false;
     
     private List<String> selectProgramEducativo;
     private ArrayList<String> selectProgramEducativo2;
     private List<String> selectPlanesEstudio;
     private ArrayList<String> selectPlanesEstudio2;
     private List<String> selectAreaConocimiento;
+    private List<String> selectAreaAdministrativa;
     private List<String> selectUnidadAprendisaje;
     private List<String> selectGrupo;
     private List<String> selectProfesor;
@@ -136,7 +139,7 @@ public class FiltrosBeanUI implements Serializable{
     private LoginBean loginBean;
     
     private Usuario usuario;
-    private Rol rolSeleccionado;
+    private String rolSeleccionado;
     
     public FiltrosBeanUI() {
         
@@ -169,6 +172,7 @@ public class FiltrosBeanUI implements Serializable{
             selectProgramEducativo = new ArrayList<String>();
             //selectProgramEducativo2 = new ArrayList<String>();
             selectAreaConocimiento = new ArrayList<String>();
+            selectAreaAdministrativa = new ArrayList<String>();
             selectUnidadAprendisaje = new ArrayList<String>();
             selectGrupo = new ArrayList<String>();
             selectProfesor = new ArrayList<String>();
@@ -190,7 +194,7 @@ public class FiltrosBeanUI implements Serializable{
         programaEducativoDelegate= new ProgramaEducativoDelegate();
         listaCatalogoReportes=null;
         usuario= new Usuario();
-        rolSeleccionado= new Rol();
+        rolSeleccionado= "";
         criterio = new String();
         CTRnombre = new String();
         CTRnombre= "";
@@ -204,10 +208,9 @@ public class FiltrosBeanUI implements Serializable{
     @PostConstruct
     public void postConstructor() {
         //profesorBeanHelper.setRolSeleccionado(loginBean.getSeleccionado());
-        usuario=loginBean.getUsuario();
+        usuario=loginBean.getLogueado();
         System.out.println("usuario(id): "+usuario.getUsuid());
-        rolSeleccionado=loginBean.rolObj;
-        System.out.println("rolSeleccionado(tipo): "+rolSeleccionado.getRoltipo());
+        rolSeleccionado=loginBean.getSeleccionado();
         mostrarUsuario();
     }
     
@@ -231,6 +234,7 @@ public class FiltrosBeanUI implements Serializable{
     private int uapclave;
     private int uacclave;
     private int creid;
+    private int aadid = 0;
     //aqui agregue Jesus Ruelas
     private String CTRnombre="";
     private String tipoReporteCTR;
@@ -248,101 +252,108 @@ public class FiltrosBeanUI implements Serializable{
     }
     
     public void CreateGeneralDataList() {
-        ArrayList<String> entregados1=null;
-        ArrayList<String> entregados2=null;
-        ArrayList<String> entregados3=null;
-        ArrayList<String> esperados=null;
-        GeneralData data;
-        //<editor-fold defaultstate="collapsed" desc="llenar Data">
-        generalDataList.clear();
-        if(criterio.equalsIgnoreCase("programa_educativo")){
-            if(reporte.equalsIgnoreCase("entregados")||reporte.equalsIgnoreCase("noentregados")||reporte.equalsIgnoreCase("entregadosynoentregados")){
-                entregados1 = esperadosDelegate.getProgramaEduEntregados(unidadacademica.getUacid(), Plan, Programa, Ciclo, "1");
-                entregados2 = esperadosDelegate.getProgramaEduEntregados(unidadacademica.getUacid(), Plan, Programa, Ciclo, "2");
-                entregados3 = esperadosDelegate.getProgramaEduEntregados(unidadacademica.getUacid(), Plan, Programa, Ciclo, "3");
+        if(!reporte.equals("entregadosatiempoenfechalimiteydespues")||
+           !reporte.equals("Porcentaje de Avance Global Completo")||
+           !reporte.equals("Porcentaje de Avance Global Incompleto")||
+           !reporte.equals("Porcentaje de Avance Global Completo e Incompleto")){
+            ArrayList<String> entregados1=null;
+            ArrayList<String> entregados2=null;
+            ArrayList<String> entregados3=null;
+            ArrayList<String> esperados=null;
+            GeneralData data;
+            //<editor-fold defaultstate="collapsed" desc="llenar Data">
+            generalDataList.clear();
+            if(criterio.equalsIgnoreCase("programa_educativo")){
+                if(reporte.equalsIgnoreCase("entregados")||reporte.equalsIgnoreCase("noentregados")||reporte.equalsIgnoreCase("entregadosynoentregados")){
+                    entregados1 = esperadosDelegate.getProgramaEduEntregados(unidadacademica.getUacid(), Plan, Programa, Ciclo, "1");
+                    entregados2 = esperadosDelegate.getProgramaEduEntregados(unidadacademica.getUacid(), Plan, Programa, Ciclo, "2");
+                    entregados3 = esperadosDelegate.getProgramaEduEntregados(unidadacademica.getUacid(), Plan, Programa, Ciclo, "3");
+                }
+                if(reporte.equalsIgnoreCase("entregadosatiempo")){
+                    System.out.println("entro a entregados a tiempo");
+                    entregados1 = esperadosDelegate.getAtiempoProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "1", "", "");
+                    entregados2 = esperadosDelegate.getAtiempoProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "", "2", "");
+                    entregados3 = esperadosDelegate.getAtiempoProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "", "", "3");
+                }
+                if(reporte.equalsIgnoreCase("entregadosenfechalimite")){
+                    System.out.println("entro a entregados en limite");
+                    entregados1 = esperadosDelegate.getEnLimiteProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "1", "", "");
+                    entregados2 = esperadosDelegate.getEnLimiteProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "", "2", "");
+                    entregados3 = esperadosDelegate.getEnLimiteProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "", "", "3");
+                }
+                if(reporte.equalsIgnoreCase("entregadosdespueslimite")){
+                    System.out.println("entro a entregados despues de limite");
+                    entregados1 = esperadosDelegate.getDespuesLimiteProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "1", "", "");
+                    entregados2 = esperadosDelegate.getDespuesLimiteProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "", "2", "");
+                    entregados3 = esperadosDelegate.getDespuesLimiteProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "", "", "3");
+                }
+                esperados = esperadosDelegate.getProgramaEduEsperados(unidadacademica.getUacid(), Plan, Programa, Ciclo);
+            }
+            int sumaEsperados = 0;
+            int sumaEntregados = 0;            
+            for (String esperado1 : esperados) {
+                String[] esperado = esperado1.split("-");
+                sumaEsperados = sumaEsperados + Integer.parseInt(esperado[1]);
+            }
+            sumaEsperados=sumaEsperados/3;for (String Plan1 : Plan) {
+                    System.out.println(Plan1);
+                }
+            for (String entregados11 : entregados1) {
+                String[] entregado = entregados11.split("-");
+                sumaEntregados = sumaEntregados + Integer.parseInt(entregado[1]);
+            }
+            data = null;
+      if(sumaEsperados>0){ //aqui modifique Jesus Ruelas
+            if(reporte.equals("entregados")){
+                tituloTabla = "Reporte general de Entregados por programa educativo";
+                data = new GeneralData("RACT 1",sumaEntregados, sumaEsperados);
+            }
+            if(reporte.equals("noentregados")){
+                tituloTabla = "Reporte general de No entregados por programa educativo";
+                data = new GeneralData("RACT 1",sumaEsperados-sumaEntregados, sumaEsperados);
+            }
+            if(reporte.equals("entregadosynoentregados")){
+                tituloTabla = "Reporte general de Entregados y No entregados por programa educativo";
+                data = new GeneralData("RACT 1",sumaEsperados, sumaEsperados);
             }
             if(reporte.equalsIgnoreCase("entregadosatiempo")){
-                System.out.println("entro a entregados a tiempo");
-                entregados1 = esperadosDelegate.getAtiempoProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "1", "", "");
-                entregados2 = esperadosDelegate.getAtiempoProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "", "2", "");
-                entregados3 = esperadosDelegate.getAtiempoProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "", "", "3");
+                tituloTabla = "Reporte general de Entregados a tiempo por programa educativo";
+                data = new GeneralData("RACT 1",sumaEntregados, sumaEsperados);
             }
             if(reporte.equalsIgnoreCase("entregadosenfechalimite")){
-                System.out.println("entro a entregados en limite");
-                entregados1 = esperadosDelegate.getEnLimiteProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "1", "", "");
-                entregados2 = esperadosDelegate.getEnLimiteProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "", "2", "");
-                entregados3 = esperadosDelegate.getEnLimiteProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "", "", "3");
+                tituloTabla = "Reporte general de Entregados en fecha límite por programa educativo";
+                data = new GeneralData("RACT 1",sumaEntregados, sumaEsperados);
             }
             if(reporte.equalsIgnoreCase("entregadosdespueslimite")){
-                System.out.println("entro a entregados despues de limite");
-                entregados1 = esperadosDelegate.getDespuesLimiteProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "1", "", "");
-                entregados2 = esperadosDelegate.getDespuesLimiteProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "", "2", "");
-                entregados3 = esperadosDelegate.getDespuesLimiteProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "", "", "3");
+                tituloTabla = "Reporte general de Entregados despues de fecha límite por programa educativo";
+                data = new GeneralData("RACT 1",sumaEntregados, sumaEsperados);
+            }      
+            generalDataList.add(data);
+            data = null;
+            sumaEntregados =0;
+            for (String entregados21 : entregados2) {
+                String[] entregado = entregados21.split("-");
+                sumaEntregados = sumaEntregados + Integer.parseInt(entregado[1]);
             }
-            esperados = esperadosDelegate.getProgramaEduEsperados(unidadacademica.getUacid(), Plan, Programa, Ciclo);
-        }
-        int sumaEsperados = 0;
-        int sumaEntregados = 0;
-        for (String esperado1 : esperados) {
-            String[] esperado = esperado1.split("-");
-            sumaEsperados = sumaEsperados + Integer.parseInt(esperado[1]);
-        }
-        sumaEsperados=sumaEsperados/3;for (String Plan1 : Plan) {
-                System.out.println(Plan1);
+            if(reporte.equals("noentregados"))
+                data = new GeneralData("RACT 2",sumaEsperados-sumaEntregados, sumaEsperados);
+            else
+                data = new GeneralData("RACT 2",sumaEntregados, sumaEsperados);
+            generalDataList.add(data);
+            data = null;
+            sumaEntregados =0;
+            for (String entregados31 : entregados3) {
+                String[] entregado = entregados31.split("-");
+                sumaEntregados = sumaEntregados + Integer.parseInt(entregado[1]);
             }
-        for (String entregados11 : entregados1) {
-            String[] entregado = entregados11.split("-");
-            sumaEntregados = sumaEntregados + Integer.parseInt(entregado[1]);
+            if(reporte.equals("noentregados"))
+                data = new GeneralData("RACT 3",sumaEsperados-sumaEntregados, sumaEsperados);
+            else
+                data = new GeneralData("RACT 3",sumaEntregados, sumaEsperados);
+            generalDataList.add(data);
+            }//aqui modifique Jesus Ruelas
+            //</editor-fold>            
         }
-        data = null;
-        if(reporte.equals("entregados")){
-            tituloTabla = "Reporte general de Entregados por Programa Educativo";
-            data = new GeneralData("RACT 1",sumaEntregados, sumaEsperados);
-        }
-        if(reporte.equals("noentregados")){
-            tituloTabla = "Reporte general de No entregados por Programa Educativo";
-            data = new GeneralData("RACT 1",sumaEsperados-sumaEntregados, sumaEsperados);
-        }
-        if(reporte.equals("entregadosynoentregados")){
-            tituloTabla = "Reporte general de Entregados y no entregados por Programa Educativo";
-            data = new GeneralData("RACT 1",sumaEsperados, sumaEsperados);
-        }
-        if(reporte.equalsIgnoreCase("entregadosatiempo")){
-            tituloTabla = "Reporte general de Entregados a tiempo por Programa Educativo";
-            data = new GeneralData("RACT 1",sumaEntregados, sumaEsperados);
-        }
-        if(reporte.equalsIgnoreCase("entregadosenfechalimite")){
-            tituloTabla = "Reporte general de Entregados en fecha limite por Programa Educativo";
-            data = new GeneralData("RACT 1",sumaEntregados, sumaEsperados);
-        }
-        if(reporte.equalsIgnoreCase("entregadosdespueslimite")){
-            tituloTabla = "Reporte general de Entregados despues de fecha limite por Programa Educativo";
-            data = new GeneralData("RACT 1",sumaEntregados, sumaEsperados);
-        }
-        generalDataList.add(data);
-        data = null;
-        sumaEntregados =0;
-        for (String entregados21 : entregados2) {
-            String[] entregado = entregados21.split("-");
-            sumaEntregados = sumaEntregados + Integer.parseInt(entregado[1]);
-        }
-        if(reporte.equals("noentregados"))
-            data = new GeneralData("RACT 2",sumaEsperados-sumaEntregados, sumaEsperados);
-        else
-            data = new GeneralData("RACT 2",sumaEntregados, sumaEsperados);
-        generalDataList.add(data);
-        data = null;
-        sumaEntregados =0;
-        for (String entregados31 : entregados3) {
-            String[] entregado = entregados31.split("-");
-            sumaEntregados = sumaEntregados + Integer.parseInt(entregado[1]);
-        }
-        if(reporte.equals("noentregados"))
-            data = new GeneralData("RACT 3",sumaEsperados-sumaEntregados, sumaEsperados);
-        else
-            data = new GeneralData("RACT 3",sumaEntregados, sumaEsperados);
-        generalDataList.add(data);
-        //</editor-fold>
     }
 
     public void setGeneralDataList(List<GeneralData> generalDataList) {
@@ -480,6 +491,14 @@ public class FiltrosBeanUI implements Serializable{
 
     public void setSelectAreaConocimiento(List<String> selectAreaConocimiento) {
         this.selectAreaConocimiento = selectAreaConocimiento;
+    }
+    
+    public List<String> getSelectAreaAdministrativa() {
+        return selectAreaAdministrativa;
+    }
+
+    public void setSelectAreaAdministrativa(List<String> selectAreaAdministrativa) {
+        this.selectAreaAdministrativa = selectAreaAdministrativa;
     }
     
     public List<String> getSelectPlanesEstudio() {
@@ -734,6 +753,33 @@ public class FiltrosBeanUI implements Serializable{
         return areasTempList;
     }
     
+    //aqui modifique Jesus Ruelas - 30 sep 2015
+    public List<Areaadministrativa> getAreasAdminByProgEdClave(){
+        List<Areaadministrativa> areasTempList;
+        areasTempList = new ArrayList<Areaadministrativa>();
+        System.out.println("Vemos SelectProgEd");
+        if(programaeducativo.getPedclave()!=0){
+            //if(selectPlanesEstudio.size()> 0){
+                System.out.println("Mas de 0");
+              //  for(String pesvigenciaPlan : selectPlanesEstudio){
+                //    System.out.println(pesvigenciaPlan);
+                    //tenemos que enviar la clave del programa educativo y de que plan de estudios hablamos para traer los programas
+                    //pesvigenciaPlan
+                    areasTempList.addAll( filtrosBeanHelper.getConsultaDelegate().getAreaadministrativaByProgramaeducativoClave(programaeducativo.getPedclave()));
+               // }
+//            }
+//            else{
+//                System.out.println("Vacio");
+//            }
+        }
+        else{
+            System.out.println("Nullo");
+        }
+                
+        return areasTempList;
+    }
+    //aqui modifique Jesus Ruelas - 30 sep 2015
+    
     public List<Areaconocimiento> getAreasByPrograma(){
         List<Areaconocimiento> areasList = null;
         if(selectProgramEducativo!=null){
@@ -842,13 +888,33 @@ public class FiltrosBeanUI implements Serializable{
                     gruposTempListAux.addAll( filtrosBeanHelper.getConsultaDelegate().getGrupoByUnidadClave(Integer.parseInt(uapclavestr)) );       
                 }
                 //sorteamos los objetos y eliminamos repetidos
-                int grp = 0;
+                /*int grp = 0;
                 for(Grupo grupo :gruposTempListAux){
                     if(grupo.getGponumero()!=grp){
                         gruposTempList.add(grupo);
                         grp = grupo.getGponumero();
                     }
-                }
+                }*/
+                
+                int grupoNum = 0;
+                int enarray = 0;
+                for(Grupo grup :  gruposTempListAux){
+                    
+                    //primero vemos si esta dentro del arrayTemporal
+                    for(Grupo grupt : gruposTempList){
+                        //System.out.println("Comparamos "+grupt.getGponumero()+" ->"+grup.getGponumero());
+                        if(grupt.getGponumero()==grup.getGponumero()){
+                            enarray = 1;
+                        }
+                    }
+                    // si no esta en el array
+                    if(enarray==0){
+                        gruposTempList.add(grup);
+                    }
+                    enarray = 0;
+                }  
+                
+                
             }
             else{
                 System.out.println("Vacio");
@@ -991,6 +1057,14 @@ public class FiltrosBeanUI implements Serializable{
             //}
         }
       }
+      
+      if(!(reporte==null)){  
+        if((!reporte.equalsIgnoreCase(""))&&(programaeducativo.getPedclave()!=0)&&(!(selectCicloEscolarList.isEmpty()))&&(!(selectPlanesEstudio.isEmpty()))&&(!(selectAreaAdministrativa.isEmpty()))){    
+            //if((criterio.equalsIgnoreCase("area_conocimiento"))){
+            disable=false;
+            //}
+        }
+      }
        
       if(!(reporte==null)){  
         if((!reporte.equalsIgnoreCase(""))&&(programaeducativo.getPedclave()!=0)&&(!(selectCicloEscolarList.isEmpty()))&&(!(selectPlanesEstudio.isEmpty()))&&(!(selectAreaConocimiento.isEmpty()))&&(!(selectUnidadAprendisaje.isEmpty()))&&(!(selectGrupo.isEmpty()))){    
@@ -1011,9 +1085,8 @@ public class FiltrosBeanUI implements Serializable{
     
     public void mostrarUsuario(){
         usuario.getUsuid();
-        usuario=filtrosBeanHelper.mostrarUsuario(usuario, rolSeleccionado);
         
-        if(rolSeleccionado.getRoltipo().equalsIgnoreCase("Director")){            
+        if(rolSeleccionado.equalsIgnoreCase("Director")){            
             unidadacademica.setUacclave(140);
         }
     }
@@ -1060,6 +1133,9 @@ public class FiltrosBeanUI implements Serializable{
         if(!(selectAreaConocimiento.isEmpty())){
         this.setAconClave(selectAreaConocimiento.get(0));
         }
+        if(!(selectAreaAdministrativa.isEmpty())){
+        this.setAadid(Integer.parseInt(selectAreaAdministrativa.get(0)));
+        }
         if(!(selectProgramEducativo.isEmpty())){
         this.setClavepe(selectProgramEducativo.get(0));
         }
@@ -1087,111 +1163,100 @@ public class FiltrosBeanUI implements Serializable{
         reporte="";
         selectProgramEducativo.clear();
         selectCicloEscolarList.clear();
-        unidadacademica.setUacclave(0);
+        //unidadacademica.setUacclave(0);
         ract="Selecciona";
         programaeducativo.setPedclave(0);
         selectPlanesEstudio.clear();
         selectAreaConocimiento.clear();
         selectUnidadAprendisaje.clear();
         selectGrupo.clear();
+        selectProfesor.clear();
         criterio=" ";
     }
     
-    /*meotodos para el reporte grafico visual :D*/
-        public void generarGrafico(){
-        
-        // se usa un select y podemos definir de cual id del arreglo
-        this.setNumRact(Integer.parseInt(ract));
-        if(!(selectCicloEscolarList.isEmpty())){
-            this.setCescicloEscolar(selectCicloEscolarList.get(0));
-        }
-        if(!(selectAreaConocimiento.isEmpty())){
-            this.setAconClave(selectAreaConocimiento.get(0));
-        }
-        if(!(selectProgramEducativo.isEmpty())){
-            this.setClavepe(selectProgramEducativo.get(0));
-        }
-        if(programaeducativo.getPedclave()!=0){
-            this.setClavepe(programaeducativo.getPedclave());
-        }
-        if(!(selectPlanesEstudio.isEmpty())){
-            this.setPesvigenciaR(selectPlanesEstudio.get(0));
-        }
-        if(!(selectGrupo.isEmpty())){
-            this.setGrupoNumero(selectGrupo.get(0));
-        }
-        if(!(selectUnidadAprendisaje.isEmpty())){
-            this.setUapclaveR(selectUnidadAprendisaje.get(0));
-        }
-        if(!(selectProfesor.isEmpty())){
-            this.setNumeroEmpleado(selectProfesor.get(0));
-        }
-        
-        selectionReporteTipo();
-        
-        arreglarRactUnico();
+    public void limpiarFiltrosByCriterio(){
                 
+//        if(selectCriterio.equalsIgnoreCase("area_conocimiento")){        
+//            programaeducativo.setPedclave(0);
+//            selectPlanesEstudio.clear();
+//            selectAreaConocimiento.clear();
+//            //selectUnidadAprendisaje.clear();
+//        }
+//        if(selectCriterio.equalsIgnoreCase("unidad_aprendizaje")){
+//            programaeducativo.setPedclave(0);
+//            selectPlanesEstudio.clear();
+//            selectAreaConocimiento.clear();
+//            selectUnidadAprendisaje.clear();
+//            selectGrupo.clear();
+//        }
+//        if(selectCriterio.equalsIgnoreCase("profesor")){
+//            programaeducativo.setPedclave(0);
+//            selectPlanesEstudio.clear();
+//            selectAreaConocimiento.clear();
+//            selectUnidadAprendisaje.clear();            
+//            selectProfesor.clear();
+//            selectGrupo.clear();
+//        }
         
-        System.out.println("**************Variables actual(1):****************");
-        System.out.println("numRact: "+numRact);
-        System.out.println("cescicloEscolar: "+cescicloEscolar);
-        System.out.println("acoclave: "+acoclave);
-        System.out.println("clavepe: "+clavepe);
-        //System.out.println("programaeducativo: "+programaeducativo.getPedclave());
-        System.out.println("pesvigencia: "+pesvigencia);
-        System.out.println("gponumero: "+gponumero);
-        System.out.println("uapclave: "+uapclave);
-        System.out.println("pronumeroempleado: "+pronumeroEmpleado);
+        programaeducativo.setPedclave(0);
+        selectPlanesEstudio.clear();
+        selectAreaConocimiento.clear();
+        selectUnidadAprendisaje.clear();            
+        selectProfesor.clear();
+        selectGrupo.clear();
         
-        System.out.println("***************Variables anterior(2)*******************");
-        System.out.println("**********Variables para ProgEd*********");
-        System.out.println("ract: "+ract);
-        int num=0;
-        for(String ce: selectCicloEscolarList ){
-            System.out.println("ciclo escolar"+num+": "+ce);
-            num++;
-        }
-        num=0;
-        for(String pe: selectProgramEducativo ){
-            System.out.println("programa educativo"+num+": "+pe);
-            num++;
-        }
-        System.out.println("programa educativo(no selectlist): "+programaeducativo.getPednombre());
-        System.out.println("programa educativo(no selectlist) id: "+programaeducativo.getPedid());
-        num=0;
-        //no funciona - no implementado
-        for(String pl: selectPlanesEstudio ){
-            System.out.println("plan estudio"+num+": "+pl);
-            num++;
-        }
-        System.out.println("planestudio vigencia: "+planestudio.getPesvigenciaPlan());
-        System.out.println("planestudio id: "+planestudio.getPesid());
-        //no funciona - no implementado
-        System.out.println("unidad academica: "+unidadacademica.getUacnombre());
-        System.out.println("unidad academica id: "+unidadacademica.getUacid());
-        System.out.println("unidad academica clave: "+unidadacademica.getUacclave());
-        System.out.println("**********Variables para ProgEd*********");
-        System.out.println(" ");
+        //showBtnCriterio(this.value);
+        //System.out.println("CRITERIO: "+criterio);
+        //RequestContext.getCurrentInstance().execute("showBtnCriterio("+criterio+");");
+        //RequestContext.getCurrentInstance().execute("showBtnCriterio('area_conocimiento');");
+    }
+    
+    public void limpiarFiltrosByProgEd(){
+//        
+//        if(criterio.equalsIgnoreCase("area_conocimiento")){
+//            selectPlanesEstudio.clear();
+//            selectAreaConocimiento.clear();
+//            //selectUnidadAprendisaje.clear();
+//        }
+//        if(criterio.equalsIgnoreCase("unidad_aprendizaje")){
+//            selectPlanesEstudio.clear();
+//            selectAreaConocimiento.clear();
+//            selectUnidadAprendisaje.clear();
+//            selectGrupo.clear();
+//        }
+//        if(criterio.equalsIgnoreCase("profesor")){
+//            selectPlanesEstudio.clear();
+//            selectAreaConocimiento.clear();
+//            selectUnidadAprendisaje.clear();            
+//            selectProfesor.clear();
+//            selectGrupo.clear();
+//        }
         
-        System.out.println("**********Variables para AreaCon*********");
-        num=0;
-        for(String ac: selectAreaConocimiento ){
-            System.out.println("area conocimiento"+num+": "+ac);
-            num++;
-        }
-        num=0;
-        //no funciona - no implementado
-        for(String pl: selectPlanesEstudio ){
-            System.out.println("plan estudio"+num+": "+pl);
-            num++;
-        }
-        //no funciona - no implementado
-        System.out.println("**********Variables para AreaCon*********");
+        selectPlanesEstudio.clear();
+        selectAreaConocimiento.clear();
+        selectUnidadAprendisaje.clear();            
+        selectProfesor.clear();
+        selectGrupo.clear();
+    }
+    
+    /*meotodos para el reporte grafico visual :D*/
+    public void generarGrafico(){
         
+   ArrayList<ReporteAvanceAux> listaAux4=entregadosYNoEntregadosProgEdComprobar();
+   Boolean correctoCiclo = false;
+        for(ReporteAvanceAux ra4: listaAux4){
+            for(String ce: selectCicloEscolarList){
+            if(ra4.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getCicloescolar().getCescicloEscolar().equalsIgnoreCase(ce)){
+                correctoCiclo = true;
+            }
+            }
+        }
+    if((correctoCiclo == true)&&(!(unidadacademica==null))&&(!(Plan==null))&&(!(Programa==null))&&(!(Ciclo==null))){
+        if(criterio.equalsIgnoreCase("programa_educativo")){
         mostrarBar=false;
         mostrarLine=false;
         mostrarPie=false;
-        mostrarGauge = true;
+        mostrarGauge = false;
         pieModel = initPieModel(); 
         if(reporte.equalsIgnoreCase("entregados")||
            reporte.equalsIgnoreCase("noentregados")||
@@ -1211,25 +1276,38 @@ public class FiltrosBeanUI implements Serializable{
             RactEntEsp = esperadosDelegate.getDespuesLimiteProgramaEdu(unidadacademica.getUacid(), Plan, Programa, Ciclo, "1", "2", "3");
             RactEsp = esperadosDelegate.getProgramaEduEsperados(unidadacademica.getUacid(), Plan, Programa, Plan);
         }
-        CreateGeneralDataList();
+        if(!(reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues"))&&
+           !(reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo"))&&
+           !(reporte.equalsIgnoreCase("Porcentaje de Avance Global Incompleto"))&&
+           !(reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo e Incompleto"))){
+            
+            CreateGeneralDataList();
+        }
+        
+        
+        if(criterio.equals("programa_educativo")){
+            if(!reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues")&&
+                   !reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo")&&
+                   !reporte.equalsIgnoreCase("Porcentaje de Avance Global Incompleto")&&
+                   !reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo e Incompleto")){
+            
         if(tipografico.equalsIgnoreCase("barras")){
-            tituloGraficas = "Grafica de Barras";
+            tituloGraficas = "Gráfica de Barras";
             mostrarBar=true;
             mostrarPie=false;
             mostrarGauge=false;
             barModel = graficoDeacuerdoFiltrosBarras();
             lineModel = ClearCharts(1);
-            gaugeModel = createMeterGaugeModels();
         }
         if(tipografico.equalsIgnoreCase("linea")){
-            tituloGraficas = "Grafica de Lineas";
+            tituloGraficas = "Gráfica de Lineas";
             mostrarLine=true;
             mostrarPie=false;
             lineModel = graficoDeacuerdoFiltrosLinear();
             barModel = ClearCharts(2);
         }
         if(tipografico.equalsIgnoreCase("pastel")){
-            tituloGraficas = "Grafica de Pastel";
+            tituloGraficas = "Gráfica de Pastel";
             mostrarPie=true;
             mostrarLine=false;
             mostrarBar=false;
@@ -1237,7 +1315,83 @@ public class FiltrosBeanUI implements Serializable{
             pieModel = graficoDeacuerdoFiltrosPastel();
             lineModel = ClearCharts(1);
             barModel = ClearCharts(2);
+        }
         } 
+        }
+        }
+     }
+        //aqui empieza codigo Jesus Ruelas
+        generarDatosListaAux();
+        
+        selectionReporteTipo();
+        
+        arreglarRactUnico();
+        
+//        System.out.println("**************Variables actual(1):****************");
+//        System.out.println("numRact: "+numRact);
+//        System.out.println("cescicloEscolar: "+cescicloEscolar);
+//        System.out.println("acoclave: "+acoclave);
+//        System.out.println("clavepe: "+clavepe);
+//        System.out.println("pesvigencia: "+pesvigencia);
+//        System.out.println("gponumero: "+gponumero);
+//        System.out.println("uapclave: "+uapclave);
+//        System.out.println("pronumeroempleado: "+pronumeroEmpleado);
+//        
+//        System.out.println("***************Variables anterior(2)*******************");
+//        System.out.println("**********Variables para ProgEd*********");
+//        System.out.println("ract: "+ract);
+//        int num=0;
+//        for(String ce: selectCicloEscolarList ){
+//            System.out.println("ciclo escolar"+num+": "+ce);
+//            num++;
+//        }
+//        num=0;
+//        for(String pe: selectProgramEducativo ){
+//            System.out.println("programa educativo"+num+": "+pe);
+//            num++;
+//        }
+//        System.out.println("programa educativo(no selectlist): "+programaeducativo.getPednombre());
+//        System.out.println("programa educativo(no selectlist) id: "+programaeducativo.getPedid());
+//        num=0;
+//        //no funciona - no implementado
+//        for(String pl: selectPlanesEstudio ){
+//            System.out.println("plan estudio"+num+": "+pl);
+//            num++;
+//        }
+//        System.out.println("planestudio vigencia: "+planestudio.getPesvigenciaPlan());
+//        System.out.println("planestudio id: "+planestudio.getPesid());
+//        //no funciona - no implementado
+//        System.out.println("unidad academica: "+unidadacademica.getUacnombre());
+//        System.out.println("unidad academica id: "+unidadacademica.getUacid());
+//        System.out.println("unidad academica clave: "+unidadacademica.getUacclave());
+//        System.out.println("**********Variables para ProgEd*********");
+//        System.out.println(" ");
+//        
+//        System.out.println("**********Variables para AreaCon*********");
+//        num=0;
+//        for(String ac: selectAreaConocimiento ){
+//            System.out.println("area conocimiento"+num+": "+ac);
+//            num++;
+//        }
+//        num=0;
+//        //no funciona - no implementado
+//        for(String pl: selectPlanesEstudio ){
+//            System.out.println("plan estudio"+num+": "+pl);
+//            num++;
+//        }
+//        System.out.println("**********Variables para AreaCon*********");
+    }
+    
+    public void crearSemaforo(){
+        mostrarBar=false;
+        mostrarLine=false;
+        mostrarPie=false;
+        mostrarGauge = true;
+        gaugeModel = createMeterGaugeModels();
+    }
+
+    public boolean getMostrarGauge() {
+        return mostrarGauge;
     }
     
     private CartesianChartModel ClearCharts(int op){
@@ -1267,37 +1421,37 @@ public class FiltrosBeanUI implements Serializable{
         ChartSeries noentregados = new ChartSeries();
         //Reportes 
         if(criterio.equalsIgnoreCase("programa_educativo")){
-            this.xaxisLabel = "Programas Educativos";
+            this.xaxisLabel = "Programas educativos";
             if(reporte.compareTo("entregados")==0){
-                tituloGraficas = tituloGraficas + " de Entregados por Programa Educativo";
+                tituloGraficas = tituloGraficas + " de Entregados por programa educativo";
                 this.title = "Entregados";
                 entregados.setLabel("Entregados");
             }
             if(reporte.compareTo("noentregados")==0){
-                tituloGraficas = tituloGraficas + " de No entregados por Programa Educativo";
+                tituloGraficas = tituloGraficas + " de No entregados por programa educativo";
                 this.title = "No entregados";
                 entregados.setLabel("No entregados");
             }
             if(reporte.compareTo("entregadosynoentregados")==0){
-                tituloGraficas = tituloGraficas + " de Entregados y no entregados por Programa Educativo";
+                tituloGraficas = tituloGraficas + " de Entregados y No entregados por programa educativo";
                 this.title = "Entregados y no entregados";
                 entregados.setLabel("Entregados");
                 noentregados.setLabel("No entregados");
             }
             if(reporte.compareTo("entregadosatiempo")==0){
-                tituloGraficas = tituloGraficas + " de Entregados a tiempo por Programa Educativo";
+                tituloGraficas = tituloGraficas + " de Entregados a tiempo por programa educativo";
                 this.title = "Entregados a tiempo";
                 entregados.setLabel("Entregados a tiempo");
             }
             if(reporte.compareTo("entregadosenfechalimite")==0){
-                tituloGraficas = tituloGraficas + " de Entregados en limite por Programa Educativo";
+                tituloGraficas = tituloGraficas + " de Entregados en limite por programa educativo";
                 this.title = "Entregados en limite";
-                entregados.setLabel("Entregados en limite");
+                entregados.setLabel("Entregados en límite");
             }
             if(reporte.compareTo("entregadosdespueslimite")==0){
-                tituloGraficas = tituloGraficas + " de Entregados despues de limite por Programa Educativo";
+                tituloGraficas = tituloGraficas + " de Entregados despues de límite por programa educativo";
                 this.title = "Entregados despues de limite";
-                entregados.setLabel("Entregados despues de limite");
+                entregados.setLabel("Entregados despues de límite");
             }
             esperados.setLabel("Esperados");
             // tengo que modificar este pars que me traiga los racs para la materia seleccionada
@@ -1363,20 +1517,20 @@ public class FiltrosBeanUI implements Serializable{
         LineChartSeries esperados = new LineChartSeries();
         LineChartSeries noentregados = new LineChartSeries();
         if(criterio.equalsIgnoreCase("programa_educativo")){
-            this.xaxisLabel = "Programas Educativos";
+            this.xaxisLabel = "Programas educativos";
             if(reporte.compareTo("entregados")==0){
-                tituloGraficas = tituloGraficas + " de Entregados por Programa Educativo";
+                tituloGraficas = tituloGraficas + " de Entregados por programa educativo";
                 this.title = "Entregados";
                 entregados.setLabel("Entregados");
             }
             if(reporte.compareTo("noentregados")==0){
-                tituloGraficas = tituloGraficas + " de No entregados por Programa Educativo";
+                tituloGraficas = tituloGraficas + " de No entregados por programa educativo";
                 this.title = "No entregados";
                 entregados.setLabel("No entregados");
             }
             if(reporte.compareTo("entregadosynoentregados")==0){
-                tituloGraficas = tituloGraficas + " de Entregados y no entregados por Programa Educativo";
-                this.title = "Entregados y no entregados";
+                tituloGraficas = tituloGraficas + " de Entregados y No entregados por programa educativo";
+                this.title = "Entregados y No entregados";
                 entregados.setLabel("Entregados");
                 noentregados.setLabel("No entregados");
             }
@@ -1571,11 +1725,21 @@ public MeterGaugeChartModel getGaugeModel() {
                     }
                 }
                 int grupoNum = 0;
+                int enarray = 0;
                 for(Grupo grup :  grupoTempList2){
-                    if(grupoNum!=grup.getGponumero()){
-                        grupoTempList.add(grup);
-                        grupoNum = grup.getGponumero();
+                    
+                    //primero vemos si esta dentro del arrayTemporal
+                    for(Grupo grupt : grupoTempList){
+                        System.out.println("Comparamos "+grupt.getGponumero()+" ->"+grup.getGponumero());
+                        if(grupt.getGponumero()==grup.getGponumero()){
+                            enarray = 1;
+                        }
                     }
+                    // si no esta en el array
+                    if(enarray==0){
+                        grupoTempList.add(grup);
+                    }
+                    enarray = 0;
                 }   
             }
             else{
@@ -1600,9 +1764,9 @@ public MeterGaugeChartModel getGaugeModel() {
         URL location = FiltrosBeanUI.class.getProtectionDomain().getCodeSource().getLocation();
         String path = location.getFile();
         String replace = path.replace("FiltrosBeanUI.class", "uabclogo.png");
-        InputStream uabc_image = new FileInputStream(replace);
+        //InputStream uabc_image = new FileInputStream(replace);
         //InputStream uabc_image = new FileInputStream("C://decode/uabclogo.png");
-        //InputStream uabc_image = new FileInputStream("/home/user/decode/uabclogo.png");
+        InputStream uabc_image = new FileInputStream("/home/user/decode/uabclogo.png");
         byte[] bytes = IOUtils.toByteArray(uabc_image);
         int uabcLogo = workbook.addPicture(bytes, Workbook.PICTURE_TYPE_PNG);
         uabc_image.close();
@@ -1931,9 +2095,9 @@ public MeterGaugeChartModel getGaugeModel() {
         URL location = FiltrosBeanUI.class.getProtectionDomain().getCodeSource().getLocation();
         String path = location.getFile();
         String replace = path.replace("FiltrosBeanUI.class", "uabclogo.png");
-        InputStream uabc_image = new FileInputStream(replace);
+        //InputStream uabc_image = new FileInputStream(replace);
         //InputStream uabc_image = new FileInputStream("C://decode/uabclogo.png");
-        //InputStream uabc_image = new FileInputStream("/home/user/decode/uabclogo.png");
+        InputStream uabc_image = new FileInputStream("/home/user/decode/uabclogo.png");
         byte[] bytes = IOUtils.toByteArray(uabc_image);
         int uabcLogo = workbook.addPicture(bytes, Workbook.PICTURE_TYPE_PNG);
         uabc_image.close();
@@ -1994,7 +2158,6 @@ public MeterGaugeChartModel getGaugeModel() {
                 setStyleCell(sheet, headerTabla, 13, 18);
                 setStyleCell(sheet, headerTabla, 13, 19);
                 
-                
                 //imprimimos la informacion en su lugar
                 
                 int prow = 14;
@@ -2049,20 +2212,17 @@ public MeterGaugeChartModel getGaugeModel() {
                     setStyleCell(sheet, headerTabla, 14, 4);
                                     
                     //llenado de informacion
-                    // se tiene imprimir por cada plan de estudios???
-                    
-//                    Responsableprogramaeducativo responsable = filtrosBeanHelper.getConsultaDelegate().getResponsableProgramaEducativoByID(programa.getPedid());
-                    
+                    List<Planestudio> planes = filtrosBeanHelper.getConsultaDelegate().getPlanesByPrograma(programa.getPedclave());
                     setExDat(sheet, 15, 1, programa.getPedclave());
                     setExDat(sheet, 15, 2, programa.getPednombre());
-                    setExDat(sheet, 15, 3, "");      
-                    setExDat(sheet, 15, 4, "");
+                    setExDat(sheet, 15, 3, planes.get(0).getPesvigenciaPlan());      
+                    setExDat(sheet, 15, 4, "Llenar en tabla");
                     setStyleCell(sheet, borderstabla, 15, 1);
                     setStyleCell(sheet, borderstabla, 15, 2);
                     setStyleCell(sheet, borderstabla, 15, 3);
                     setStyleCell(sheet, borderstabla, 15, 4);
                     
-                    List<Planestudio> planes = filtrosBeanHelper.getConsultaDelegate().getPlanesByPrograma(programa.getPedid());
+                   
                     boolean uno = true;
                     int currow = 20;
                     
@@ -2240,6 +2400,181 @@ public MeterGaugeChartModel getGaugeModel() {
                                 currow+=2;
                             }
                             
+                            
+    //aqui modifique Jesus Ruelas  - Entregados
+        //aqui cambie
+        headerTabla.setWrapText(true);
+        //aqui cambie
+                
+                //aqui cambie jesus ruelas
+                
+                //for(int i=0;i<28;i++){
+//                 sheet.autoSizeColumn(1);
+//                 sheet.autoSizeColumn(2);
+//                 sheet.autoSizeColumn(3);
+//                 sheet.autoSizeColumn(4);
+                
+                //merge cells de Total de RACT General de + ProgEd
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,1,5));
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,7,11));
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,13,17));
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,19,23));
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,25,29));
+                
+                
+
+                //}
+                //aqui cambie jesus ruelas
+                
+                //mostraremos tabla con
+                // Programas educativos //  Total Racs entregados // Total Esperados
+                //preparamos informacion para insertar
+       //         List<Programaeducativo> programasByUnidad = getProgramasByUnidad();
+        List<Planestudio> planesByPrograma = getPlanesByPrograma();
+        int UACid = 1; 
+        ArrayList<String> listaProgEdContar = esperadosDelegate.getSemadoroProgEdValor(UACid); 
+                
+                
+                //setCellStyle(style); 
+                
+                //setExDat(sheet, 7, 1, "Concentrado de Reporte de Avance de Contenido Temático General  por Programa Educativo");
+                
+                //imrpiimiremos la tabla
+                // Definimos los encabezados de la tabla
+                
+                int pos=0;
+                
+                int row=currow+4;
+                int col=1;
+                
+                Boolean bandPe=false;
+                
+                //for (Programaeducativo pe : programasByUnidad) {
+                  for (String peContar : listaProgEdContar) {
+
+                   String[] contarEntEspProgEd;
+
+                  if(listaProgEdContar.size()>=pos){ 
+                   if (peContar.contains(programa.getPednombre())) {
+
+                   contarEntEspProgEd = listaProgEdContar.get(pos).split("-");
+
+                   setExDat(sheet, row, col, "Clave");
+                   setExDat(sheet, row, col + 1, "Programa Educativo");
+                   setExDat(sheet, row, col + 3, "Plan de Estudios");
+                   setExDat(sheet, row, col + 4, "Responsable");
+
+               //    if (contarEntEspProgEd[0].equalsIgnoreCase(programasByUnidad.get(0).getPednombre())) {
+
+                       setExDat(sheet, row + 1, col, programa.getPedclave());
+                       setExDat(sheet, row + 1, col + 1, programa.getPednombre());
+                       if (!(planesByPrograma.isEmpty())) {
+                           setExDat(sheet, row + 1, col + 2, planesByPrograma.get(0).getPesvigenciaPlan());
+                       }
+                       setExDat(sheet, row + 1, col + 3, "");
+
+                //   }
+
+ //                  sheet.addMergedRegion(new CellRangeAddress(row+2,col,5,1));
+                   setExDat(sheet, row + 2, col, "Total de RACT General de " + programa.getPednombre());
+
+                   setExDat(sheet, row + 3, col, "Resumen de totales \r\n por numero de RACT");
+                   setExDat(sheet, row + 3, col + 1, "Total entregados");
+                   setExDat(sheet, row + 3, col + 2, "%");
+                   setExDat(sheet, row + 3, col + 3, "Total esperados");
+                   setExDat(sheet, row + 3, col + 4, "%");
+
+                   sheet.getRow(row+3).getCell(1);//aqui modifique jesus ruelas
+                   
+                   float porcentEnt = (Float.parseFloat(contarEntEspProgEd[1])) / (Float.parseFloat(contarEntEspProgEd[2])) * 100;
+
+                   float porcentEsp = 100 - porcentEnt;
+
+//                setExDat(sheet, 15, 1, "Todos los RACTS");
+//                setExDat(sheet, 15, 2, contarEntEspProgEd[1]);
+//                setExDat(sheet, 15, 3, "" + porcentEnt + "%");
+//                setExDat(sheet, 15, 4, contarEntEspProgEd[2]);
+//                setExDat(sheet, 15, 5, ""  + porcentEsp + "%");
+                   //String[] contarEntEspProgEd;
+                   String[] contarEntRact1;
+                   String[] contarEntRact2;
+                   String[] contarEntRact3;
+                   int esperadosProgEdUnicoRact = 0;
+
+                   contarEntRact1 = contarEntEspProgEd[3].split(":");
+                   contarEntRact2 = contarEntEspProgEd[4].split(":");
+                   contarEntRact3 = contarEntEspProgEd[5].split(":");
+
+                   esperadosProgEdUnicoRact = (Integer.parseInt(contarEntEspProgEd[2])) / 3;
+
+                   float contarPorcentEntRact1 = (Float.parseFloat(contarEntRact1[1])) / ((float) esperadosProgEdUnicoRact) * 100;
+                   float contarPorcentEntRact2 = (Float.parseFloat(contarEntRact2[1])) / ((float) esperadosProgEdUnicoRact) * 100;
+                   float contarPorcentEntRact3 = (Float.parseFloat(contarEntRact3[1])) / ((float) esperadosProgEdUnicoRact) * 100;
+
+                   float contarPorcentEspRact1 = 100 - contarPorcentEntRact1;
+                   float contarPorcentEspRact2 = 100 - contarPorcentEntRact2;
+                   float contarPorcentEspRact3 = 100 - contarPorcentEntRact3;
+
+                   setExDat(sheet, row + 4, col, "RACT 1");
+                   setExDat(sheet, row + 4, col + 1, contarEntRact1[1]);
+                   setExDat(sheet, row + 4, col + 2, "" + contarPorcentEntRact1 + "%");
+                   setExDat(sheet, row + 4, col + 3, esperadosProgEdUnicoRact);
+                   setExDat(sheet, row + 4, col + 4, "" + contarPorcentEspRact1 + "%");
+
+                   setExDat(sheet, row + 5, col, "RACT 2");
+                   setExDat(sheet, row + 5, col + 1, contarEntRact2[1]);
+                   setExDat(sheet, row + 5, col + 2, "" + contarPorcentEntRact2 + "%");
+                   setExDat(sheet, row + 5, col + 3, esperadosProgEdUnicoRact);
+                   setExDat(sheet, row + 5, col + 4, "" + contarPorcentEspRact2 + "%");
+
+                   setExDat(sheet, row + 6, col, "RACT 3");
+                   setExDat(sheet, row + 6, col + 1, contarEntRact3[1]);
+                   setExDat(sheet, row + 6, col + 2, "" + contarPorcentEntRact3 + "%");
+                   setExDat(sheet, row + 6, col + 3, esperadosProgEdUnicoRact);
+                   setExDat(sheet, row + 6, col + 4, "" + contarPorcentEspRact3 + "%");
+
+                   setExDat(sheet, row + 7, col, "Todos los RACTS");
+                   setExDat(sheet, row + 7, col + 1, contarEntEspProgEd[1]);
+                   setExDat(sheet, row + 7, col + 2, "" + porcentEnt + "%");
+                   setExDat(sheet, row + 7, col + 3, contarEntEspProgEd[2]);
+                   setExDat(sheet, row + 7, col + 4, "" + porcentEsp + "%");
+
+                   setStyleCell(sheet, headerTabla, row, col);
+                   setStyleCell(sheet, headerTabla, row, col + 1);
+                   setStyleCell(sheet, headerTabla, row, col + 2);
+                   setStyleCell(sheet, headerTabla, row, col + 3);
+                   setStyleCell(sheet, headerTabla, row, col + 4);
+
+                   setStyleCell(sheet, headerTabla, row + 2, col);
+                   setStyleCell(sheet, headerTabla, row + 2, col + 1);
+                   setStyleCell(sheet, headerTabla, row + 2, col + 2);
+                   setStyleCell(sheet, headerTabla, row + 2, col + 3);
+
+                   setStyleCell(sheet, headerTabla, row + 3, col);
+                   setStyleCell(sheet, headerTabla, row + 3, col + 1);
+                   setStyleCell(sheet, headerTabla, row + 3, col + 2);
+                   setStyleCell(sheet, headerTabla, row + 3, col + 3);
+                   setStyleCell(sheet, headerTabla, row + 3, col + 4);
+
+                   bandPe = true;
+                   
+                   pos++;
+               }
+               
+              }
+//               if (bandPe == true) {
+//                   if (col >= 25) {
+//                       row = row + 14;
+//                       col = -5;
+//                   }
+//                   col = col + 6;
+//                   bandPe = false;
+//               }
+                  pos++;
+           }
+       //}
+        //aqui modifique Jesus Ruelas
+                  
                                                  
                             sheet = cabezeraGeneralExcel(sheet,uabcLogo,style);
                     }// fin del la comparacon de plan
@@ -2269,10 +2604,6 @@ public MeterGaugeChartModel getGaugeModel() {
                 setStyleCell(sheet, headerTabla, 13, 17);
                 setStyleCell(sheet, headerTabla, 13, 18);
                 setStyleCell(sheet, headerTabla, 13, 19);
-                
-                /*sheet.autoSizeColumn(2);
-                sheet.autoSizeColumn(3);
-                sheet.autoSizeColumn(4);*/
                 
                 //imprimimos la informacion en su lugar
                 
@@ -2327,9 +2658,7 @@ public MeterGaugeChartModel getGaugeModel() {
                                     
                     //llenado de informacion
                     // se tiene imprimir por cada plan de estudios???
-                    
-//                    Responsableprogramaeducativo responsable = filtrosBeanHelper.getConsultaDelegate().getResponsableProgramaEducativoByID(programa.getPedid());
-                    
+                   
                     setExDat(sheet, 15, 1, programa.getPedclave());
                     setExDat(sheet, 15, 2, programa.getPednombre());
                     setExDat(sheet, 15, 3, "");      
@@ -2494,7 +2823,191 @@ public MeterGaugeChartModel getGaugeModel() {
                                 currow+=2;
                             }
                             
-                                                 
+            //aqui modifique Jesus Ruelas  - No entregados
+        //aqui cambie
+        headerTabla.setWrapText(true);
+        //aqui cambie
+                
+                //aqui cambie jesus ruelas
+                
+                //for(int i=0;i<28;i++){
+//                 sheet.autoSizeColumn(1);
+//                 sheet.autoSizeColumn(2);
+//                 sheet.autoSizeColumn(3);
+//                 sheet.autoSizeColumn(4);
+                
+                //merge cells de Total de RACT General de + ProgEd
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,1,5));
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,7,11));
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,13,17));
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,19,23));
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,25,29));
+                
+                
+
+                //}
+                //aqui cambie jesus ruelas
+                
+                //mostraremos tabla con
+                // Programas educativos //  Total Racs entregados // Total Esperados
+                //preparamos informacion para insertar
+       //         List<Programaeducativo> programasByUnidad = getProgramasByUnidad();
+        List<Planestudio> planesByPrograma = getPlanesByPrograma();
+        int UACid = 1; 
+        ArrayList<String> listaProgEdContar = esperadosDelegate.getSemadoroProgEdValor(UACid); 
+                
+                
+                //setCellStyle(style); 
+                
+                //setExDat(sheet, 7, 1, "Concentrado de Reporte de Avance de Contenido Temático General  por Programa Educativo");
+                
+                //imrpiimiremos la tabla
+                // Definimos los encabezados de la tabla
+                
+                int pos=0;
+                
+                int row=currow+4;
+                int col=1;
+                
+                Boolean bandPe=false;
+                
+                //for (Programaeducativo pe : programasByUnidad) {
+                  for (String peContar : listaProgEdContar) {
+
+                   String[] contarEntEspProgEd;
+
+                  if(listaProgEdContar.size()>=pos){ 
+                   if (peContar.contains(programa.getPednombre())) {
+
+                   contarEntEspProgEd = listaProgEdContar.get(pos).split("-");
+
+                   setExDat(sheet, row, col, "Clave");
+                   setExDat(sheet, row, col + 1, "Programa Educativo");
+                   setExDat(sheet, row, col + 3, "Plan de Estudios");
+                   setExDat(sheet, row, col + 4, "Responsable");
+
+               //    if (contarEntEspProgEd[0].equalsIgnoreCase(programasByUnidad.get(0).getPednombre())) {
+
+                       setExDat(sheet, row + 1, col, programa.getPedclave());
+                       setExDat(sheet, row + 1, col + 1, programa.getPednombre());
+                       if (!(planesByPrograma.isEmpty())) {
+                           setExDat(sheet, row + 1, col + 2, planesByPrograma.get(0).getPesvigenciaPlan());
+                       }
+                       setExDat(sheet, row + 1, col + 3, "");
+
+                //   }
+
+ //                  sheet.addMergedRegion(new CellRangeAddress(row+2,col,5,1));
+                   setExDat(sheet, row + 2, col, "Total de RACT General de " + programa.getPednombre());
+
+                   setExDat(sheet, row + 3, col, "Resumen de totales \r\n por numero de RACT");
+                   setExDat(sheet, row + 3, col + 1, "Total no entregados");
+                   setExDat(sheet, row + 3, col + 2, "%");
+                   setExDat(sheet, row + 3, col + 3, "Total esperados");
+                   setExDat(sheet, row + 3, col + 4, "%");
+
+                   sheet.getRow(row+3).getCell(1);//aqui modifique jesus ruelas
+                   
+                   float porcentEnt = (Float.parseFloat(contarEntEspProgEd[1])) / (Float.parseFloat(contarEntEspProgEd[2])) * 100;
+
+                   float porcentNoEnt = ((Float.parseFloat(contarEntEspProgEd[2]))-(Float.parseFloat(contarEntEspProgEd[1]))) / (Float.parseFloat(contarEntEspProgEd[2])) * 100;
+                   
+                   float porcentEsp = 100 - porcentEnt;
+
+//                setExDat(sheet, 15, 1, "Todos los RACTS");
+//                setExDat(sheet, 15, 2, contarEntEspProgEd[1]);
+//                setExDat(sheet, 15, 3, "" + porcentEnt + "%");
+//                setExDat(sheet, 15, 4, contarEntEspProgEd[2]);
+//                setExDat(sheet, 15, 5, ""  + porcentEsp + "%");
+                   //String[] contarEntEspProgEd;
+                   String[] contarEntRact1;
+                   String[] contarEntRact2;
+                   String[] contarEntRact3;
+                   int esperadosProgEdUnicoRact = 0;
+
+                   contarEntRact1 = contarEntEspProgEd[3].split(":");
+                   contarEntRact2 = contarEntEspProgEd[4].split(":");
+                   contarEntRact3 = contarEntEspProgEd[5].split(":");
+
+                   esperadosProgEdUnicoRact = (Integer.parseInt(contarEntEspProgEd[2])) / 3;
+                   
+                   int contarNoEntRact1 = esperadosProgEdUnicoRact-(Integer.parseInt(contarEntRact1[1]));
+                   int contarNoEntRact2 = esperadosProgEdUnicoRact-(Integer.parseInt(contarEntRact2[1]));
+                   int contarNoEntRact3 = esperadosProgEdUnicoRact-(Integer.parseInt(contarEntRact3[1]));
+
+                   float contarPorcentEntRact1 = (Float.parseFloat(contarEntRact1[1])) / ((float) esperadosProgEdUnicoRact) * 100;
+                   float contarPorcentEntRact2 = (Float.parseFloat(contarEntRact2[1])) / ((float) esperadosProgEdUnicoRact) * 100;
+                   float contarPorcentEntRact3 = (Float.parseFloat(contarEntRact3[1])) / ((float) esperadosProgEdUnicoRact) * 100;
+
+                   float contarPorcentNoEntRact1 = (((float) esperadosProgEdUnicoRact)-(Float.parseFloat(contarEntRact1[1]))) / ((float) esperadosProgEdUnicoRact) * 100;
+                   float contarPorcentNoEntRact2 = (((float) esperadosProgEdUnicoRact)-(Float.parseFloat(contarEntRact2[1]))) / ((float) esperadosProgEdUnicoRact) * 100;
+                   float contarPorcentNoEntRact3 = (((float) esperadosProgEdUnicoRact)-(Float.parseFloat(contarEntRact3[1]))) / ((float) esperadosProgEdUnicoRact) * 100;
+                   
+                   float contarPorcentEspRact1 = 100 - contarPorcentEntRact1;
+                   float contarPorcentEspRact2 = 100 - contarPorcentEntRact2;
+                   float contarPorcentEspRact3 = 100 - contarPorcentEntRact3;
+
+                   setExDat(sheet, row + 4, col, "RACT 1");
+                   setExDat(sheet, row + 4, col + 1, contarNoEntRact1);
+                   setExDat(sheet, row + 4, col + 2, "" + contarPorcentNoEntRact1 + "%");
+                   setExDat(sheet, row + 4, col + 3, esperadosProgEdUnicoRact);
+                   setExDat(sheet, row + 4, col + 4, "" + contarPorcentEspRact1 + "%");
+
+                   setExDat(sheet, row + 5, col, "RACT 2");
+                   setExDat(sheet, row + 5, col + 1, contarNoEntRact2);
+                   setExDat(sheet, row + 5, col + 2, "" + contarPorcentNoEntRact2 + "%");
+                   setExDat(sheet, row + 5, col + 3, esperadosProgEdUnicoRact);
+                   setExDat(sheet, row + 5, col + 4, "" + contarPorcentEspRact2 + "%");
+
+                   setExDat(sheet, row + 6, col, "RACT 3");
+                   setExDat(sheet, row + 6, col + 1, contarNoEntRact3);
+                   setExDat(sheet, row + 6, col + 2, "" + contarPorcentNoEntRact3 + "%");
+                   setExDat(sheet, row + 6, col + 3, esperadosProgEdUnicoRact);
+                   setExDat(sheet, row + 6, col + 4, "" + contarPorcentEspRact3 + "%");
+
+                   int totalNoEnt=(Integer.parseInt(contarEntEspProgEd[2])-(Integer.parseInt(contarEntEspProgEd[1])));
+                   
+                   setExDat(sheet, row + 7, col, "Todos los RACTS");
+                   setExDat(sheet, row + 7, col + 1, ""+(Integer.parseInt(contarEntEspProgEd[2])-(Integer.parseInt(contarEntEspProgEd[1]))));
+                   setExDat(sheet, row + 7, col + 2, "" + porcentNoEnt + "%");
+                   setExDat(sheet, row + 7, col + 3, contarEntEspProgEd[2]);
+                   setExDat(sheet, row + 7, col + 4, "" + porcentEsp + "%");
+
+                   setStyleCell(sheet, headerTabla, row, col);
+                   setStyleCell(sheet, headerTabla, row, col + 1);
+                   setStyleCell(sheet, headerTabla, row, col + 2);
+                   setStyleCell(sheet, headerTabla, row, col + 3);
+                   setStyleCell(sheet, headerTabla, row, col + 4);
+
+                   setStyleCell(sheet, headerTabla, row + 2, col);
+                   setStyleCell(sheet, headerTabla, row + 2, col + 1);
+                   setStyleCell(sheet, headerTabla, row + 2, col + 2);
+                   setStyleCell(sheet, headerTabla, row + 2, col + 3);
+
+                   setStyleCell(sheet, headerTabla, row + 3, col);
+                   setStyleCell(sheet, headerTabla, row + 3, col + 1);
+                   setStyleCell(sheet, headerTabla, row + 3, col + 2);
+                   setStyleCell(sheet, headerTabla, row + 3, col + 3);
+                   setStyleCell(sheet, headerTabla, row + 3, col + 4);
+
+                   bandPe = true;
+                   
+                   pos++;
+               }
+               
+              }
+//               if (bandPe == true) {
+//                   if (col >= 25) {
+//                       row = row + 14;
+//                       col = -5;
+//                   }
+//                   col = col + 6;
+//                   bandPe = false;
+//               }
+                  pos++;
+           }
+       //}
+        //aqui modifique Jesus Ruelas                                     
 
                     }// fin del la comparacon de plan
                 }// fin del for por plan de estudios
@@ -2730,7 +3243,179 @@ public MeterGaugeChartModel getGaugeModel() {
                                 currow+=2;
                             }
                             
-                                                 
+                   //aqui modifique Jesus Ruelas  - Entregados Y No Entregados
+        //aqui cambie
+        headerTabla.setWrapText(true);
+        //aqui cambie
+                
+                //aqui cambie jesus ruelas
+                
+                //for(int i=0;i<28;i++){
+//                 sheet.autoSizeColumn(1);
+//                 sheet.autoSizeColumn(2);
+//                 sheet.autoSizeColumn(3);
+//                 sheet.autoSizeColumn(4);
+                
+                //merge cells de Total de RACT General de + ProgEd
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,1,5));
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,7,11));
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,13,17));
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,19,23));
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,25,29));
+                
+                
+
+                //}
+                //aqui cambie jesus ruelas
+                
+                //mostraremos tabla con
+                // Programas educativos //  Total Racs entregados // Total Esperados
+                //preparamos informacion para insertar
+       //         List<Programaeducativo> programasByUnidad = getProgramasByUnidad();
+        List<Planestudio> planesByPrograma = getPlanesByPrograma();
+        int UACid = 1; 
+        ArrayList<String> listaProgEdContar = esperadosDelegate.getSemadoroProgEdValor(UACid); 
+                
+                
+                //setCellStyle(style); 
+                
+                //setExDat(sheet, 7, 1, "Concentrado de Reporte de Avance de Contenido Temático General  por Programa Educativo");
+                
+                //imrpiimiremos la tabla
+                // Definimos los encabezados de la tabla
+                
+                int pos=0;
+                
+                int row=currow+4;
+                int col=1;
+                
+                Boolean bandPe=false;
+                
+                //for (Programaeducativo pe : programasByUnidad) {
+                  for (String peContar : listaProgEdContar) {
+
+                   String[] contarEntEspProgEd;
+
+                  if(listaProgEdContar.size()>=pos){ 
+                   if (peContar.contains(programa.getPednombre())) {
+
+                   contarEntEspProgEd = listaProgEdContar.get(pos).split("-");
+
+                   setExDat(sheet, row, col, "Clave");
+                   setExDat(sheet, row, col + 1, "Programa Educativo");
+                   setExDat(sheet, row, col + 3, "Plan de Estudios");
+                   setExDat(sheet, row, col + 4, "Responsable");
+
+               //    if (contarEntEspProgEd[0].equalsIgnoreCase(programasByUnidad.get(0).getPednombre())) {
+
+                       setExDat(sheet, row + 1, col, programa.getPedclave());
+                       setExDat(sheet, row + 1, col + 1, programa.getPednombre());
+                       if (!(planesByPrograma.isEmpty())) {
+                           setExDat(sheet, row + 1, col + 2, planesByPrograma.get(0).getPesvigenciaPlan());
+                       }
+                       setExDat(sheet, row + 1, col + 3, "");
+
+                //   }
+
+ //                  sheet.addMergedRegion(new CellRangeAddress(row+2,col,5,1));
+                   setExDat(sheet, row + 2, col, "Total de RACT General de " + programa.getPednombre());
+
+                   setExDat(sheet, row + 3, col, "Resumen de totales \r\n por numero de RACT");
+                   setExDat(sheet, row + 3, col + 1, "Total entregados");
+                   setExDat(sheet, row + 3, col + 2, "%");
+                   setExDat(sheet, row + 3, col + 3, "Total esperados");
+                   setExDat(sheet, row + 3, col + 4, "%");
+
+                   sheet.getRow(row+3).getCell(1);//aqui modifique jesus ruelas
+                   
+                   float porcentEnt = (Float.parseFloat(contarEntEspProgEd[1])) / (Float.parseFloat(contarEntEspProgEd[2])) * 100;
+
+                   float porcentEsp = 100 - porcentEnt;
+
+//                setExDat(sheet, 15, 1, "Todos los RACTS");
+//                setExDat(sheet, 15, 2, contarEntEspProgEd[1]);
+//                setExDat(sheet, 15, 3, "" + porcentEnt + "%");
+//                setExDat(sheet, 15, 4, contarEntEspProgEd[2]);
+//                setExDat(sheet, 15, 5, ""  + porcentEsp + "%");
+                   //String[] contarEntEspProgEd;
+                   String[] contarEntRact1;
+                   String[] contarEntRact2;
+                   String[] contarEntRact3;
+                   int esperadosProgEdUnicoRact = 0;
+
+                   contarEntRact1 = contarEntEspProgEd[3].split(":");
+                   contarEntRact2 = contarEntEspProgEd[4].split(":");
+                   contarEntRact3 = contarEntEspProgEd[5].split(":");
+
+                   esperadosProgEdUnicoRact = (Integer.parseInt(contarEntEspProgEd[2])) / 3;
+
+                   float contarPorcentEntRact1 = (Float.parseFloat(contarEntRact1[1])) / ((float) esperadosProgEdUnicoRact) * 100;
+                   float contarPorcentEntRact2 = (Float.parseFloat(contarEntRact2[1])) / ((float) esperadosProgEdUnicoRact) * 100;
+                   float contarPorcentEntRact3 = (Float.parseFloat(contarEntRact3[1])) / ((float) esperadosProgEdUnicoRact) * 100;
+
+                   float contarPorcentEspRact1 = 100 - contarPorcentEntRact1;
+                   float contarPorcentEspRact2 = 100 - contarPorcentEntRact2;
+                   float contarPorcentEspRact3 = 100 - contarPorcentEntRact3;
+
+                   setExDat(sheet, row + 4, col, "RACT 1");
+                   setExDat(sheet, row + 4, col + 1, contarEntRact1[1]);
+                   setExDat(sheet, row + 4, col + 2, "" + contarPorcentEntRact1 + "%");
+                   setExDat(sheet, row + 4, col + 3, esperadosProgEdUnicoRact);
+                   setExDat(sheet, row + 4, col + 4, "" + contarPorcentEspRact1 + "%");
+
+                   setExDat(sheet, row + 5, col, "RACT 2");
+                   setExDat(sheet, row + 5, col + 1, contarEntRact2[1]);
+                   setExDat(sheet, row + 5, col + 2, "" + contarPorcentEntRact2 + "%");
+                   setExDat(sheet, row + 5, col + 3, esperadosProgEdUnicoRact);
+                   setExDat(sheet, row + 5, col + 4, "" + contarPorcentEspRact2 + "%");
+
+                   setExDat(sheet, row + 6, col, "RACT 3");
+                   setExDat(sheet, row + 6, col + 1, contarEntRact3[1]);
+                   setExDat(sheet, row + 6, col + 2, "" + contarPorcentEntRact3 + "%");
+                   setExDat(sheet, row + 6, col + 3, esperadosProgEdUnicoRact);
+                   setExDat(sheet, row + 6, col + 4, "" + contarPorcentEspRact3 + "%");
+
+                   setExDat(sheet, row + 7, col, "Todos los RACTS");
+                   setExDat(sheet, row + 7, col + 1, contarEntEspProgEd[1]);
+                   setExDat(sheet, row + 7, col + 2, "" + porcentEnt + "%");
+                   setExDat(sheet, row + 7, col + 3, contarEntEspProgEd[2]);
+                   setExDat(sheet, row + 7, col + 4, "" + porcentEsp + "%");
+
+                   setStyleCell(sheet, headerTabla, row, col);
+                   setStyleCell(sheet, headerTabla, row, col + 1);
+                   setStyleCell(sheet, headerTabla, row, col + 2);
+                   setStyleCell(sheet, headerTabla, row, col + 3);
+                   setStyleCell(sheet, headerTabla, row, col + 4);
+
+                   setStyleCell(sheet, headerTabla, row + 2, col);
+                   setStyleCell(sheet, headerTabla, row + 2, col + 1);
+                   setStyleCell(sheet, headerTabla, row + 2, col + 2);
+                   setStyleCell(sheet, headerTabla, row + 2, col + 3);
+
+                   setStyleCell(sheet, headerTabla, row + 3, col);
+                   setStyleCell(sheet, headerTabla, row + 3, col + 1);
+                   setStyleCell(sheet, headerTabla, row + 3, col + 2);
+                   setStyleCell(sheet, headerTabla, row + 3, col + 3);
+                   setStyleCell(sheet, headerTabla, row + 3, col + 4);
+
+                   bandPe = true;
+                   
+                   pos++;
+               }
+               
+              }
+//               if (bandPe == true) {
+//                   if (col >= 25) {
+//                       row = row + 14;
+//                       col = -5;
+//                   }
+//                   col = col + 6;
+//                   bandPe = false;
+//               }
+                  pos++;
+           }
+       //}
+        //aqui modifique Jesus Ruelas                 
 
                     }// fin del la comparacon de plan
                 }// fin del for por plan de estudios
@@ -2983,7 +3668,179 @@ public MeterGaugeChartModel getGaugeModel() {
                                 currow+=2;
                             }
                             
-                                                 
+                //aqui modifique Jesus Ruelas  - Entregados A Tiempo
+        //aqui cambie
+        headerTabla.setWrapText(true);
+        //aqui cambie
+                
+                //aqui cambie jesus ruelas
+                
+                //for(int i=0;i<28;i++){
+//                 sheet.autoSizeColumn(1);
+//                 sheet.autoSizeColumn(2);
+//                 sheet.autoSizeColumn(3);
+//                 sheet.autoSizeColumn(4);
+                
+                //merge cells de Total de RACT General de + ProgEd
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,1,5));
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,7,11));
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,13,17));
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,19,23));
+//                sheet.addMergedRegion(new CellRangeAddress(13,13,25,29));
+                
+                
+
+                //}
+                //aqui cambie jesus ruelas
+                
+                //mostraremos tabla con
+                // Programas educativos //  Total Racs entregados // Total Esperados
+                //preparamos informacion para insertar
+       //         List<Programaeducativo> programasByUnidad = getProgramasByUnidad();
+        List<Planestudio> planesByPrograma = getPlanesByPrograma();
+        int UACid = 1; 
+        ArrayList<String> listaProgEdContar = esperadosDelegate.getSemadoroProgEdValor(UACid); 
+                
+                
+                //setCellStyle(style); 
+                
+                //setExDat(sheet, 7, 1, "Concentrado de Reporte de Avance de Contenido Temático General  por Programa Educativo");
+                
+                //imrpiimiremos la tabla
+                // Definimos los encabezados de la tabla
+                
+                int pos=0;
+                
+                int row=currow+4;
+                int col=1;
+                
+                Boolean bandPe=false;
+                
+                //for (Programaeducativo pe : programasByUnidad) {
+                  for (String peContar : listaProgEdContar) {
+
+                   String[] contarEntEspProgEd;
+
+                  if(listaProgEdContar.size()>=pos){ 
+                   if (peContar.contains(programa.getPednombre())) {
+
+                   contarEntEspProgEd = listaProgEdContar.get(pos).split("-");
+
+                   setExDat(sheet, row, col, "Clave");
+                   setExDat(sheet, row, col + 1, "Programa Educativo");
+                   setExDat(sheet, row, col + 3, "Plan de Estudios");
+                   setExDat(sheet, row, col + 4, "Responsable");
+
+               //    if (contarEntEspProgEd[0].equalsIgnoreCase(programasByUnidad.get(0).getPednombre())) {
+
+                       setExDat(sheet, row + 1, col, programa.getPedclave());
+                       setExDat(sheet, row + 1, col + 1, programa.getPednombre());
+                       if (!(planesByPrograma.isEmpty())) {
+                           setExDat(sheet, row + 1, col + 2, planesByPrograma.get(0).getPesvigenciaPlan());
+                       }
+                       setExDat(sheet, row + 1, col + 3, "");
+
+                //   }
+
+ //                  sheet.addMergedRegion(new CellRangeAddress(row+2,col,5,1));
+                   setExDat(sheet, row + 2, col, "Total de RACT General de " + programa.getPednombre());
+
+                   setExDat(sheet, row + 3, col, "Resumen de totales \r\n por numero de RACT");
+                   setExDat(sheet, row + 3, col + 1, "Total entregados");
+                   setExDat(sheet, row + 3, col + 2, "%");
+                   setExDat(sheet, row + 3, col + 3, "Total esperados");
+                   setExDat(sheet, row + 3, col + 4, "%");
+
+                   sheet.getRow(row+3).getCell(1);//aqui modifique jesus ruelas
+                   
+                   float porcentEnt = (Float.parseFloat(contarEntEspProgEd[1])) / (Float.parseFloat(contarEntEspProgEd[2])) * 100;
+
+                   float porcentEsp = 100 - porcentEnt;
+
+//                setExDat(sheet, 15, 1, "Todos los RACTS");
+//                setExDat(sheet, 15, 2, contarEntEspProgEd[1]);
+//                setExDat(sheet, 15, 3, "" + porcentEnt + "%");
+//                setExDat(sheet, 15, 4, contarEntEspProgEd[2]);
+//                setExDat(sheet, 15, 5, ""  + porcentEsp + "%");
+                   //String[] contarEntEspProgEd;
+                   String[] contarEntRact1;
+                   String[] contarEntRact2;
+                   String[] contarEntRact3;
+                   int esperadosProgEdUnicoRact = 0;
+
+                   contarEntRact1 = contarEntEspProgEd[3].split(":");
+                   contarEntRact2 = contarEntEspProgEd[4].split(":");
+                   contarEntRact3 = contarEntEspProgEd[5].split(":");
+
+                   esperadosProgEdUnicoRact = (Integer.parseInt(contarEntEspProgEd[2])) / 3;
+
+                   float contarPorcentEntRact1 = (Float.parseFloat(contarEntRact1[1])) / ((float) esperadosProgEdUnicoRact) * 100;
+                   float contarPorcentEntRact2 = (Float.parseFloat(contarEntRact2[1])) / ((float) esperadosProgEdUnicoRact) * 100;
+                   float contarPorcentEntRact3 = (Float.parseFloat(contarEntRact3[1])) / ((float) esperadosProgEdUnicoRact) * 100;
+
+                   float contarPorcentEspRact1 = 100 - contarPorcentEntRact1;
+                   float contarPorcentEspRact2 = 100 - contarPorcentEntRact2;
+                   float contarPorcentEspRact3 = 100 - contarPorcentEntRact3;
+
+                   setExDat(sheet, row + 4, col, "RACT 1");
+                   setExDat(sheet, row + 4, col + 1, contarEntRact1[1]);
+                   setExDat(sheet, row + 4, col + 2, "" + contarPorcentEntRact1 + "%");
+                   setExDat(sheet, row + 4, col + 3, esperadosProgEdUnicoRact);
+                   setExDat(sheet, row + 4, col + 4, "" + contarPorcentEspRact1 + "%");
+
+                   setExDat(sheet, row + 5, col, "RACT 2");
+                   setExDat(sheet, row + 5, col + 1, contarEntRact2[1]);
+                   setExDat(sheet, row + 5, col + 2, "" + contarPorcentEntRact2 + "%");
+                   setExDat(sheet, row + 5, col + 3, esperadosProgEdUnicoRact);
+                   setExDat(sheet, row + 5, col + 4, "" + contarPorcentEspRact2 + "%");
+
+                   setExDat(sheet, row + 6, col, "RACT 3");
+                   setExDat(sheet, row + 6, col + 1, contarEntRact3[1]);
+                   setExDat(sheet, row + 6, col + 2, "" + contarPorcentEntRact3 + "%");
+                   setExDat(sheet, row + 6, col + 3, esperadosProgEdUnicoRact);
+                   setExDat(sheet, row + 6, col + 4, "" + contarPorcentEspRact3 + "%");
+
+                   setExDat(sheet, row + 7, col, "Todos los RACTS");
+                   setExDat(sheet, row + 7, col + 1, contarEntEspProgEd[1]);
+                   setExDat(sheet, row + 7, col + 2, "" + porcentEnt + "%");
+                   setExDat(sheet, row + 7, col + 3, contarEntEspProgEd[2]);
+                   setExDat(sheet, row + 7, col + 4, "" + porcentEsp + "%");
+
+                   setStyleCell(sheet, headerTabla, row, col);
+                   setStyleCell(sheet, headerTabla, row, col + 1);
+                   setStyleCell(sheet, headerTabla, row, col + 2);
+                   setStyleCell(sheet, headerTabla, row, col + 3);
+                   setStyleCell(sheet, headerTabla, row, col + 4);
+
+                   setStyleCell(sheet, headerTabla, row + 2, col);
+                   setStyleCell(sheet, headerTabla, row + 2, col + 1);
+                   setStyleCell(sheet, headerTabla, row + 2, col + 2);
+                   setStyleCell(sheet, headerTabla, row + 2, col + 3);
+
+                   setStyleCell(sheet, headerTabla, row + 3, col);
+                   setStyleCell(sheet, headerTabla, row + 3, col + 1);
+                   setStyleCell(sheet, headerTabla, row + 3, col + 2);
+                   setStyleCell(sheet, headerTabla, row + 3, col + 3);
+                   setStyleCell(sheet, headerTabla, row + 3, col + 4);
+
+                   bandPe = true;
+                   
+                   pos++;
+               }
+               
+              }
+//               if (bandPe == true) {
+//                   if (col >= 25) {
+//                       row = row + 14;
+//                       col = -5;
+//                   }
+//                   col = col + 6;
+//                   bandPe = false;
+//               }
+                  pos++;
+           }
+       //}
+        //aqui modifique Jesus Ruelas                                                          
 
                     }// fin del la comparacon de plan
                 }// fin del for por plan de estudios
@@ -3110,9 +3967,6 @@ public MeterGaugeChartModel getGaugeModel() {
                             setExDat(sheet, currow , 1, "Áreas de conocimiento");
                             setStyleCell(sheet, headerTabla, currow, 1);
                             currow++;
-                            //cada plan de estudios tiene varias areas de conocimiento
-                            //List<Areaconocimiento> areasConocimiento = filtrosBeanHelper.getConsultaDelegate().getAreasByPlan( tempAux.getReporteAvance().getUnidadaprendizajeImparteProfesor().getGrupo().getPlanestudio().getPesid() );
-                            //List<Areaconocimiento> areasConocimiento = filtrosBeanHelper.getConsultaDelegate().getAreasByPlan( planeact.getPesid() );
                             List<Areaconocimiento> areasConocimiento = filtrosBeanHelper.getConsultaDelegate().getAreasByPlanClave(programa.getPedclave(),tempAux.getReporteAvance().getUnidadaprendizajeImparteProfesor().getGrupo().getPlanestudio().getPesvigenciaPlan());
                             
                             
@@ -3293,7 +4147,17 @@ public MeterGaugeChartModel getGaugeModel() {
            HSSFSheet sheet = workbook.createSheet("Graficos");
            nombreLibro = "- Area de conocimiento";
 
-           if(reporte.equalsIgnoreCase("entregados") || reporte.equalsIgnoreCase("noentregados") || reporte.equalsIgnoreCase("entregadosynoentregados")){
+           if(reporte.equalsIgnoreCase("entregados") || 
+                   reporte.equalsIgnoreCase("noentregados") || 
+                   reporte.equalsIgnoreCase("entregadosynoentregados") || 
+                   //Aqui modifique Jesus Ruelas 26 oct 2015
+                   reporte.equalsIgnoreCase("entregadosatiempo") || 
+                   reporte.equalsIgnoreCase("entregadosdespueslimite") || 
+                   reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues") ||                    
+                   //Aqui modifique Jesus Ruelas 26 oct 2015
+                   reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo") || 
+                   reporte.equalsIgnoreCase("Porcentaje de Avance Global Incompleto") || 
+                   reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo e Incompleto") ){
                
                if(reporte.equalsIgnoreCase("entregados"))
                 nombreLibro = "Entregados " + nombreLibro;
@@ -3303,9 +4167,29 @@ public MeterGaugeChartModel getGaugeModel() {
                
                if(reporte.equalsIgnoreCase("entregadosynoentregados"))
                 nombreLibro = "Entregados Y No Entregados " + nombreLibro;
-                
+               
+               //Aqui modifique Jesus Ruelas 26 oct 2015               
+               if(reporte.equalsIgnoreCase("entregadosatiempo"))
+                nombreLibro = "Entregados a tiempo " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("entregadosdespueslimite"))
+                nombreLibro = "Entregados después de fecha límite " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues"))
+                nombreLibro = "Entregados a tiempo y despues de fecha límite " + nombreLibro;
+               //Aqui modifique Jesus Ruelas 26 oct 2015
+               
+               if(reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo"))
+                nombreLibro = "Porcentaje de Avance Global Completo " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("Porcentaje de Avance Global Incompleto"))
+                nombreLibro = "Porcentaje de Avance Global Incompleto " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo e Incompleto"))
+                nombreLibro = "Porcentaje de Avance Global Completo e Incompleto " + nombreLibro;
+         
                 //definimos encabezado
-                sheet = cabezeraGeneralExcel(sheet,uabcLogo,style);
+                //sheet = cabezeraGeneralExcel(sheet,uabcLogo,style);
                 
                 //mostraremos tabla con
                 // Programas educativos //  Total Racs entregados // Total Esperados
@@ -3317,22 +4201,6 @@ public MeterGaugeChartModel getGaugeModel() {
                 for(Areaconocimiento areaConocimiento: areasByUnidad){
                     if( selectAreaConocimiento.contains( Integer.toString( areaConocimiento.getAcoclave() ) ) ){
                         //aqui creamos la hoja para el programa
-                        sheet = workbook.createSheet(areaConocimiento.getAconombre());
-                        //sheet = cabezeraGeneralExcel(sheet,uabcLogo,style); lo moveremos al final de la hoja para que no sea mdoficada la imagen
-                        setExDat(sheet, 8, 3, "Concentrado de Reporte de Avance de Contenido Temático de Entregados por Area de conocimiento");
-
-                        boolean autotam = true;
-
-                        //informacion de programa educativo tabla
-                        setExDat(sheet, 14, 1, "Clave");
-                        setExDat(sheet, 14, 2, "Programa Educativo");
-                        setExDat(sheet, 14, 3, "Plan de Estudios");
-                        setExDat(sheet, 14, 4, "Responsable");
-
-                        setStyleCell(sheet, headerTabla, 14, 1);
-                        setStyleCell(sheet, headerTabla, 14, 2);
-                        setStyleCell(sheet, headerTabla, 14, 3);
-                        setStyleCell(sheet, headerTabla, 14, 4);
                         
                         ArrayList <ReporteAvanceAux> tempListAux = new ArrayList<ReporteAvanceAux>();        
                         for(ReporteAvanceAux aux : listaAux){
@@ -3342,131 +4210,178 @@ public MeterGaugeChartModel getGaugeModel() {
                             }
                         }
                         
-                        int currow = 22;
-                        setExDat(sheet, currow,1, "Clave unidad de aprendizaje" );
-                        setExDat(sheet, currow,2, "Unidad de aprendizaje" );
-                        setExDat(sheet, currow,3, "No. de empleado" );
-                        setExDat(sheet, currow,4, "Nombre del profesor" );
-                        setExDat(sheet, currow,5, "Grupo" );
-                        setExDat(sheet, currow,6, "% Avance 1er reporte" );
-                        setExDat(sheet, currow,7, "Fecha de elaboración 1er RACT" );
-                        setExDat(sheet, currow,8, "% Avance 2do reporte" );
-                        setExDat(sheet, currow,9, "Fecha de elaboración 2do RACT" );
-                        setExDat(sheet, currow,10, "% Avance 3er reporte" );
-                        setExDat(sheet, currow,11, "Fecha de elaboración 3er RACT" );
+                        //// de este for
+                        // para no imprirmir hojas vacias
+                        if(tempListAux.size()>0){
+                        
+                            sheet = workbook.createSheet(areaConocimiento.getAconombre());
+                            //sheet = cabezeraGeneralExcel(sheet,uabcLogo,style); lo moveremos al final de la hoja para que no sea mdoficada la imagen
+                            setExDat(sheet, 8, 3, "Concentrado de Reporte de Avance de Contenido Temático de Entregados por Area de conocimiento");
 
-                        //autosize para la columna
-                        if(autotam){
-                            sheet.autoSizeColumn(2);
-                            sheet.autoSizeColumn(4);
-                            sheet.autoSizeColumn(11);
-                            autotam = false;
-                        }
-                        // para formatear toda la linea
-                        for(int i=1;i<=11;i++){
-                          setStyleCell(sheet, headerTabla, currow, i);  
-                        }
-                        currow++;
-                        
-                        
-                        int uniprofeTemp = 0 ; 
-                        for(ReporteAvanceAux auxRacs :tempListAux){
+                            boolean autotam = true;
+
+                            int currow = 18;
                             
-                            //marcamos bordes
+                            //Aqui modifique Jesus Ruelas 26 oct 2015
+                            if(reporte.equalsIgnoreCase("entregadosatiempo")||
+                                reporte.equalsIgnoreCase("entregadosdespueslimite")||
+                                    reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues")){
+                             if(ract.equalsIgnoreCase("1")||ract.equalsIgnoreCase("2")||ract.equalsIgnoreCase("3")){
+                            setExDat(sheet, currow,1, "Fecha Corte" );
+                            setExDat(sheet, currow,2, "Fecha Límite" );
+                            currow++;                            
+                            setExDat(sheet, currow,1, tempListAux.get(0).getFechaCorte().toString() );
+                            setExDat(sheet, currow,2, tempListAux.get(0).getFechaLimite().toString() );                            
+                            currow++;
+                            currow++;
+                             }else{
+                              setExDat(sheet, currow,1, "Fecha Corte Ract 1" );
+                              setExDat(sheet, currow,2, "Fecha Límite Ract 1" );
+                              currow++;                            
+                              setExDat(sheet, currow,1, tempListAux.get(0).getFechaCorteRact1().toString() );
+                              setExDat(sheet, currow,2, tempListAux.get(0).getFechaLimiteRact1().toString() );
+                              //currow++;                       
+                              setExDat(sheet, currow-1,4, "Fecha Corte Ract 2" );
+                              setExDat(sheet, currow-1,5, "Fecha Límite Ract 2" );
+                              //currow++;                            
+                              setExDat(sheet, currow,4, tempListAux.get(0).getFechaCorteRact2().toString() );
+                              setExDat(sheet, currow,5, tempListAux.get(0).getFechaLimiteRact2().toString() );                            
+                              //currow++;                       
+                              setExDat(sheet, currow-1,7, "Fecha Corte Ract 3" );
+                              setExDat(sheet, currow-1,8, "Fecha Límite Ract 3" );
+                              //currow++;                            
+                              setExDat(sheet, currow,7, tempListAux.get(0).getFechaCorteRact3().toString() );
+                              setExDat(sheet, currow,8, tempListAux.get(0).getFechaLimiteRact3().toString() ); 
+                            currow++;
+                            currow++;   
+                             }
+                            }
+                            //Aqui modifique Jesus Ruelas 26 oct 2015
+                            
+                            setExDat(sheet, currow,1, "Clave unidad de aprendizaje" );
+                            setExDat(sheet, currow,2, "Unidad de aprendizaje" );
+                            setExDat(sheet, currow,3, "No. de empleado" );
+                            setExDat(sheet, currow,4, "Nombre del profesor" );
+                            setExDat(sheet, currow,5, "Grupo" );
+                            setExDat(sheet, currow,6, "% Avance 1er reporte" );
+                            setExDat(sheet, currow,7, "Fecha de elaboración 1er RACT" );
+                            setExDat(sheet, currow,8, "% Avance 2do reporte" );
+                            setExDat(sheet, currow,9, "Fecha de elaboración 2do RACT" );
+                            setExDat(sheet, currow,10, "% Avance 3er reporte" );
+                            setExDat(sheet, currow,11, "Fecha de elaboración 3er RACT" );
+
+                            //autosize para la columna
+                            if(autotam){
+                                sheet.autoSizeColumn(2);
+                                sheet.autoSizeColumn(4);
+                                sheet.autoSizeColumn(11);
+                                autotam = false;
+                            }
+                            // para formatear toda la linea
                             for(int i=1;i<=11;i++){
-                                setExDat(sheet, currow,i," ");
+                              setStyleCell(sheet, headerTabla, currow, i);  
                             }
-                            for(int i=1;i<=11;i++){
-                                setStyleCell(sheet, borderstabla, currow, i);
-                            }
+                            currow++;
 
-                            String nompreP = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getPronombre();
-                            String apellidoPP = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getProapellidoPaterno();
-                            String apellidoPM = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getProapellidoMaterno();
-                            int claveUnidadApren = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave();
-                            String nombreUnidad = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapnombre();
 
-                            uniprofeTemp = claveUnidadApren;
-                            setExDat(sheet, currow,1, claveUnidadApren ); //clave
-                            setExDat(sheet, currow,2, nombreUnidad ); //nombre unidad
-                            //reporteAvance.unidadaprendizajeImparteProfesor.profesor.pronumeroEmpleado
-                            setExDat(sheet, currow,3, auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getPronumeroEmpleado() ); //numero empleado
-                            setExDat(sheet, currow,4, apellidoPP+ " "+apellidoPM+ " "+nompreP ); //nombre maestro
-                            setExDat(sheet, currow,5, auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getGrupo().getGponumero() + "-"+ auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUiptipoSubgrupo()  + "-"+ auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUipsubgrupo() ); //grupo numero
+                            int uniprofeTemp = 0 ; 
+                            for(ReporteAvanceAux auxRacs :tempListAux){
 
-                            //marcamos bordes
-                            for(int i=1;i<=5;i++){
-                                setStyleCell(sheet, borderstabla, currow, i);
-                            }
-                            //tienne que ser entregados/enviados
-                            if(auxRacs.getStatusRact1()!=null){
+                                //marcamos bordes
+                                for(int i=1;i<=11;i++){
+                                    setExDat(sheet, currow,i," ");
+                                }
+                                for(int i=1;i<=11;i++){
+                                    setStyleCell(sheet, borderstabla, currow, i);
+                                }
 
-                                    System.out.println("Entro a enviados 1");
-                                    setExDat(sheet, currow,(4 + (1*2)), auxRacs.getPorcentAvanceRact1() ); //% avance 7**
+                                String nompreP = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getPronombre();
+                                String apellidoPP = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getProapellidoPaterno();
+                                String apellidoPM = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getProapellidoMaterno();
+                                int claveUnidadApren = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave();
+                                String nombreUnidad = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapnombre();
 
-                                    if(auxRacs.getFechaElaboracRact1()!=null){
-                                        setExDat(sheet, currow,(4 + (1*2)+1), auxRacs.getFechaElaboracRact1().toString() ); //fecha elabora 8***
-                                    }
-                                    else{
-                                        setExDat(sheet, currow,(4 + (1*2)+1), " " ); //fecha elabora 8***
-                                    }
+                                uniprofeTemp = claveUnidadApren;
+                                setExDat(sheet, currow,1, claveUnidadApren ); //clave
+                                setExDat(sheet, currow,2, nombreUnidad ); //nombre unidad
+                                //reporteAvance.unidadaprendizajeImparteProfesor.profesor.pronumeroEmpleado
+                                setExDat(sheet, currow,3, auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getPronumeroEmpleado() ); //numero empleado
+                                setExDat(sheet, currow,4, apellidoPP+ " "+apellidoPM+ " "+nompreP ); //nombre maestro
+                                setExDat(sheet, currow,5, auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getGrupo().getGponumero() + "-"+ auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUiptipoSubgrupo()  + "-"+ auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUipsubgrupo() ); //grupo numero
+
+                                //marcamos bordes
+                                for(int i=1;i<=5;i++){
+                                    setStyleCell(sheet, borderstabla, currow, i);
+                                }
+                                //tienne que ser entregados/enviados
+                                if(auxRacs.getStatusRact1()!=null){
+
+                                        System.out.println("Entro a enviados 1");
+                                        setExDat(sheet, currow,(4 + (1*2)), auxRacs.getPorcentAvanceRact1() ); //% avance 7**
+
+                                        if(auxRacs.getFechaElaboracRact1()!=null){
+                                            setExDat(sheet, currow,(4 + (1*2)+1), auxRacs.getFechaElaboracRact1().toString() ); //fecha elabora 8***
+                                        }
+                                        else{
+                                            setExDat(sheet, currow,(4 + (1*2)+1), " " ); //fecha elabora 8***
+                                        }
+                                        setStyleCell(sheet, borderstabla, currow, (4 + (1*2)));
+                                        setStyleCell(sheet, borderstabla, currow, (4 + (1*2)+1));
+
+                                }
+                                else{
+                                    setExDat(sheet, currow,(4 + (1*2)), " " ); //% avance 7**
+                                    setExDat(sheet, currow,(4 + (1*2)+1), " " ); //fecha elabora 8***
                                     setStyleCell(sheet, borderstabla, currow, (4 + (1*2)));
                                     setStyleCell(sheet, borderstabla, currow, (4 + (1*2)+1));
-
-                            }
-                            else{
-                                setExDat(sheet, currow,(4 + (1*2)), " " ); //% avance 7**
-                                setExDat(sheet, currow,(4 + (1*2)+1), " " ); //fecha elabora 8***
-                                setStyleCell(sheet, borderstabla, currow, (4 + (1*2)));
-                                setStyleCell(sheet, borderstabla, currow, (4 + (1*2)+1));
-                            }
+                                }
 
 
-                            if(auxRacs.getStatusRact2()!=null){
+                                if(auxRacs.getStatusRact2()!=null){
 
-                                    setExDat(sheet, currow,(4 + (2*2)), auxRacs.getPorcentAvanceRact2() ); //% avance 7**
+                                        setExDat(sheet, currow,(4 + (2*2)), auxRacs.getPorcentAvanceRact2() ); //% avance 7**
 
-                                    if(auxRacs.getFechaElaboracRact2()!=null){
-                                        setExDat(sheet, currow,(4 + (2*2)+1), auxRacs.getFechaElaboracRact2().toString() ); //fecha elabora 8***
-                                    }
-                                    else{
-                                        setExDat(sheet, currow,(4 + (2*2)+1)," " ); //fecha elabora 8***
-                                    }
+                                        if(auxRacs.getFechaElaboracRact2()!=null){
+                                            setExDat(sheet, currow,(4 + (2*2)+1), auxRacs.getFechaElaboracRact2().toString() ); //fecha elabora 8***
+                                        }
+                                        else{
+                                            setExDat(sheet, currow,(4 + (2*2)+1)," " ); //fecha elabora 8***
+                                        }
+                                        setStyleCell(sheet, borderstabla, currow, (4 + (2*2)));
+                                        setStyleCell(sheet, borderstabla, currow, (4 + (2*2)+1));
+
+                                }else{
+                                    setExDat(sheet, currow,(4 + (2*2)), " " ); //% avance 7**
+                                    setExDat(sheet, currow,(4 + (2*2)+1), " " ); //fecha elabora 8***
                                     setStyleCell(sheet, borderstabla, currow, (4 + (2*2)));
                                     setStyleCell(sheet, borderstabla, currow, (4 + (2*2)+1));
+                                }
 
-                            }else{
-                                setExDat(sheet, currow,(4 + (2*2)), " " ); //% avance 7**
-                                setExDat(sheet, currow,(4 + (2*2)+1), " " ); //fecha elabora 8***
-                                setStyleCell(sheet, borderstabla, currow, (4 + (2*2)));
-                                setStyleCell(sheet, borderstabla, currow, (4 + (2*2)+1));
-                            }
+                                if(auxRacs.getStatusRact3()!=null){
 
-                            if(auxRacs.getStatusRact3()!=null){
+                                        setExDat(sheet, currow,(4 + (3*2)), auxRacs.getPorcentAvanceRact3() ); //% avance 7**
+                                        if(auxRacs.getFechaElaboracRact3()!=null){
+                                            setExDat(sheet, currow,(4 + (3*2)+1), auxRacs.getFechaElaboracRact3().toString() ); //fecha elabora 8***
+                                        }
+                                        else{
+                                            setExDat(sheet, currow,(4 + (3*2)+1), " " ); //fecha elabora 8***
+                                        }
+                                        setStyleCell(sheet, borderstabla, currow, (4 + (3*2)));
+                                        setStyleCell(sheet, borderstabla, currow, (4 + (3*2)+1));
 
-                                    setExDat(sheet, currow,(4 + (3*2)), auxRacs.getPorcentAvanceRact3() ); //% avance 7**
-                                    if(auxRacs.getFechaElaboracRact3()!=null){
-                                        setExDat(sheet, currow,(4 + (3*2)+1), auxRacs.getFechaElaboracRact3().toString() ); //fecha elabora 8***
-                                    }
-                                    else{
-                                        setExDat(sheet, currow,(4 + (3*2)+1), " " ); //fecha elabora 8***
-                                    }
+                                }
+                                else{
+                                    setExDat(sheet, currow,(4 + (3*2)), " "  ); //% avance 7**
+                                    setExDat(sheet, currow,(4 + (3*2)+1), " " ); //fecha elabora 8***
                                     setStyleCell(sheet, borderstabla, currow, (4 + (3*2)));
-                                    setStyleCell(sheet, borderstabla, currow, (4 + (3*2)+1));
+                                    setStyleCell(sheet, borderstabla, currow, (4 + (3*2)+1));   
+                                }
 
+
+                                currow++;
                             }
-                            else{
-                                setExDat(sheet, currow,(4 + (3*2)), " "  ); //% avance 7**
-                                setExDat(sheet, currow,(4 + (3*2)+1), " " ); //fecha elabora 8***
-                                setStyleCell(sheet, borderstabla, currow, (4 + (3*2)));
-                                setStyleCell(sheet, borderstabla, currow, (4 + (3*2)+1));   
-                            }
-
-
-                            currow++;
                         }
-                        
-                        
+                        // delfindelfor
                         
                         //fin de codigo e imrpesion de cabezera
                         sheet = cabezeraGeneralExcel(sheet,uabcLogo,style);
@@ -3476,6 +4391,789 @@ public MeterGaugeChartModel getGaugeModel() {
             }// fin de si es por entregados if(entregados)
         }//fin de areas de conocimiento
         
+        if(criterio.equalsIgnoreCase("unidad_aprendizaje")){
+           HSSFSheet sheet = workbook.createSheet("Graficos");
+           nombreLibro = "- Unidad de aprendizaje";
+
+           if(reporte.equalsIgnoreCase("entregados") || 
+                   reporte.equalsIgnoreCase("noentregados") || 
+                   reporte.equalsIgnoreCase("entregadosynoentregados") || 
+                   //Aqui modifique Jesus Ruelas 26 oct 2015
+                   reporte.equalsIgnoreCase("entregadosatiempo") || 
+                   reporte.equalsIgnoreCase("entregadosdespueslimite") || 
+                   reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues") ||                    
+                   //Aqui modifique Jesus Ruelas 26 oct 2015
+                   reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo") || 
+                   reporte.equalsIgnoreCase("Porcentaje de Avance Global Incompleto") || 
+                   reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo e Incompleto") ){
+               
+               if(reporte.equalsIgnoreCase("entregados"))
+                nombreLibro = "Entregados " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("noentregados"))
+                nombreLibro = "No Entregados " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("entregadosynoentregados"))
+                nombreLibro = "Entregados Y No Entregados " + nombreLibro;
+               
+               //Aqui modifique Jesus Ruelas 26 oct 2015               
+               if(reporte.equalsIgnoreCase("entregadosatiempo"))
+                nombreLibro = "Entregados a tiempo " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("entregadosdespueslimite"))
+                nombreLibro = "Entregados después de fecha límite " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues"))
+                nombreLibro = "Entregados a tiempo y despues de fecha límite " + nombreLibro;
+               //Aqui modifique Jesus Ruelas 26 oct 2015
+               
+               if(reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo"))
+                nombreLibro = "Porcentaje de Avance Global Completo " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("Porcentaje de Avance Global Incompleto"))
+                nombreLibro = "Porcentaje de Avance Global Incompleto " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo e Incompleto"))
+                nombreLibro = "Porcentaje de Avance Global Completo e Incompleto " + nombreLibro;
+         
+                //definimos encabezado
+                //sheet = cabezeraGeneralExcel(sheet,uabcLogo,style);
+                
+                //mostraremos tabla con
+                // Programas educativos //  Total Racs entregados // Total Esperados
+                //preparamos informacion para insertar
+                List<Programaeducativo> programasByUnidad = getProgramasByUnidad();
+                List<Unidadaprendizaje> unidadesByArea = getUnidadesByAreaAconocimientoClave();
+
+                /* Programacion de Hojas*/
+                for(Unidadaprendizaje unidadAprend: unidadesByArea){
+                    if( selectUnidadAprendisaje.contains( Integer.toString( unidadAprend.getUapclave()) ) ){
+                        //aqui creamos la hoja para el programa
+                        
+                        ArrayList <ReporteAvanceAux> tempListAux = new ArrayList<ReporteAvanceAux>();        
+                        for(ReporteAvanceAux aux : listaAux){
+                            if( aux.reporteAvance.getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave() == unidadAprend.getUapclave() )
+                            {
+                                tempListAux.add(aux);
+                            }
+                        }
+                        
+                        //// de este for
+                        // para no imprirmir hojas vacias
+                        if(tempListAux.size()>0){
+                        
+                            sheet = workbook.createSheet(unidadAprend.getUapnombre());
+                            //sheet = cabezeraGeneralExcel(sheet,uabcLogo,style); lo moveremos al final de la hoja para que no sea mdoficada la imagen
+                            setExDat(sheet, 8, 3, "Concentrado de Reporte de Avance de Contenido Temático de Entregados por Unidad de aprendizaje");
+
+                            boolean autotam = true;
+
+                            int currow = 18;
+                            
+                            //Aqui modifique Jesus Ruelas 26 oct 2015
+                            if(reporte.equalsIgnoreCase("entregadosatiempo")||
+                                reporte.equalsIgnoreCase("entregadosdespueslimite")||
+                                    reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues")){
+                             if(ract.equalsIgnoreCase("1")||ract.equalsIgnoreCase("2")||ract.equalsIgnoreCase("3")){
+                            setExDat(sheet, currow,1, "Fecha Corte" );
+                            setExDat(sheet, currow,2, "Fecha Límite" );
+                            currow++;                            
+                            setExDat(sheet, currow,1, tempListAux.get(0).getFechaCorte().toString() );
+                            setExDat(sheet, currow,2, tempListAux.get(0).getFechaLimite().toString() );                            
+                            currow++;
+                            currow++;
+                             }else{
+                              setExDat(sheet, currow,1, "Fecha Corte Ract 1" );
+                              setExDat(sheet, currow,2, "Fecha Límite Ract 1" );
+                              currow++;                            
+                              setExDat(sheet, currow,1, tempListAux.get(0).getFechaCorteRact1().toString() );
+                              setExDat(sheet, currow,2, tempListAux.get(0).getFechaLimiteRact1().toString() );
+                              //currow++;                       
+                              setExDat(sheet, currow-1,4, "Fecha Corte Ract 2" );
+                              setExDat(sheet, currow-1,5, "Fecha Límite Ract 2" );
+                              //currow++;                            
+                              setExDat(sheet, currow,4, tempListAux.get(0).getFechaCorteRact2().toString() );
+                              setExDat(sheet, currow,5, tempListAux.get(0).getFechaLimiteRact2().toString() );                            
+                              //currow++;                       
+                              setExDat(sheet, currow-1,7, "Fecha Corte Ract 3" );
+                              setExDat(sheet, currow-1,8, "Fecha Límite Ract 3" );
+                              //currow++;                            
+                              setExDat(sheet, currow,7, tempListAux.get(0).getFechaCorteRact3().toString() );
+                              setExDat(sheet, currow,8, tempListAux.get(0).getFechaLimiteRact3().toString() ); 
+                            currow++;
+                            currow++;   
+                             }
+                            }
+                            //Aqui modifique Jesus Ruelas 26 oct 2015
+                            
+                            setExDat(sheet, currow,1, "Clave unidad de aprendizaje" );
+                            setExDat(sheet, currow,2, "Unidad de aprendizaje" );
+                            currow++;
+                            int claveUnidadApren = tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave();
+                            String nombreUnidad = tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapnombre();
+
+                            int uniprofeTemp = 0 ;
+                            
+                            uniprofeTemp = claveUnidadApren;
+                            setExDat(sheet, currow,1, claveUnidadApren ); //clave
+                            setExDat(sheet, currow,2, nombreUnidad ); //nombre unidad
+                            currow++;
+                            
+                            //autosize para la columna
+                            if(autotam){
+                                sheet.autoSizeColumn(2);
+                                sheet.autoSizeColumn(4);
+                                sheet.autoSizeColumn(11);
+                                autotam = false;
+                            }
+                            // para formatear toda la linea
+                            for(int i=1;i<=9;i++){
+                              setStyleCell(sheet, headerTabla, currow, i);  
+                            }
+                            currow++;
+
+                            setExDat(sheet, currow,1, "No. de empleado" );
+                            setExDat(sheet, currow,2, "Nombre del profesor" );
+                            setExDat(sheet, currow,3, "Grupo" );
+                            setExDat(sheet, currow,4, "% Avance 1er reporte" );
+                            setExDat(sheet, currow,5, "Fecha de elaboración 1er RACT" );
+                            setExDat(sheet, currow,6, "% Avance 2do reporte" );
+                            setExDat(sheet, currow,7, "Fecha de elaboración 2do RACT" );
+                            setExDat(sheet, currow,8, "% Avance 3er reporte" );
+                            setExDat(sheet, currow,9, "Fecha de elaboración 3er RACT" );
+                            currow++;
+                            
+                            for(ReporteAvanceAux auxRacs :tempListAux){
+
+                                //marcamos bordes
+                                for(int i=1;i<=9;i++){
+                                    setExDat(sheet, currow,i," ");
+                                }
+                                for(int i=1;i<=9;i++){
+                                    setStyleCell(sheet, borderstabla, currow, i);
+                                }
+
+                                String nompreP = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getPronombre();
+                                String apellidoPP = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getProapellidoPaterno();
+                                String apellidoPM = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getProapellidoMaterno();
+                                
+                                //reporteAvance.unidadaprendizajeImparteProfesor.profesor.pronumeroEmpleado
+                                setExDat(sheet, currow,1, auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getPronumeroEmpleado() ); //numero empleado
+                                setExDat(sheet, currow,2, apellidoPP+ " "+apellidoPM+ " "+nompreP ); //nombre maestro
+                                setExDat(sheet, currow,3, auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getGrupo().getGponumero() + "-"+ auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUiptipoSubgrupo()  + "-"+ auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUipsubgrupo() ); //grupo numero
+
+                                //marcamos bordes
+                                for(int i=1;i<=5;i++){
+                                    setStyleCell(sheet, borderstabla, currow, i);
+                                }
+                                //tienne que ser entregados/enviados
+                                if(auxRacs.getStatusRact1()!=null){
+
+                                        System.out.println("Entro a enviados 1");
+                                        setExDat(sheet, currow,(2 + (1*2)), auxRacs.getPorcentAvanceRact1() ); //% avance 7**
+
+                                        if(auxRacs.getFechaElaboracRact1()!=null){
+                                            setExDat(sheet, currow,(2 + (1*2)+1), auxRacs.getFechaElaboracRact1().toString() ); //fecha elabora 8***
+                                        }
+                                        else{
+                                            setExDat(sheet, currow,(2 + (1*2)+1), " " ); //fecha elabora 8***
+                                        }
+                                        setStyleCell(sheet, borderstabla, currow, (2 + (1*2)));
+                                        setStyleCell(sheet, borderstabla, currow, (2 + (1*2)+1));
+
+                                }
+                                else{
+                                    setExDat(sheet, currow,(2 + (1*2)), " " ); //% avance 7**
+                                    setExDat(sheet, currow,(2 + (1*2)+1), " " ); //fecha elabora 8***
+                                    setStyleCell(sheet, borderstabla, currow, (2 + (1*2)));
+                                    setStyleCell(sheet, borderstabla, currow, (2 + (1*2)+1));
+                                }
+
+
+                                if(auxRacs.getStatusRact2()!=null){
+
+                                        setExDat(sheet, currow,(2 + (2*2)), auxRacs.getPorcentAvanceRact2() ); //% avance 7**
+
+                                        if(auxRacs.getFechaElaboracRact2()!=null){
+                                            setExDat(sheet, currow,(2 + (2*2)+1), auxRacs.getFechaElaboracRact2().toString() ); //fecha elabora 8***
+                                        }
+                                        else{
+                                            setExDat(sheet, currow,(2 + (2*2)+1)," " ); //fecha elabora 8***
+                                        }
+                                        setStyleCell(sheet, borderstabla, currow, (2 + (2*2)));
+                                        setStyleCell(sheet, borderstabla, currow, (2 + (2*2)+1));
+
+                                }else{
+                                    setExDat(sheet, currow,(2 + (2*2)), " " ); //% avance 7**
+                                    setExDat(sheet, currow,(2 + (2*2)+1), " " ); //fecha elabora 8***
+                                    setStyleCell(sheet, borderstabla, currow, (2 + (2*2)));
+                                    setStyleCell(sheet, borderstabla, currow, (2 + (2*2)+1));
+                                }
+
+                                if(auxRacs.getStatusRact3()!=null){
+
+                                        setExDat(sheet, currow,(2 + (3*2)), auxRacs.getPorcentAvanceRact3() ); //% avance 7**
+                                        if(auxRacs.getFechaElaboracRact3()!=null){
+                                            setExDat(sheet, currow,(2 + (3*2)+1), auxRacs.getFechaElaboracRact3().toString() ); //fecha elabora 8***
+                                        }
+                                        else{
+                                            setExDat(sheet, currow,(2 + (3*2)+1), " " ); //fecha elabora 8***
+                                        }
+                                        setStyleCell(sheet, borderstabla, currow, (2 + (3*2)));
+                                        setStyleCell(sheet, borderstabla, currow, (2 + (3*2)+1));
+
+                                }
+                                else{
+                                    setExDat(sheet, currow,(2 + (3*2)), " "  ); //% avance 7**
+                                    setExDat(sheet, currow,(2 + (3*2)+1), " " ); //fecha elabora 8***
+                                    setStyleCell(sheet, borderstabla, currow, (2 + (3*2)));
+                                    setStyleCell(sheet, borderstabla, currow, (2 + (3*2)+1));   
+                                }
+
+
+                                currow++;
+                            }
+                        }
+                        // delfindelfor
+                        
+                        //fin de codigo e imrpesion de cabezera
+                        sheet = cabezeraGeneralExcel(sheet,uabcLogo,style);
+                    }
+                                                
+                }// fin del for por plan de estudios     
+            }// fin de si es por entregados if(entregados)
+        }//fin de unidad de aprendizaje
+        
+        if(criterio.equalsIgnoreCase("profesor")){
+           HSSFSheet sheet = workbook.createSheet("Graficos");
+           nombreLibro = "- Profesor";
+
+           if(reporte.equalsIgnoreCase("entregados") || 
+                   reporte.equalsIgnoreCase("noentregados") || 
+                   reporte.equalsIgnoreCase("entregadosynoentregados") || 
+                   //Aqui modifique Jesus Ruelas 26 oct 2015
+                   reporte.equalsIgnoreCase("entregadosatiempo") || 
+                   reporte.equalsIgnoreCase("entregadosdespueslimite") || 
+                   reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues") ||                    
+                   //Aqui modifique Jesus Ruelas 26 oct 2015
+                   reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo") || 
+                   reporte.equalsIgnoreCase("Porcentaje de Avance Global Incompleto") || 
+                   reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo e Incompleto") ){
+               
+               if(reporte.equalsIgnoreCase("entregados"))
+                nombreLibro = "Entregados " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("noentregados"))
+                nombreLibro = "No Entregados " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("entregadosynoentregados"))
+                nombreLibro = "Entregados Y No Entregados " + nombreLibro;
+               
+               //Aqui modifique Jesus Ruelas 26 oct 2015               
+               if(reporte.equalsIgnoreCase("entregadosatiempo"))
+                nombreLibro = "Entregados a tiempo " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("entregadosdespueslimite"))
+                nombreLibro = "Entregados después de fecha límite " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues"))
+                nombreLibro = "Entregados a tiempo y despues de fecha límite " + nombreLibro;
+               //Aqui modifique Jesus Ruelas 26 oct 2015
+               
+               if(reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo"))
+                nombreLibro = "Porcentaje de Avance Global Completo " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("Porcentaje de Avance Global Incompleto"))
+                nombreLibro = "Porcentaje de Avance Global Incompleto " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo e Incompleto"))
+                nombreLibro = "Porcentaje de Avance Global Completo e Incompleto " + nombreLibro;
+         
+                //definimos encabezado
+                //sheet = cabezeraGeneralExcel(sheet,uabcLogo,style);
+                
+                //mostraremos tabla con
+                // Programas educativos //  Total Racs entregados // Total Esperados
+                //preparamos informacion para insertar
+                List<Programaeducativo> programasByUnidad = getProgramasByUnidad();
+                List<Profesor> profesoresByUAprend = getProfesoresByUnidadAprendisajeClave();
+
+                /* Programacion de Hojas*/
+                for(Profesor prof: profesoresByUAprend){
+                    if( selectProfesor.contains( Integer.toString( prof.getPronumeroEmpleado()) ) ){
+                        //aqui creamos la hoja para el programa
+                        
+                        ArrayList <ReporteAvanceAux> tempListAux = new ArrayList<ReporteAvanceAux>();        
+                        for(ReporteAvanceAux aux : listaAux){
+                            if( aux.reporteAvance.getUnidadaprendizajeImparteProfesor().getProfesor().getPronumeroEmpleado() == prof.getPronumeroEmpleado())
+                            {
+                                tempListAux.add(aux);
+                            }
+                        }
+                        
+                        //// de este for
+                        // para no imprirmir hojas vacias
+                        if(tempListAux.size()>0){
+                        
+                            String nompreP = tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getPronombre();
+                            String apellidoPP = tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getProapellidoPaterno();
+                            String apellidoPM = tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getProapellidoMaterno();
+                            
+                            sheet = workbook.createSheet(String.valueOf(prof.getPronumeroEmpleado()));
+                            //sheet = cabezeraGeneralExcel(sheet,uabcLogo,style); lo moveremos al final de la hoja para que no sea mdoficada la imagen
+                            setExDat(sheet, 8, 3, "Concentrado de Reporte de Avance de Contenido Temático de Entregados por Profesor "+prof.getPronumeroEmpleado()+" "+apellidoPP+ " "+apellidoPM+ " "+nompreP);
+
+                            boolean autotam = true;
+
+                            int currow = 18;
+                            
+                            //Aqui modifique Jesus Ruelas 26 oct 2015
+                            if(reporte.equalsIgnoreCase("entregadosatiempo")||
+                                reporte.equalsIgnoreCase("entregadosdespueslimite")||
+                                    reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues")){
+                             if(ract.equalsIgnoreCase("1")||ract.equalsIgnoreCase("2")||ract.equalsIgnoreCase("3")){
+                            setExDat(sheet, currow,1, "Fecha Corte" );
+                            setExDat(sheet, currow,2, "Fecha Límite" );
+                            currow++;                            
+                            setExDat(sheet, currow,1, tempListAux.get(0).getFechaCorte().toString() );
+                            setExDat(sheet, currow,2, tempListAux.get(0).getFechaLimite().toString() );                            
+                            currow++;
+                            currow++;
+                             }else{
+                              setExDat(sheet, currow,1, "Fecha Corte Ract 1" );
+                              setExDat(sheet, currow,2, "Fecha Límite Ract 1" );
+                              currow++;                            
+                              setExDat(sheet, currow,1, tempListAux.get(0).getFechaCorteRact1().toString() );
+                              setExDat(sheet, currow,2, tempListAux.get(0).getFechaLimiteRact1().toString() );
+                              //currow++;                       
+                              setExDat(sheet, currow-1,4, "Fecha Corte Ract 2" );
+                              setExDat(sheet, currow-1,5, "Fecha Límite Ract 2" );
+                              //currow++;                            
+                              setExDat(sheet, currow,4, tempListAux.get(0).getFechaCorteRact2().toString() );
+                              setExDat(sheet, currow,5, tempListAux.get(0).getFechaLimiteRact2().toString() );                            
+                              //currow++;                       
+                              setExDat(sheet, currow-1,7, "Fecha Corte Ract 3" );
+                              setExDat(sheet, currow-1,8, "Fecha Límite Ract 3" );
+                              //currow++;                            
+                              setExDat(sheet, currow,7, tempListAux.get(0).getFechaCorteRact3().toString() );
+                              setExDat(sheet, currow,8, tempListAux.get(0).getFechaLimiteRact3().toString() ); 
+                            currow++;
+                            currow++;   
+                             }
+                            }
+                            //Aqui modifique Jesus Ruelas 26 oct 2015
+                            
+                            //autosize para la columna
+                            if(autotam){
+                                sheet.autoSizeColumn(2);
+                                sheet.autoSizeColumn(4);
+                                sheet.autoSizeColumn(11);
+                                autotam = false;
+                            }
+                            // para formatear toda la linea
+                            for(int i=1;i<=9;i++){
+                              setStyleCell(sheet, headerTabla, currow, i);  
+                            }
+                            currow++;
+                            
+                            
+                            
+                            //reporteAvance.unidadaprendizajeImparteProfesor.profesor.pronumeroEmpleado
+//                                setExDat(sheet, currow,3, tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getPronumeroEmpleado() ); //numero empleado
+//                                setExDat(sheet, currow,4, apellidoPP+ " "+apellidoPM+ " "+nompreP ); //nombre maestro
+//                                setExDat(sheet, currow,5, tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getGrupo().getGponumero() + "-"+ auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUiptipoSubgrupo()  + "-"+ auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUipsubgrupo() ); //grupo numero
+
+                            setExDat(sheet, currow,1, "Clave unidad de aprendizaje" );
+                            setExDat(sheet, currow,2, "Unidad de aprendizaje" );
+                            setExDat(sheet, currow,3, "Area de conocimiento" );                            
+                            setExDat(sheet, currow,4, "Grupo" );
+                            setExDat(sheet, currow,5, "% Avance 1er reporte" );
+                            setExDat(sheet, currow,6, "Fecha de elaboración 1er RACT" );
+                            setExDat(sheet, currow,7, "% Avance 2do reporte" );
+                            setExDat(sheet, currow,8, "Fecha de elaboración 2do RACT" );
+                            setExDat(sheet, currow,9, "% Avance 3er reporte" );
+                            setExDat(sheet, currow,10, "Fecha de elaboración 3er RACT" );
+                            currow++;
+                            
+                            for(ReporteAvanceAux auxRacs :tempListAux){
+
+                                //marcamos bordes
+                                for(int i=1;i<=11;i++){
+                                    setExDat(sheet, currow,i," ");
+                                }
+                                for(int i=1;i<=11;i++){
+                                    setStyleCell(sheet, borderstabla, currow, i);
+                                }
+
+                                
+                            
+                            
+                            //currow++;
+                            int claveUnidadApren = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave();
+                            String nombreUnidad = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapnombre();
+                            String areaCon = auxRacs.getAreaConocimiento().getAconombre();
+                            //String grupo = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getGrupo().getAreaConocimiento();
+
+                            int uniprofeTemp = 0 ;
+                            
+                            uniprofeTemp = claveUnidadApren;
+                            setExDat(sheet, currow,1, claveUnidadApren ); //clave
+                            setExDat(sheet, currow,2, nombreUnidad ); //clave
+                            setExDat(sheet, currow,3, areaCon ); //nombre unidad                           
+                            setExDat(sheet, currow,4, auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getGrupo().getGponumero() + "-"+ auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUiptipoSubgrupo()  + "-"+ auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUipsubgrupo() ); //grupo numero
+                            
+                                
+
+                                //marcamos bordes
+                                for(int i=1;i<=5;i++){
+                                    setStyleCell(sheet, borderstabla, currow, i);
+                                }
+                                //tienne que ser entregados/enviados
+                                if(auxRacs.getStatusRact1()!=null){
+
+                                        System.out.println("Entro a enviados 1");
+                                        setExDat(sheet, currow,(3 + (1*2)), auxRacs.getPorcentAvanceRact1() ); //% avance 7**
+
+                                        if(auxRacs.getFechaElaboracRact1()!=null){
+                                            setExDat(sheet, currow,(3 + (1*2)+1), auxRacs.getFechaElaboracRact1().toString() ); //fecha elabora 8***
+                                        }
+                                        else{
+                                            setExDat(sheet, currow,(3 + (1*2)+1), " " ); //fecha elabora 8***
+                                        }
+                                        setStyleCell(sheet, borderstabla, currow, (3 + (1*2)));
+                                        setStyleCell(sheet, borderstabla, currow, (3 + (1*2)+1));
+
+                                }
+                                else{
+                                    setExDat(sheet, currow,(3 + (1*2)), " " ); //% avance 7**
+                                    setExDat(sheet, currow,(3 + (1*2)+1), " " ); //fecha elabora 8***
+                                    setStyleCell(sheet, borderstabla, currow, (3 + (1*2)));
+                                    setStyleCell(sheet, borderstabla, currow, (3 + (1*2)+1));
+                                }
+
+
+                                if(auxRacs.getStatusRact2()!=null){
+
+                                        setExDat(sheet, currow,(3 + (2*2)), auxRacs.getPorcentAvanceRact2() ); //% avance 7**
+
+                                        if(auxRacs.getFechaElaboracRact2()!=null){
+                                            setExDat(sheet, currow,(3 + (2*2)+1), auxRacs.getFechaElaboracRact2().toString() ); //fecha elabora 8***
+                                        }
+                                        else{
+                                            setExDat(sheet, currow,(3 + (2*2)+1)," " ); //fecha elabora 8***
+                                        }
+                                        setStyleCell(sheet, borderstabla, currow, (3 + (2*2)));
+                                        setStyleCell(sheet, borderstabla, currow, (3 + (2*2)+1));
+
+                                }else{
+                                    setExDat(sheet, currow,(3 + (2*2)), " " ); //% avance 7**
+                                    setExDat(sheet, currow,(3 + (2*2)+1), " " ); //fecha elabora 8***
+                                    setStyleCell(sheet, borderstabla, currow, (3 + (2*2)));
+                                    setStyleCell(sheet, borderstabla, currow, (3 + (2*2)+1));
+                                }
+
+                                if(auxRacs.getStatusRact3()!=null){
+
+                                        setExDat(sheet, currow,(3 + (3*2)), auxRacs.getPorcentAvanceRact3() ); //% avance 7**
+                                        if(auxRacs.getFechaElaboracRact3()!=null){
+                                            setExDat(sheet, currow,(3 + (3*2)+1), auxRacs.getFechaElaboracRact3().toString() ); //fecha elabora 8***
+                                        }
+                                        else{
+                                            setExDat(sheet, currow,(3 + (3*2)+1), " " ); //fecha elabora 8***
+                                        }
+                                        setStyleCell(sheet, borderstabla, currow, (3 + (3*2)));
+                                        setStyleCell(sheet, borderstabla, currow, (3 + (3*2)+1));
+
+                                }
+                                else{
+                                    setExDat(sheet, currow,(3 + (3*2)), " "  ); //% avance 7**
+                                    setExDat(sheet, currow,(3 + (3*2)+1), " " ); //fecha elabora 8***
+                                    setStyleCell(sheet, borderstabla, currow, (3 + (3*2)));
+                                    setStyleCell(sheet, borderstabla, currow, (3 + (3*2)+1));   
+                                }
+
+
+                                currow++;
+                            }
+                        }
+                        // delfindelfor
+                        
+                        //fin de codigo e imrpesion de cabezera
+                        sheet = cabezeraGeneralExcel(sheet,uabcLogo,style);
+                    }
+                                                
+                }// fin del for por plan de estudios     
+            }// fin de si es por entregados if(entregados)
+        }//fin de profesor
+        
+        if(criterio.equalsIgnoreCase("area_administrativa")){
+           HSSFSheet sheet = workbook.createSheet("Graficos");
+           nombreLibro = "- Area administrativa";
+
+           if(reporte.equalsIgnoreCase("entregados") || 
+                   reporte.equalsIgnoreCase("noentregados") || 
+                   reporte.equalsIgnoreCase("entregadosynoentregados") || 
+                   //Aqui modifique Jesus Ruelas 26 oct 2015
+                   reporte.equalsIgnoreCase("entregadosatiempo") || 
+                   reporte.equalsIgnoreCase("entregadosdespueslimite") || 
+                   reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues") ||                    
+                   //Aqui modifique Jesus Ruelas 26 oct 2015
+                   reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo") || 
+                   reporte.equalsIgnoreCase("Porcentaje de Avance Global Incompleto") || 
+                   reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo e Incompleto") ){
+               
+               if(reporte.equalsIgnoreCase("entregados"))
+                nombreLibro = "Entregados " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("noentregados"))
+                nombreLibro = "No Entregados " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("entregadosynoentregados"))
+                nombreLibro = "Entregados Y No Entregados " + nombreLibro;
+               
+               //Aqui modifique Jesus Ruelas 26 oct 2015               
+               if(reporte.equalsIgnoreCase("entregadosatiempo"))
+                nombreLibro = "Entregados a tiempo " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("entregadosdespueslimite"))
+                nombreLibro = "Entregados después de fecha límite " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues"))
+                nombreLibro = "Entregados a tiempo y despues de fecha límite " + nombreLibro;
+               //Aqui modifique Jesus Ruelas 26 oct 2015
+               
+               if(reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo"))
+                nombreLibro = "Porcentaje de Avance Global Completo " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("Porcentaje de Avance Global Incompleto"))
+                nombreLibro = "Porcentaje de Avance Global Incompleto " + nombreLibro;
+               
+               if(reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo e Incompleto"))
+                nombreLibro = "Porcentaje de Avance Global Completo e Incompleto " + nombreLibro;
+         
+                //definimos encabezado
+                //sheet = cabezeraGeneralExcel(sheet,uabcLogo,style);
+                
+                //mostraremos tabla con
+                // Programas educativos //  Total Racs entregados // Total Esperados
+                //preparamos informacion para insertar
+                List<Programaeducativo> programasByUnidad = getProgramasByUnidad();
+                List<Areaadministrativa> areasByProgEd = getAreasAdminByProgEdClave();                
+
+                //Aqui modifique Jesus Ruelas 28 oct 2015
+                sheet = workbook.createSheet("Hoja 1");
+                int currow = 15;
+                //Aqui modifique Jesus Ruelas 28 oct 2015
+                
+                /* Programacion de Hojas*/
+                for(Areaadministrativa areaAdmin: areasByProgEd){
+                    if( selectAreaAdministrativa.contains( Integer.toString( areaAdmin.getAadid() ) ) ){
+                        //aqui creamos la hoja para el programa
+                        
+                        ArrayList <ReporteAvanceAux> tempListAux = new ArrayList<ReporteAvanceAux>();        
+                        
+                        for(ReporteAvanceAux aux : listaAux){
+                            if( aux.CAAnombre.equalsIgnoreCase(areaAdmin.getAadnombre()) )
+                            {
+                                tempListAux.add(aux);
+                            }
+                        }
+                        
+                        //// de este for
+                        // para no imprirmir hojas vacias
+                        if(tempListAux.size()>0){
+                        
+                            //comente esta linea de abajo Jesus Ruelas - 28 oct 2015
+                            //sheet = workbook.createSheet(areaConocimiento.getAconombre());
+                            
+                            //sheet = cabezeraGeneralExcel(sheet,uabcLogo,style); lo moveremos al final de la hoja para que no sea mdoficada la imagen
+                            setExDat(sheet, 8, 3, "Concentrado de Reporte de Avance de Contenido Temático de Entregados por Area administrativa");
+
+                            boolean autotam = true;
+                            
+                            //currow = currow + 3;
+                            
+                            //Aqui modifique Jesus Ruelas 26 oct 2015
+                            if(reporte.equalsIgnoreCase("entregadosatiempo")||
+                                reporte.equalsIgnoreCase("entregadosdespueslimite")||
+                                    reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues")){
+                             if(ract.equalsIgnoreCase("1")||ract.equalsIgnoreCase("2")||ract.equalsIgnoreCase("3")){
+                            setExDat(sheet, currow,1, "Fecha Corte" );
+                            setExDat(sheet, currow,2, "Fecha Límite" );
+                            currow++;                            
+                            setExDat(sheet, currow,1, tempListAux.get(0).getFechaCorte().toString() );
+                            setExDat(sheet, currow,2, tempListAux.get(0).getFechaLimite().toString() );                            
+                            currow++;
+                            currow++;
+                             }else{
+                              setExDat(sheet, currow,1, "Fecha Corte Ract 1" );
+                              setExDat(sheet, currow,2, "Fecha Límite Ract 1" );
+                              currow++;                            
+                              setExDat(sheet, currow,1, tempListAux.get(0).getFechaCorteRact1().toString() );
+                              setExDat(sheet, currow,2, tempListAux.get(0).getFechaLimiteRact1().toString() );
+                              //currow++;                       
+                              setExDat(sheet, currow-1,4, "Fecha Corte Ract 2" );
+                              setExDat(sheet, currow-1,5, "Fecha Límite Ract 2" );
+                              //currow++;                            
+                              setExDat(sheet, currow,4, tempListAux.get(0).getFechaCorteRact2().toString() );
+                              setExDat(sheet, currow,5, tempListAux.get(0).getFechaLimiteRact2().toString() );                            
+                              //currow++;                       
+                              setExDat(sheet, currow-1,7, "Fecha Corte Ract 3" );
+                              setExDat(sheet, currow-1,8, "Fecha Límite Ract 3" );
+                              //currow++;                            
+                              setExDat(sheet, currow,7, tempListAux.get(0).getFechaCorteRact3().toString() );
+                              setExDat(sheet, currow,8, tempListAux.get(0).getFechaLimiteRact3().toString() ); 
+                            currow++;
+                            currow++;   
+                             }
+                            }
+                            //Aqui modifique Jesus Ruelas 26 oct 2015
+                            
+                            //autosize para la columna
+                            if(autotam){
+                                sheet.autoSizeColumn(2);
+                                sheet.autoSizeColumn(4);
+                                sheet.autoSizeColumn(11);
+                                autotam = false;
+                            }
+                            // para formatear toda la linea
+                            for(int i=1;i<=11;i++){
+                              setStyleCell(sheet, headerTabla, currow, i);  
+                            }
+                            currow++;
+
+                            //Boolean siguienteAreaAdmin = true;
+                            String CAAnombreActual="";
+                            
+                            int uniprofeTemp = 0 ; 
+                            for(ReporteAvanceAux auxRacs :tempListAux){
+
+                            if(!(CAAnombreActual.equalsIgnoreCase(auxRacs.getCAAnombre()))){    
+                                CAAnombreActual=auxRacs.getCAAnombre();
+                           // currow=currow+2;
+                            setExDat(sheet, currow,1, "Area de conocimiento" );
+                            setExDat(sheet, currow,2, "Area administrativa" );
+                            currow++;
+                            setExDat(sheet, currow,1, auxRacs.getAreaConocimiento().getAconombre() ); //clave
+                            setExDat(sheet, currow,2, auxRacs.getCAAnombre() ); //nombre unidad                            
+                            currow = currow+2;
+                                
+                                //marcamos bordes
+                                for(int i=1;i<=11;i++){
+                                    setExDat(sheet, currow,i," ");
+                                }
+                                for(int i=1;i<=11;i++){
+                                    setStyleCell(sheet, borderstabla, currow, i);
+                                }
+
+                            setExDat(sheet, currow,1, "Clave unidad de aprendizaje" );
+                            setExDat(sheet, currow,2, "Unidad de aprendizaje" );
+                            setExDat(sheet, currow,3, "No. de empleado" );
+                            setExDat(sheet, currow,4, "Nombre del profesor" );
+                            setExDat(sheet, currow,5, "Grupo" );
+                            setExDat(sheet, currow,6, "% Avance 1er reporte" );
+                            setExDat(sheet, currow,7, "Fecha de elaboración 1er RACT" );
+                            setExDat(sheet, currow,8, "% Avance 2do reporte" );
+                            setExDat(sheet, currow,9, "Fecha de elaboración 2do RACT" );
+                            setExDat(sheet, currow,10, "% Avance 3er reporte" );
+                            setExDat(sheet, currow,11, "Fecha de elaboración 3er RACT" );
+                            currow++;    
+                            }
+                                String nompreP = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getPronombre();
+                                String apellidoPP = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getProapellidoPaterno();
+                                String apellidoPM = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getProapellidoMaterno();
+                                int claveUnidadApren = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave();
+                                String nombreUnidad = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapnombre();
+
+                                uniprofeTemp = claveUnidadApren;
+                                setExDat(sheet, currow,1, claveUnidadApren ); //clave
+                                setExDat(sheet, currow,2, nombreUnidad ); //nombre unidad
+                                //reporteAvance.unidadaprendizajeImparteProfesor.profesor.pronumeroEmpleado
+                                setExDat(sheet, currow,3, auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getPronumeroEmpleado() ); //numero empleado
+                                setExDat(sheet, currow,4, apellidoPP+ " "+apellidoPM+ " "+nompreP ); //nombre maestro
+                                setExDat(sheet, currow,5, auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getGrupo().getGponumero() + "-"+ auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUiptipoSubgrupo()  + "-"+ auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUipsubgrupo() ); //grupo numero
+
+                                //marcamos bordes
+                                for(int i=1;i<=5;i++){
+                                    setStyleCell(sheet, borderstabla, currow, i);
+                                }
+                                //tienne que ser entregados/enviados
+                                if(auxRacs.getStatusRact1()!=null){
+
+                                        System.out.println("Entro a enviados 1");
+                                        setExDat(sheet, currow,(4 + (1*2)), auxRacs.getPorcentAvanceRact1() ); //% avance 7**
+
+                                        if(auxRacs.getFechaElaboracRact1()!=null){
+                                            setExDat(sheet, currow,(4 + (1*2)+1), auxRacs.getFechaElaboracRact1().toString() ); //fecha elabora 8***
+                                        }
+                                        else{
+                                            setExDat(sheet, currow,(4 + (1*2)+1), " " ); //fecha elabora 8***
+                                        }
+                                        setStyleCell(sheet, borderstabla, currow, (4 + (1*2)));
+                                        setStyleCell(sheet, borderstabla, currow, (4 + (1*2)+1));
+
+                                }
+                                else{
+                                    setExDat(sheet, currow,(4 + (1*2)), " " ); //% avance 7**
+                                    setExDat(sheet, currow,(4 + (1*2)+1), " " ); //fecha elabora 8***
+                                    setStyleCell(sheet, borderstabla, currow, (4 + (1*2)));
+                                    setStyleCell(sheet, borderstabla, currow, (4 + (1*2)+1));
+                                }
+
+
+                                if(auxRacs.getStatusRact2()!=null){
+
+                                        setExDat(sheet, currow,(4 + (2*2)), auxRacs.getPorcentAvanceRact2() ); //% avance 7**
+
+                                        if(auxRacs.getFechaElaboracRact2()!=null){
+                                            setExDat(sheet, currow,(4 + (2*2)+1), auxRacs.getFechaElaboracRact2().toString() ); //fecha elabora 8***
+                                        }
+                                        else{
+                                            setExDat(sheet, currow,(4 + (2*2)+1)," " ); //fecha elabora 8***
+                                        }
+                                        setStyleCell(sheet, borderstabla, currow, (4 + (2*2)));
+                                        setStyleCell(sheet, borderstabla, currow, (4 + (2*2)+1));
+
+                                }else{
+                                    setExDat(sheet, currow,(4 + (2*2)), " " ); //% avance 7**
+                                    setExDat(sheet, currow,(4 + (2*2)+1), " " ); //fecha elabora 8***
+                                    setStyleCell(sheet, borderstabla, currow, (4 + (2*2)));
+                                    setStyleCell(sheet, borderstabla, currow, (4 + (2*2)+1));
+                                }
+
+                                if(auxRacs.getStatusRact3()!=null){
+
+                                        setExDat(sheet, currow,(4 + (3*2)), auxRacs.getPorcentAvanceRact3() ); //% avance 7**
+                                        if(auxRacs.getFechaElaboracRact3()!=null){
+                                            setExDat(sheet, currow,(4 + (3*2)+1), auxRacs.getFechaElaboracRact3().toString() ); //fecha elabora 8***
+                                        }
+                                        else{
+                                            setExDat(sheet, currow,(4 + (3*2)+1), " " ); //fecha elabora 8***
+                                        }
+                                        setStyleCell(sheet, borderstabla, currow, (4 + (3*2)));
+                                        setStyleCell(sheet, borderstabla, currow, (4 + (3*2)+1));
+
+                                }
+                                else{
+                                    setExDat(sheet, currow,(4 + (3*2)), " "  ); //% avance 7**
+                                    setExDat(sheet, currow,(4 + (3*2)+1), " " ); //fecha elabora 8***
+                                    setStyleCell(sheet, borderstabla, currow, (4 + (3*2)));
+                                    setStyleCell(sheet, borderstabla, currow, (4 + (3*2)+1));   
+                                }
+
+
+                                currow++;
+                            }
+                        }
+                        // delfindelfor
+                        
+                        //fin de codigo e imrpesion de cabezera
+                        sheet = cabezeraGeneralExcel(sheet,uabcLogo,style);
+                    }
+                                                
+                }// fin del for por plan de estudios     
+            }// fin de si es por entregados if(entregados)
+        }//fin de areas administrativas
         
         //finalizamos con
         //metodo para descargar el objeto
@@ -3485,13 +5183,14 @@ public MeterGaugeChartModel getGaugeModel() {
             ExternalContext externalContext = facesContext.getExternalContext();
             externalContext.setResponseContentType("application/vnd.ms-excel");
             externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\""+nombreLibro+".xls\"");
+            //genera libro
             workbook.write(externalContext.getResponseOutputStream());
             facesContext.responseComplete();
         }
         else{
             System.out.println("No se Genero por: Criterio->"+criterio+" , Reporte->"+reporte);
         }
-    }
+    }// fin de Export2Excel
    
     public HSSFSheet cabezeraGeneralExcel(HSSFSheet sheet,int logouabc,HSSFCellStyle style){
         /* Create the drawing container */
@@ -3764,6 +5463,7 @@ public MeterGaugeChartModel getGaugeModel() {
         reporteUI.setGponumero(gponumero);
         reporteUI.setClave(clavepe);
         reporteUI.setUapclave(uapclave); 
+        reporteUI.setAadid(aadid);
         
         //aqui
         ArrayList<ReporteAux> listaReporte = new ArrayList<ReporteAux>();
@@ -3771,8 +5471,11 @@ public MeterGaugeChartModel getGaugeModel() {
         if(criterio.equalsIgnoreCase("programa_educativo")){
         listaReporte=filtrosBeanHelper.prepararAtribGuardarConsultaProgEd(reporteUI,selectCicloEscolarList, selectProgramEducativo);
         }     
-        if(criterio.equalsIgnoreCase("area_conocimiento")){
+        if((criterio.equalsIgnoreCase("area_conocimiento"))){
         listaReporte=filtrosBeanHelper.prepararAtribGuardarConsultaAreaCon(reporteUI,selectCicloEscolarList,selectPlanesEstudio,selectAreaConocimiento);
+        }
+        if((criterio.equalsIgnoreCase("area_administrativa"))){
+        listaReporte=filtrosBeanHelper.prepararAtribGuardarConsultaAreaAdmin(reporteUI,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
         }
         if(criterio.equalsIgnoreCase("unidad_aprendizaje")){
         listaReporte=filtrosBeanHelper.prepararAtribGuardarConsultaUAprend(reporteUI,selectCicloEscolarList,selectPlanesEstudio,selectAreaConocimiento,selectUnidadAprendisaje,selectGrupo);
@@ -3810,7 +5513,7 @@ public MeterGaugeChartModel getGaugeModel() {
      
         if ((bandera == false)&&!(CTRnombreTemp.equalsIgnoreCase(""))) {
             for (ReporteAux report : listaReporte) {
-                CTRConsultaQuery = filtrosBeanHelper.guardarConsulta(report, tipoReporteCTR, CTRnombre);
+                CTRConsultaQuery = filtrosBeanHelper.guardarConsulta(report, tipoReporteCTR, CTRnombre, aadid);
             }
         }
     
@@ -3849,6 +5552,7 @@ public MeterGaugeChartModel getGaugeModel() {
         reporteUI.setGponumero(gponumero);
         reporteUI.setClave(clavepe);
         reporteUI.setUapclave(uapclave);   
+        reporteUI.setAadid(aadid);
         
         //aqui
         ArrayList<ReporteAux> listaReporte = new ArrayList<ReporteAux>();
@@ -3858,6 +5562,9 @@ public MeterGaugeChartModel getGaugeModel() {
         }     
         if(criterio.equalsIgnoreCase("area_conocimiento")){
         listaReporte=filtrosBeanHelper.prepararAtribGuardarConsultaAreaCon(reporteUI,selectCicloEscolarList,selectPlanesEstudio,selectAreaConocimiento);
+        }
+        if((criterio.equalsIgnoreCase("area_administrativa"))){
+        listaReporte=filtrosBeanHelper.prepararAtribGuardarConsultaAreaAdmin(reporteUI,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
         }
         if(criterio.equalsIgnoreCase("unidad_aprendizaje")){
         listaReporte=filtrosBeanHelper.prepararAtribGuardarConsultaUAprend(reporteUI,selectCicloEscolarList,selectPlanesEstudio,selectAreaConocimiento,selectUnidadAprendisaje,selectGrupo);
@@ -3894,7 +5601,7 @@ public MeterGaugeChartModel getGaugeModel() {
          if(!listaReporte.isEmpty()&&!(CTRnombreTemp.equalsIgnoreCase(""))){
             for (ReporteAux report : listaReporte) {
                 //filtrosBeanHelper.modificarConsulta(report, tipoReporteCTR, CTRnombre, listaIdCTR.get(cont));
-                filtrosBeanHelper.guardarConsulta(report, tipoReporteCTR, CTRnombre);
+                filtrosBeanHelper.guardarConsulta(report, tipoReporteCTR, CTRnombre,aadid);
                 cont++;
             }
          }
@@ -4042,8 +5749,11 @@ public MeterGaugeChartModel getGaugeModel() {
         if(tipoReporteCTR.contains("ProgEd")){
             fijarConsultaReporteGuardadoActualProgEd(catReportDatosSelec2);
         }
-        if(tipoReporteCTR.contains("AreaCon")){
+        if((tipoReporteCTR.contains("AreaCon"))){
             fijarConsultaReporteGuardadoActualAreaCon(catReportDatosSelec2);
+        }
+        if((tipoReporteCTR.contains("AreaAdmin"))){
+            fijarConsultaReporteGuardadoActualAreaAdmin(catReportDatosSelec2);
         }
         if(tipoReporteCTR.contains("UAGrupo")){
             fijarConsultaReporteGuardadoActualUAprend(catReportDatosSelec2);
@@ -4086,6 +5796,7 @@ public MeterGaugeChartModel getGaugeModel() {
         selectProfesor.clear();
         selectGrupo.clear();
         selectUnidadAprendisaje.clear();
+        selectAreaAdministrativa.clear();
         
         for (Catalogoreportes cr : catReportDatosSelec2) {
 
@@ -4179,6 +5890,8 @@ public MeterGaugeChartModel getGaugeModel() {
 
     //toma el valor para uapclave
 //    reporteUI.setUapclave(Integer.parseInt(uapclaveSTRArray[1]));
+            String aadidSTRArray[] = CTRConsultaQueryArray[10].split(":");
+            
             System.out.println(" ");
 
 //    CTRConsultaQuery="tipoReporte:"+tipoReporte+"#"+"numRact:"+reporte.getNumRact()+"#"+
@@ -4194,6 +5907,7 @@ public MeterGaugeChartModel getGaugeModel() {
         ArrayList<String> selectProgramaEducativo2 = new ArrayList<String>();
         ArrayList<String> selectCicloEscolarList2 = new ArrayList<String>();
         ArrayList<String> selectAreaConocimientoList2 = new ArrayList<String>();
+        //ArrayList<String> selectAreaAdministrativaList2 = new ArrayList<String>();
         ArrayList<String> selectPlanesEstudioList2 = new ArrayList<String>();
         //List<Programaeducativo> todosProgEd = programaEducativoDelegate.getListaProgramaeducativo();
 
@@ -4206,6 +5920,7 @@ public MeterGaugeChartModel getGaugeModel() {
         selectProfesor.clear();
         selectGrupo.clear();
         selectUnidadAprendisaje.clear();
+        selectAreaAdministrativa.clear();
         
         for (Catalogoreportes cr : catReportDatosSelec2) {
 
@@ -4321,6 +6036,209 @@ public MeterGaugeChartModel getGaugeModel() {
 //    reporteUI.setClave(Integer.parseInt(claveSTRArray[1]));
             String uapclaveSTRArray[] = CTRConsultaQueryArray[9].split(":");
 
+            
+            String aadidSTRArray[] = CTRConsultaQueryArray[10].split(":");
+
+    //toma el valor para acoclave
+//    reporteUI.setAcoclave(Integer.parseInt(acoclaveSTRArray[1]));
+            
+//            bandera=false;
+//            
+//            for(String selAreaAdmin :selectAreaAdministrativa){
+//                if(selAreaAdmin.equalsIgnoreCase(aadidSTRArray[1])){
+//                    bandera=true;
+//                }
+//            }            
+//            if(!bandera){
+//            selectAreaAdministrativaList2.add(aadidSTRArray[1]);
+//            setSelectAreaAdministrativa(selectAreaAdministrativaList2);
+//            }
+            
+    //toma el valor para uapclave
+//    reporteUI.setUapclave(Integer.parseInt(uapclaveSTRArray[1]));
+            System.out.println(" ");
+
+//    CTRConsultaQuery="tipoReporte:"+tipoReporte+"#"+"numRact:"+reporte.getNumRact()+"#"+
+//             "cescicloEscolar:"+reporte.getCescicloEscolar()+"#"+"acoclave:"+reporte.getAcoclave()+"#"+
+//             "clavepe:"+reporte.getClavepe()+"#"+"pesvigencia:"+reporte.getPesvigencia()+"#"+
+//             "pronumeroEmpleado:"+reporte.getPronumeroEmpleado()+"#"+"gponumero:"+reporte.getGponumero()+"#"+
+//             "clave:"+reporte.getClavepe()+"#"+"uapclave:"+reporte.getUapclave();
+            //hasta aqui codigo de test
+        }
+        
+//        String areaConTemp;
+//        int cont=0;
+//        
+//        ArrayList<String> selectAreaConTemp = new ArrayList<String>();
+//        
+//        selectAreaConTemp.addAll(selectAreaConocimiento);
+//        
+//        for(String selAcon:selectAreaConTemp){
+//            cont=0;
+//            for(String selAcon2:selectAreaConTemp){
+//                if(selAcon.equalsIgnoreCase(selAcon2)){
+//                    if(cont>=2){
+//                    areaConTemp=selAcon;    
+//                    selectAreaConocimiento.remove(areaConTemp);                    
+//                    }
+//                    cont++;
+//                }                
+//            }
+//        }
+        
+    }
+    
+    public void fijarConsultaReporteGuardadoActualAreaAdmin(ArrayList<Catalogoreportes> catReportDatosSelec2){
+        ArrayList<String> selectProgramaEducativo2 = new ArrayList<String>();
+        ArrayList<String> selectCicloEscolarList2 = new ArrayList<String>();
+        //ArrayList<String> selectAreaConocimientoList2 = new ArrayList<String>();
+        ArrayList<String> selectAreaAdministrativaList2 = new ArrayList<String>();
+        ArrayList<String> selectPlanesEstudioList2 = new ArrayList<String>();
+        //List<Programaeducativo> todosProgEd = programaEducativoDelegate.getListaProgramaeducativo();
+
+        boolean bandera=false;
+        
+        selectCicloEscolarList.clear();
+        selectAreaConocimiento.clear();
+        selectProgramEducativo.clear();
+        selectPlanesEstudio.clear();
+        selectProfesor.clear();
+        selectGrupo.clear();
+        selectUnidadAprendisaje.clear();
+        selectAreaAdministrativa.clear();
+        
+        for (Catalogoreportes cr : catReportDatosSelec2) {
+
+            String CTRConsultaQuery = cr.getCtrconsultaQuery();
+
+            String CTRConsultaQueryArray[] = CTRConsultaQuery.split("#");
+
+        //muestra cada atributo correctamente guardado
+            String tipoReporteSTRArray[] = CTRConsultaQueryArray[0].split(":");
+
+            //toma el valor para tipoReporteUI
+            String tipoReporteUI = tipoReporteSTRArray[1];
+            
+            fijarReporteYCriterio(tipoReporteUI);
+            
+            
+            String numRactSTRArray[] = CTRConsultaQueryArray[1].split(":");
+
+    //toma el valor para numRact
+            //reporteUI.setNumRact(Integer.parseInt(numRactSTRArray[1]));
+            setRact(numRactSTRArray[1]);
+            setNumRact(Integer.parseInt(numRactSTRArray[1]));
+
+            String cescicloEscolarSTRArray[] = CTRConsultaQueryArray[2].split(":");
+
+    //toma el valor para cescicloEscolar
+            //reporteUI.setCescicloEscolar(cescicloEscolarSTRArray[1]); 
+            bandera=false;
+            
+            for(String selCicloEs :selectCicloEscolarList){
+                if(selCicloEs.equalsIgnoreCase(cescicloEscolarSTRArray[1])){
+                    bandera=true;
+                }
+            }
+            if(!bandera){
+            selectCicloEscolarList2.add(cescicloEscolarSTRArray[1]);
+            setSelectCicloEscolar(selectCicloEscolarList2);
+            }
+            
+            String acoclaveSTRArray[] = CTRConsultaQueryArray[3].split(":");
+
+    //toma el valor para acoclave
+//    reporteUI.setAcoclave(Integer.parseInt(acoclaveSTRArray[1]));
+            
+//            bandera=false;
+//            
+//            for(String selAreaCon :selectAreaConocimiento){
+//                if(selAreaCon.equalsIgnoreCase(acoclaveSTRArray[1])){
+//                    bandera=true;
+//                }
+//            }            
+//            if(!bandera){
+//            selectAreaConocimientoList2.add(acoclaveSTRArray[1]);
+//            setSelectAreaConocimiento(selectAreaConocimientoList2);
+//            }
+            
+            String clavepeSTRArray[] = CTRConsultaQueryArray[4].split(":");
+
+    //toma el valor para clavepe
+            //reporteUI.setClavepe(Integer.parseInt(clavepeSTRArray[1]));
+            //setSelectProgramaEducativo(Integer.parseInt(clavepeSTRArray[1]));    
+//            int clavePe = -1;
+//            for (Programaeducativo pe : todosProgEd) {
+//                if (pe.getPedclave() == (Integer.parseInt(clavepeSTRArray[1]))) {
+//                    clavePe = pe.getPedclave();
+//                }
+//            }
+            bandera=false;
+            
+            //for(String selPE :selectProgramEducativo){
+            //    if(selPE.equalsIgnoreCase(clavepeSTRArray[1])){
+            //        bandera=true;
+            //    }
+            //}
+            if(!bandera){
+            int clavePe=Integer.parseInt(clavepeSTRArray[1]);
+            selectProgramaEducativo2.add(String.valueOf(clavePe));
+            setSelectProgramEducativo(selectProgramaEducativo2);
+            programaeducativo.setPedclave(clavePe);
+            }
+            System.out.println("**************************(1)*******************************");
+            System.out.println("programaeducativo clavePe(fijarEjecutarQuery): "+programaeducativo.getPedclave());
+            System.out.println("**************************(1)*******************************");
+
+            String pesvigenciaSTRArray[] = CTRConsultaQueryArray[5].split(":");
+
+    //toma el valor para pesvigencia
+//    reporteUI.setPesvigencia(pesvigenciaSTRArray[1]);
+             
+            bandera=false;
+            
+            for(String selPlanE :selectPlanesEstudio){
+                if(selPlanE.equalsIgnoreCase(pesvigenciaSTRArray[1])){
+                    bandera=true;
+                }
+            }
+            if(!bandera){
+            selectPlanesEstudioList2.add(pesvigenciaSTRArray[1]);
+            setSelectPlanesEstudio(selectPlanesEstudioList2);
+            }
+            
+            String pronumeroEmpleadoSTRArray[] = CTRConsultaQueryArray[6].split(":");
+
+    //toma el valor para pronumeroEmpleado
+//    reporteUI.setPronumeroEmpleado(Integer.parseInt(pronumeroEmpleadoSTRArray[1]));
+            String gponumeroSTRArray[] = CTRConsultaQueryArray[7].split(":");
+
+    //toma el valor para pronumeroEmpleado
+//    reporteUI.setGponumero(Integer.parseInt(gponumeroSTRArray[1]));
+            String claveSTRArray[] = CTRConsultaQueryArray[8].split(":");
+
+    //toma el valor para clave(clavepe)
+//    reporteUI.setClave(Integer.parseInt(claveSTRArray[1]));
+            String uapclaveSTRArray[] = CTRConsultaQueryArray[9].split(":");
+
+            
+            String aadidSTRArray[] = CTRConsultaQueryArray[10].split(":");
+
+    //toma el valor para acoclave
+//    reporteUI.setAcoclave(Integer.parseInt(acoclaveSTRArray[1]));
+            
+            bandera=false;
+            
+            for(String selAreaAdmin :selectAreaAdministrativa){
+                if(selAreaAdmin.equalsIgnoreCase(aadidSTRArray[1])){
+                    bandera=true;
+                }
+            }            
+            if(!bandera){
+            selectAreaAdministrativaList2.add(aadidSTRArray[1]);
+            setSelectAreaAdministrativa(selectAreaAdministrativaList2);
+            }
+            
     //toma el valor para uapclave
 //    reporteUI.setUapclave(Integer.parseInt(uapclaveSTRArray[1]));
             System.out.println(" ");
@@ -4372,6 +6290,7 @@ public MeterGaugeChartModel getGaugeModel() {
         selectProfesor.clear();
         selectGrupo.clear();
         selectUnidadAprendisaje.clear();
+        selectAreaAdministrativa.clear();
         
         for (Catalogoreportes cr : catReportDatosSelec2) {
 
@@ -4517,6 +6436,8 @@ public MeterGaugeChartModel getGaugeModel() {
             setSelectUnidadAprendisaje(selectUapclaveList2);
             }
             
+            String aadidSTRArray[] = CTRConsultaQueryArray[10].split(":");
+            
             System.out.println(" ");
 
 //    CTRConsultaQuery="tipoReporte:"+tipoReporte+"#"+"numRact:"+reporte.getNumRact()+"#"+
@@ -4546,6 +6467,7 @@ public MeterGaugeChartModel getGaugeModel() {
         selectProfesor.clear();
         selectGrupo.clear();
         selectUnidadAprendisaje.clear();
+        selectAreaAdministrativa.clear();
         
         for (Catalogoreportes cr : catReportDatosSelec2) {
 
@@ -4703,6 +6625,8 @@ public MeterGaugeChartModel getGaugeModel() {
             setSelectUnidadAprendisaje(selectUapclaveList2);
             }
             
+            String aadidSTRArray[] = CTRConsultaQueryArray[10].split(":");
+            
             System.out.println(" ");
 
 //    CTRConsultaQuery="tipoReporte:"+tipoReporte+"#"+"numRact:"+reporte.getNumRact()+"#"+
@@ -4763,6 +6687,24 @@ public MeterGaugeChartModel getGaugeModel() {
         if(tipoReporteUI.equalsIgnoreCase("fueraTiempoAreaConTodosRacts")){            
             setReporte("entregadosdespueslimite");            
             setCriterio("area_conocimiento");            
+        }
+        
+        //ATiempoAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("ATiempoAreaAdmin")){                         
+            setReporte("entregadosatiempo");            
+            setCriterio("area_administrativa");            
+        }
+        
+        //ATiempoAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("ATiempoAreaAdminTodosRacts")){
+            setReporte("entregadosatiempo");            
+            setCriterio("area_administrativa");            
+        }
+        
+        //fueraTiempoAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("fueraTiempoAreaAdminTodosRacts")){            
+            setReporte("entregadosdespueslimite");            
+            setCriterio("area_administrativa");            
         }
         
         //ATiempoProfGrupo
@@ -4831,6 +6773,18 @@ public MeterGaugeChartModel getGaugeModel() {
             setCriterio("area_conocimiento");            
         }
         
+        //ATiempoYNoYEnLimiteAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("ATiempoYNoYEnLimiteAreaAdmin")){                         
+            setReporte("entregadosatiempoenfechalimiteydespues");            
+            setCriterio("area_administrativa");            
+        }
+        
+        //ATiempoYNoYEnLimiteAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("ATiempoYNoYEnLimiteAreaAdminTodosRacts")){                         
+            setReporte("entregadosatiempoenfechalimiteydespues");
+            setCriterio("area_administrativa");            
+        }
+        
         //ATiempoYNoYEnLimiteProfGrupo
         if(tipoReporteUI.equalsIgnoreCase("ATiempoYNoYEnLimiteProfGrupo")){            
             setReporte("entregadosatiempoenfechalimiteydespues");
@@ -4897,6 +6851,36 @@ public MeterGaugeChartModel getGaugeModel() {
             setCriterio("area_conocimiento");            
         }
         
+        //PAGCAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("PAGCAreaAdmin")){                         
+            setReporte("Porcentaje de Avance Global Incompleto");            
+            setCriterio("area_administrativa");            
+        }
+        
+        //PAGCAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("PAGCAreaAdminTodosRacts")){                         
+            setReporte("Porcentaje de Avance Global Incompleto");            
+            setCriterio("area_administrativa");            
+        }
+        
+        //PAGCCompletoAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("PAGCCompletoAreaAdminTodosRacts")){             
+            setReporte("Porcentaje de Avance Global Completo");            
+            setCriterio("area_administrativa");            
+        }
+        
+        //PAGCCompletoAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("PAGCCompletoAreaAdmin")){             
+            setReporte("Porcentaje de Avance Global Completo");            
+            setCriterio("area_administrativa");            
+        }
+        
+        //PAGCompletoEIncompletoAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("PAGCompletoEIncompletoAreaAdmin")){                        
+            setReporte("Porcentaje de Avance Global Completo e Incompleto");
+            setCriterio("area_administrativa");            
+        }
+        
         //PAGCompletoEIncompletoProfGrupo
         if(tipoReporteUI.equalsIgnoreCase("PAGCompletoEIncompletoProfGrupo")){            
             setReporte("Porcentaje de Avance Global Completo e Incompleto");
@@ -4937,6 +6921,12 @@ public MeterGaugeChartModel getGaugeModel() {
         if(tipoReporteUI.equalsIgnoreCase("PAGCompletosYNoAreaConTodosRacts")){                         
             setReporte("Porcentaje de Avance Global Completo e Incompleto");
             setCriterio("area_conocimiento");            
+        }
+        
+        //PAGCompletosYNoAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("PAGCompletosYNoAreaAdminTodosRacts")){                         
+            setReporte("Porcentaje de Avance Global Completo e Incompleto");
+            setCriterio("area_administrativa");            
         }
         
         //PAGCompletosYNoProfGrupoTodosRacts
@@ -5023,6 +7013,18 @@ public MeterGaugeChartModel getGaugeModel() {
             setCriterio("area_conocimiento");                                    
         }
         
+        //enFechaLimiteTiempoAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("enFechaLimiteTiempoAreaAdmin")){                         
+            setReporte("entregadosenfechalimite");            
+            setCriterio("area_administrativa");                                    
+        }
+        
+        //enFechaLimiteTiempoAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("enFechaLimiteTiempoAreaAdminTodosRacts")){             
+            setReporte("entregadosenfechalimite");
+            setCriterio("area_administrativa");                                    
+        }
+        
         //enFechaLimiteTiempoProfGrupo
         if(tipoReporteUI.equalsIgnoreCase("enFechaLimiteTiempoProfGrupo")){            
             setReporte("entregadosenfechalimite");            
@@ -5069,6 +7071,18 @@ public MeterGaugeChartModel getGaugeModel() {
         if(tipoReporteUI.equalsIgnoreCase("entregadosAreaConTodosRacts")){             
             setReporte("entregados");            
             setCriterio("area_conocimiento");                                    
+        }
+        
+        //entregadosAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("entregadosAreaAdmin")){             
+            setReporte("entregados");            
+            setCriterio("area_administrativa");                                    
+        }
+        
+        //entregadosAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("entregadosAreaAdminTodosRacts")){             
+            setReporte("entregados");            
+            setCriterio("area_administrativa");                                    
         }
         
         //entregadosProfGrupo
@@ -5119,6 +7133,18 @@ public MeterGaugeChartModel getGaugeModel() {
             setCriterio("area_conocimiento");                                    
         }
         
+        //entregadosYNoAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("entregadosYNoAreaAdminTodosRacts")){                         
+            setReporte("entregadosynoentregados");
+            setCriterio("area_administrativa");                                    
+        }
+        
+        //entregadosYNoEntregadosAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("entregadosYNoEntregadosAreaAdmin")){                         
+            setReporte("entregadosynoentregados");
+            setCriterio("area_administrativa");                                    
+        }
+        
         //entregadosYNoEntregadosProfGrupo
         if(tipoReporteUI.equalsIgnoreCase("entregadosYNoEntregadosProfGrupo")){            
             setReporte("entregadosynoentregados");
@@ -5161,6 +7187,12 @@ public MeterGaugeChartModel getGaugeModel() {
             setCriterio("area_conocimiento");                                    
         }
         
+        //fueraTiempoAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("fueraTiempoAreaAdmin")){                         
+            setReporte("entregadosdespueslimite");            
+            setCriterio("area_administrativa");                                    
+        }
+        
         //fueraTiempoProfGrupo
         if(tipoReporteUI.equalsIgnoreCase("fueraTiempoProfGrupo")){            
             setReporte("entregadosdespueslimite");            
@@ -5189,6 +7221,18 @@ public MeterGaugeChartModel getGaugeModel() {
         if(tipoReporteUI.equalsIgnoreCase("noEntregadosAreaConTodosRacts")){                         
             setReporte("noentregados");            
             setCriterio("area_conocimiento");                                    
+        }
+        
+        //noEntregadosAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("noEntregadosAreaAdmin")){                         
+            setReporte("noentregados");            
+            setCriterio("area_administrativa");                                    
+        }
+        
+        //noEntregadosAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("noEntregadosAreaAdminTodosRacts")){                         
+            setReporte("noentregados");            
+            setCriterio("area_administrativa");                                    
         }
         
         //noEntregadosProfGrupo
@@ -5888,6 +7932,168 @@ public MeterGaugeChartModel getGaugeModel() {
 //                noEntregadosProgEd();
 //            }
             
+            //area_administrativa
+            
+            //Opciones tipoReporteUI:        
+                
+//            //ATiempoProgEd
+//            if (reporte.equalsIgnoreCase("ATiempoProgEd")&&criterio.equalsIgnoreCase("area_conocimiento")) {
+//                ATiempoProgEd();
+//            }
+
+            //ATiempoProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("entregadosatiempo")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact==4||nRact==0)) {
+                ATiempoAreaAdminTodosRacts(); 
+            }
+            
+            if (reporte.equalsIgnoreCase("entregadosatiempo")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact>0&&nRact<4)) {
+                ATiempoAreaAdmin();
+            }
+
+//            //ATiempoYNoYEnLimiteProgEd
+//            if (reporte.equalsIgnoreCase("ATiempoYNoYEnLimiteProgEd")&&criterio.equalsIgnoreCase("area_conocimiento")) {
+//                ATiempoYNoYEnLimiteProgEd();
+//            }
+
+            //ATiempoYNoYEnLimiteProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact==4||nRact==0)) {
+                ATiempoYNoYEnLimiteAreaAdminTodosRacts();
+            }
+            
+            //ATiempoYNoYEnLimiteProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact>0&&nRact<4)) {
+                ATiempoYNoYEnLimiteAreaAdmin();
+            }
+
+//            //PAGCompletoEIncompletoProgEd
+//            if (reporte.equalsIgnoreCase("PAGCompletoEIncompletoProgEd")&&criterio.equalsIgnoreCase("area_conocimiento")) {
+//               PAGCCompletoEIncompletoProgEd();
+//            }
+
+//            //PAGCompletoProgEd
+//            if (reporte.equalsIgnoreCase("PAGCompletoProgEd")&&criterio.equalsIgnoreCase("area_conocimiento")) {
+//                PAGCCompletoProgEd();
+//            }
+
+            //PAGCompletosYNoProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo e Incompleto")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact==4||nRact==0)) {
+                PAGCCompletosYNoAreaAdminTodosRacts();
+                isPAGCTodosRacts=true;
+            }
+            
+            //PAGCompletosYNoProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo e Incompleto")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact>0&&nRact<4)) {
+                //PAGCCompletoEIncompletoAreaCon();
+                PAGCCompletosYNoAreaAdminTodosRacts();
+                isPAGCTodosRacts=true;
+            }
+
+//            //PAGCProgEd
+//            if (reporte.equalsIgnoreCase("PAGCProgEd")&&criterio.equalsIgnoreCase("area_conocimiento")) {
+//               PAGCProgEd();
+//            }
+
+            //PAGCProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("Porcentaje de Avance Global Incompleto")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact==4||nRact==0)) {
+                PAGCAreaAdminTodosRacts(); 
+                isPAGCTodosRacts=true;
+            }
+            
+            //PAGCProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("Porcentaje de Avance Global Incompleto")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact>0&&nRact<4)) {
+                //PAGCAreaCon(); 
+                PAGCAreaAdminTodosRacts(); 
+                isPAGCTodosRacts=true;
+            }
+
+            //PAGCCompletoProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact==4||nRact==0)) {
+                PAGCCompletoAreaAdminTodosRacts(); 
+                isPAGCTodosRacts=true;
+            }
+            
+            //PAGCCompletoProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("Porcentaje de Avance Global Completo")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact>0&&nRact<4)) {
+                //PAGCCompletoAreaCon();
+                PAGCCompletoAreaAdminTodosRacts(); 
+                isPAGCTodosRacts=true;
+            }
+
+//            //enFechaLimiteTiempoProgEd
+//            if (reporte.equalsIgnoreCase("enFechaLimiteTiempoProgEd")&&criterio.equalsIgnoreCase("area_conocimiento")) {
+//                enFechaLimiteTiempoProgEd();
+//            }
+
+            //enFechaLimiteTiempoProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("entregadosenfechalimite")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact==4||nRact==0)) {
+           //     enFechaLimiteTiempoAreaAdminTodosRacts();
+            }
+            
+            //enFechaLimiteTiempoProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("entregadosenfechalimite")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact>0&&nRact<4)) {
+            //    enFechaLimiteTiempoAreaAdmin();
+            }
+
+//            //entregadosProgEd
+//            if (reporte.equalsIgnoreCase("entregadosProgEd")&&criterio.equalsIgnoreCase("area_conocimiento")) {
+//                entregadosProgEd();
+//            }
+
+            //entregadosProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("entregados")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact==4||nRact==0)) {                
+                entregadosAreaAdminTodosRacts();                
+            }
+            
+            //entregadosProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("entregados")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact>0&&nRact<4)) {                
+                entregadosAreaAdmin();                
+            }
+
+            //noEntregadosProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("noentregados")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact==4||nRact==0)) {
+                noEntregadosAreaAdminTodosRacts();
+            }
+            
+            //noEntregadosProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("noentregados")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact>0&&nRact<4)) {
+                noEntregadosAreaAdmin();
+            }
+
+//            //entregadosYNoEntregadosProgEd
+//            if (reporte.equalsIgnoreCase("entregadosYNoEntregadosProgEd")&&criterio.equalsIgnoreCase("area_conocimiento")) {
+//                entregadosYNoEntregadosProgEd();
+//            }
+
+            //entregadosYNoProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("entregadosynoentregados")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact==4||nRact==0)) {
+                entregadosYNoAreaAdminTodosRacts();
+            }
+            
+            //entregadosYNoProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("entregadosynoentregados")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact>0&&nRact<4)) {
+                entregadosYNoEntregadosAreaAdmin();
+            }
+
+//            //fueraTiempoProgEd
+//            if (reporte.equalsIgnoreCase("fueraTiempoProgEd")&&criterio.equalsIgnoreCase("area_conocimiento")) {
+//                fueraTiempoProgEd();
+//            }
+
+            //fueraTiempoProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("entregadosdespueslimite")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact==4||nRact==0)) {
+                fueraTiempoAreaAdminTodosRacts();
+            }
+            
+            //fueraTiempoProgEdTodosRacts
+            if (reporte.equalsIgnoreCase("entregadosdespueslimite")&&criterio.equalsIgnoreCase("area_administrativa")&&(nRact>0&&nRact<4)) {
+                fueraTiempoAreaAdmin();
+            }
+
+//            //noEntregadosProgEd
+//            if (reporte.equalsIgnoreCase("noEntregadosProgEd")&&criterio.equalsIgnoreCase("area_conocimiento")) {
+//                noEntregadosProgEd();
+//            }
+            
     }
 
     public ReporteAux fijarAtributosReporteUI(ReporteAux reporteUI,String tipoReporte){
@@ -5900,7 +8106,7 @@ public MeterGaugeChartModel getGaugeModel() {
             reporteUI.setClavepe(clavepe);
             reporteUI.setPesvigencia(pesvigencia);
         }
-        if (tipoReporte.equalsIgnoreCase("AreaCon")) {
+        if ((tipoReporte.equalsIgnoreCase("AreaCon")) || (tipoReporte.equalsIgnoreCase("AreaAdmin"))) {
             //pasa los atributos que necesita por tipo de consulta
             //o reporte para los atributos del objeto del criteria
             reporteUI.setNumRact(numRact);
@@ -5908,7 +8114,7 @@ public MeterGaugeChartModel getGaugeModel() {
             reporteUI.setAcoclave(acoclave);
             reporteUI.setClavepe(clavepe);
             reporteUI.setPesvigencia(pesvigencia);
-        }
+        }        
         if (tipoReporte.equalsIgnoreCase("UAGrupo")) {
             //pasa los atributos que necesita por tipo de consulta
             //o reporte para los atributos del objeto del criteria
@@ -6037,6 +8243,32 @@ public MeterGaugeChartModel getGaugeModel() {
     
     //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
     //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento de
+    //solamente entregados
+    public void entregadosAreaAdminTodosRacts(){
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR="entregadosAreaAdminTodosRacts";
+        
+        //init(); esto creo que no se ocupa ya(comentado) por que en realidad toma los atributos y
+        
+        //reporteUI = fijarAtributosReporteUI(reporteUI,"AreaCon");
+        
+        reporteUI.setNumRact(numRact);
+        reporteUI.setCescicloEscolar(cescicloEscolar);
+        reporteUI.setClavepe(clavepe);
+        reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+                
+        //listaAux=filtrosBeanHelper.entregadosAreaAdminTodosRacts(reporteUI,aadid);
+        
+        listaAux=filtrosBeanHelper.selectionAreaAdmin(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
+    }
+    
+    //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
+    //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento de
     //solamente no entregados
     public void noEntregadosAreaConTodosRacts(){
         //objeto para inicializar a ceros y nulos los
@@ -6059,6 +8291,34 @@ public MeterGaugeChartModel getGaugeModel() {
     
     //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
     //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento de
+    //solamente no entregados
+    public void noEntregadosAreaAdminTodosRacts(){
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR="noEntregadosAreaAdminTodosRacts";
+        
+        //init(); esto creo que no se ocupa ya(comentado) por que en realidad toma los atributos y
+        
+        //reporteUI = fijarAtributosReporteUI(reporteUI,"AreaCon");
+        
+        reporteUI.setNumRact(numRact);
+        reporteUI.setCescicloEscolar(cescicloEscolar);
+        reporteUI.setClavepe(clavepe);
+        reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+                
+        //listaAux=filtrosBeanHelper.noEntregadosAreaAdminTodosRacts(reporteUI,aadid);
+        
+        //listaAux=filtrosBeanHelper.selectionAreaCon(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaConocimiento);
+        
+        listaAux=filtrosBeanHelper.selectionAreaAdmin(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
+    }
+    
+    //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
+    //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento de
     //la union de entregados y no entregados
     public void entregadosYNoAreaConTodosRacts(){
         //objeto para inicializar a ceros y nulos los
@@ -6075,6 +8335,32 @@ public MeterGaugeChartModel getGaugeModel() {
         //listaAux=filtrosBeanHelper.entregadosYNoAreaConTodosRacts(reporteUI);
         
         listaAux=filtrosBeanHelper.selectionAreaCon(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaConocimiento);
+    }
+    
+    //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
+    //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento de
+    //la union de entregados y no entregados
+    public void entregadosYNoAreaAdminTodosRacts(){
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR="entregadosYNoAreaAdminTodosRacts";
+        
+        //init(); esto creo que no se ocupa ya(comentado) por que en realidad toma los atributos y
+
+        //reporteUI = fijarAtributosReporteUI(reporteUI,"AreaCon");
+        
+        reporteUI.setNumRact(numRact);
+        reporteUI.setCescicloEscolar(cescicloEscolar);
+        reporteUI.setClavepe(clavepe);
+        reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+                
+        //listaAux=filtrosBeanHelper.entregadosYNoAreaAdminTodosRacts(reporteUI,aadid);
+        
+        listaAux=filtrosBeanHelper.selectionAreaAdmin(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
     }
     
     //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
@@ -6300,6 +8586,32 @@ public MeterGaugeChartModel getGaugeModel() {
     
     //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
     //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento
+    //de solamente Porcentaje de Avance General *Incompleto*
+    public void PAGCAreaAdminTodosRacts(){
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR="PAGCAreaAdminTodosRacts";
+        
+        //init(); esto creo que no se ocupa ya(comentado) por que en realidad toma los atributos y
+
+        //reporteUI = fijarAtributosReporteUI(reporteUI,"AreaCon");
+        
+        reporteUI.setNumRact(numRact);
+        reporteUI.setCescicloEscolar(cescicloEscolar);
+        reporteUI.setClavepe(clavepe);
+        reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+                
+        //listaAux=filtrosBeanHelper.PAGCAreaAdminTodosRacts(reporteUI,aadid);
+        
+        listaAux=filtrosBeanHelper.selectionAreaAdmin(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
+    }
+    
+    //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
+    //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento
     //de solamente Porcentaje de Avance General *Completo*
     public void PAGCCompletoAreaConTodosRacts(){
         //objeto para inicializar a ceros y nulos los
@@ -6320,6 +8632,32 @@ public MeterGaugeChartModel getGaugeModel() {
     
     //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
     //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento
+    //de solamente Porcentaje de Avance General *Completo*
+    public void PAGCCompletoAreaAdminTodosRacts(){
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR="PAGCCompletoAreaAdminTodosRacts";
+        
+        //init(); esto creo que no se ocupa ya(comentado) por que en realidad toma los atributos y
+
+        //reporteUI = fijarAtributosReporteUI(reporteUI,"AreaCon");
+        
+        reporteUI.setNumRact(numRact);
+        reporteUI.setCescicloEscolar(cescicloEscolar);
+        reporteUI.setClavepe(clavepe);
+        reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+                
+        //listaAux=filtrosBeanHelper.PAGCCompletoAreaAdminTodosRacts(reporteUI,aadid);
+        
+        listaAux=filtrosBeanHelper.selectionAreaAdmin(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
+    }
+    
+    //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
+    //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento
     //de ambos Porcentaje de Avance General Completo e *Incompleto*
     public void PAGCCompletosYNoAreaConTodosRacts(){
         //objeto para inicializar a ceros y nulos los
@@ -6336,6 +8674,32 @@ public MeterGaugeChartModel getGaugeModel() {
         //listaAux=filtrosBeanHelper.PAGCCompletosYNoAreaConTodosRacts(reporteUI);
         
         listaAux=filtrosBeanHelper.selectionAreaCon(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaConocimiento);
+    }
+    
+    //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
+    //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento
+    //de ambos Porcentaje de Avance General Completo e *Incompleto*
+    public void PAGCCompletosYNoAreaAdminTodosRacts(){
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR="PAGCompletosYNoAreaAdminTodosRacts";
+        
+        //init(); esto creo que no se ocupa ya(comentado) por que en realidad toma los atributos y
+            
+        //reporteUI = fijarAtributosReporteUI(reporteUI,"AreaCon");
+        
+        reporteUI.setNumRact(numRact);
+        reporteUI.setCescicloEscolar(cescicloEscolar);
+        reporteUI.setClavepe(clavepe);
+        reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+               
+        //listaAux=filtrosBeanHelper.PAGCCompletosYNoAreaAdminTodosRacts(reporteUI,aadid);
+        
+        listaAux=filtrosBeanHelper.selectionAreaAdmin(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
     }
     
     //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
@@ -6588,6 +8952,32 @@ public MeterGaugeChartModel getGaugeModel() {
     
     //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
     //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento
+    //para solamente A Tiempo(comparando la fecha limite)
+    public void ATiempoAreaAdminTodosRacts(){
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR="ATiempoAreaAdminTodosRacts";
+        
+        //init(); esto creo que no se ocupa ya(comentado) por que en realidad toma los atributos y
+         
+        //reporteUI = fijarAtributosReporteUI(reporteUI,"AreaCon");
+        
+        reporteUI.setNumRact(numRact);
+        reporteUI.setCescicloEscolar(cescicloEscolar);
+        reporteUI.setClavepe(clavepe);
+        reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+                
+        //listaAux=filtrosBeanHelper.ATiempoAreaAdminTodosRacts(reporteUI,aadid);
+        
+        listaAux=filtrosBeanHelper.selectionAreaAdmin(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
+    }
+    
+    //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
+    //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento
     //para solamente Despues de fecha Limite Tiempo(comparando la fecha limite)
     public void fueraTiempoAreaConTodosRacts(){
         //objeto para inicializar a ceros y nulos los
@@ -6604,6 +8994,32 @@ public MeterGaugeChartModel getGaugeModel() {
         //listaAux=filtrosBeanHelper.FueraTiempoAreaConTodosRacts(reporteUI);
         
         listaAux=filtrosBeanHelper.selectionAreaCon(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaConocimiento);
+    }
+    
+    //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
+    //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento
+    //para solamente Despues de fecha Limite Tiempo(comparando la fecha limite)
+    public void fueraTiempoAreaAdminTodosRacts(){
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR="fueraTiempoAreaAdminTodosRacts";
+        
+        //init(); esto creo que no se ocupa ya(comentado) por que en realidad toma los atributos y
+         
+        //reporteUI = fijarAtributosReporteUI(reporteUI,"AreaCon");
+        
+        reporteUI.setNumRact(numRact);
+        reporteUI.setCescicloEscolar(cescicloEscolar);
+        reporteUI.setClavepe(clavepe);
+        reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+               
+        //listaAux=filtrosBeanHelper.FueraTiempoAreaAdminTodosRacts(reporteUI,aadid);
+        
+        listaAux=filtrosBeanHelper.selectionAreaAdmin(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
     }
     
     //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
@@ -6644,6 +9060,32 @@ public MeterGaugeChartModel getGaugeModel() {
         //listaAux=filtrosBeanHelper.ATiempoYNoYEnLimiteAreaConTodosRacts(reporteUI);
         
         listaAux=filtrosBeanHelper.selectionAreaCon(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaConocimiento);
+    }
+    
+    //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
+    //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area conocimiento
+    //para todos A Tiempo, En Fecha Limite y Despues de Fecha Limite(comparando la fecha limite)
+    public void ATiempoYNoYEnLimiteAreaAdminTodosRacts(){
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR="ATiempoYNoYEnLimiteAreaAdminTodosRacts";
+        
+        //init(); esto creo que no se ocupa ya(comentado) por que en realidad toma los atributos y
+         
+        //reporteUI = fijarAtributosReporteUI(reporteUI,"AreaCon");
+        
+        reporteUI.setNumRact(numRact);
+        reporteUI.setCescicloEscolar(cescicloEscolar);
+        reporteUI.setClavepe(clavepe);
+        reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+               
+        //listaAux=filtrosBeanHelper.ATiempoYNoYEnLimiteAreaAdminTodosRacts(reporteUI,aadid);
+        
+        listaAux=filtrosBeanHelper.selectionAreaAdmin(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
     }
     
     //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
@@ -6843,6 +9285,31 @@ public MeterGaugeChartModel getGaugeModel() {
     }
     
     //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
+    //para los entregados por Area de conocimiento segun los atributos de consulta
+    //de la especificación(Todo esto por un solo numero de Ract)
+    public void entregadosAreaAdmin(){
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR="entregadosAreaAdmin";
+        
+        //reporteUI = fijarAtributosReporteUI(reporteUI,"AreaAdmin");
+        
+        reporteUI.setNumRact(numRact);
+        reporteUI.setCescicloEscolar(cescicloEscolar);
+        reporteUI.setClavepe(clavepe);
+        reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+        
+        
+        //listaAux=filtrosBeanHelper.entregadosAreaAdmin(reporteUI,aadid);
+        
+        listaAux=filtrosBeanHelper.selectionAreaAdmin(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
+    }
+    
+    //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
     //para los entregados por Unidad aprendizaje con Grupo segun los atributos de consulta
     //de la especificación(Todo esto por un solo numero de Ract)
     public void entregadosUAGrupo(){
@@ -6915,6 +9382,30 @@ public MeterGaugeChartModel getGaugeModel() {
     }
     
     //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
+    //para los no entregados por Area Conocimiento segun los atributos de consulta
+    //de la especificación(Todo esto por un solo numero de Ract)
+    public void noEntregadosAreaAdmin(){
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR="noEntregadosAreaAdmin";
+        
+        //reporteUI = fijarAtributosReporteUI(reporteUI,"AreaCon");
+        
+        reporteUI.setNumRact(numRact);
+        reporteUI.setCescicloEscolar(cescicloEscolar);
+        reporteUI.setClavepe(clavepe);
+        reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+        
+        //listaAux=filtrosBeanHelper.noEntregadosAreaAdmin(reporteUI,aadid);
+        
+        listaAux=filtrosBeanHelper.selectionAreaAdmin(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
+    }
+    
+    //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
     //para los no entregados por Unidad Aprendizaje con Grupo segun los atributos de consulta
     //de la especificación(Todo esto por un solo numero de Ract)
     public void noEntregadosUAGrupo(){
@@ -6970,6 +9461,32 @@ public MeterGaugeChartModel getGaugeModel() {
     
     //metodo que une los entregados y no entregados por un solo numero de
     //ract *no por una sola linea los tres racts de un mismo id de 
+    //unidadaprendizajeimparteprofesor por Programa Educativo
+    public ArrayList entregadosYNoEntregadosProgEdComprobar(){
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR="entregadosYNoEntregadosProgEd";
+        
+        reporteUI = fijarAtributosReporteUI(reporteUI,"ProgEd");
+        
+        //reporteUI.setNumRact(numRact);
+        //reporteUI.setCescicloEscolar(cescicloEscolar);
+        //reporteUI.setClavepe(clavepe);
+        //reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+                
+        //listaAux=filtrosBeanHelper.entregadosYNoEntregadosProgEd(reporteUI);
+        
+       ArrayList<ReporteAvanceAux> listaAux4=filtrosBeanHelper.selectionProgEd(reporteUI,tipoReporteCTR,selectProgramEducativo,selectCicloEscolarList);
+       
+       return listaAux4;
+    }
+    
+    //metodo que une los entregados y no entregados por un solo numero de
+    //ract *no por una sola linea los tres racts de un mismo id de 
     //unidadaprendizajeimparteprofesor por Area Conocimiento
     public void entregadosYNoEntregadosAreaCon(){        
         //objeto para inicializar a ceros y nulos los
@@ -6984,6 +9501,29 @@ public MeterGaugeChartModel getGaugeModel() {
         //listaAux=filtrosBeanHelper.entregadosYNoEntregadosAreaCon(reporteUI);
         
         listaAux=filtrosBeanHelper.selectionAreaCon(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaConocimiento);
+    }
+    
+    //metodo que une los entregados y no entregados por un solo numero de
+    //ract *no por una sola linea los tres racts de un mismo id de 
+    //unidadaprendizajeimparteprofesor por Area Conocimiento
+    public void entregadosYNoEntregadosAreaAdmin(){        
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR="entregadosYNoEntregadosAreaAdmin";
+        
+        //reporteUI = fijarAtributosReporteUI(reporteUI,"AreaCon");
+        reporteUI.setNumRact(numRact);
+        reporteUI.setCescicloEscolar(cescicloEscolar);
+        reporteUI.setClavepe(clavepe);
+        reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+        
+        //listaAux=filtrosBeanHelper.entregadosYNoEntregadosAreaAdmin(reporteUI,aadid);
+        
+        listaAux=filtrosBeanHelper.selectionAreaAdmin(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
     }
     
     //metodo que une los entregados y no entregados por un solo numero de
@@ -7058,6 +9598,31 @@ public MeterGaugeChartModel getGaugeModel() {
         //listaAux=filtrosBeanHelper.PAGCAreaCon(reporteUI);
         
         listaAux=filtrosBeanHelper.selectionAreaCon(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaConocimiento);
+    }
+    
+    //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
+    //para Porcentaje Avance General *Incompleto* por Area de conocimiento
+    //segun los atributos de consulta de la especificación
+    //(Todo esto por un solo numero de Ract)
+    public void PAGCAreaAdmin(){
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR="PAGCAreaAdmin";
+        
+        //reporteUI = fijarAtributosReporteUI(reporteUI,"AreaCon");
+        
+        reporteUI.setNumRact(numRact);
+        reporteUI.setCescicloEscolar(cescicloEscolar);
+        reporteUI.setClavepe(clavepe);
+        reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+        
+        //listaAux=filtrosBeanHelper.PAGCAreaAdmin(reporteUI,aadid);
+        
+        listaAux=filtrosBeanHelper.selectionAreaCon(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
     }
     
     //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
@@ -7137,6 +9702,31 @@ public MeterGaugeChartModel getGaugeModel() {
     }
     
     //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
+    //para Porcentaje Avance General Completo por Area Conocimiento
+    //segun los atributos de consulta de la especificación
+    //(Todo esto por un solo numero de Ract)
+    public void PAGCCompletoAreaAdmin(){
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR="PAGCCompletoAreaAdmin";
+        
+        //reporteUI = fijarAtributosReporteUI(reporteUI,"AreaCon");
+        
+        reporteUI.setNumRact(numRact);
+        reporteUI.setCescicloEscolar(cescicloEscolar);
+        reporteUI.setClavepe(clavepe);
+        reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+        
+        //listaAux=filtrosBeanHelper.PAGCCompletoAreaAdmin(reporteUI,aadid);
+        
+        listaAux=filtrosBeanHelper.selectionAreaAdmin(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
+    }
+    
+    //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
     //para Porcentaje Avance General Completo por Unidad Aprendizaje con Grupo
     //segun los atributos de consulta de la especificación
     //(Todo esto por un solo numero de Ract)
@@ -7208,6 +9798,30 @@ public MeterGaugeChartModel getGaugeModel() {
         //listaAux=filtrosBeanHelper.PAGCCompletoEIncompletoAreaCon(reporteUI);
         
         listaAux=filtrosBeanHelper.selectionAreaCon(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaConocimiento);
+    }
+    
+    //este metodo une los Porcentaje Avance Global Completo con Incompleto
+    //por un solo numero de ract, *no en una sola linea los tres ract por 
+    //id de unidadaprendizajeimparteprofesor por Area Conocimiento
+    public void PAGCCompletoEIncompletoAreaAdmin(){
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR="PAGCompletoEIncompletoAreaCon";
+        
+        //reporteUI = fijarAtributosReporteUI(reporteUI,"AreaCon");
+        
+        reporteUI.setNumRact(numRact);
+        reporteUI.setCescicloEscolar(cescicloEscolar);
+        reporteUI.setClavepe(clavepe);
+        reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+        
+        //listaAux=filtrosBeanHelper.PAGCCompletoEIncompletoAreaAdmin(reporteUI,aadid);
+        
+        listaAux=filtrosBeanHelper.selectionAreaAdmin(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
     }
     
     //este metodo une los Porcentaje Avance Global Completo con Incompleto
@@ -7286,6 +9900,31 @@ public MeterGaugeChartModel getGaugeModel() {
     
     //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
     //para A Tiempo(comparando la fecha límite por numero de ract y ciclo escolar) 
+    //por Area Conocimiento segun los atributos de consulta de la especificación
+    //(Todo esto por un solo numero de Ract)
+    public void ATiempoAreaAdmin(){
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR = "ATiempoAreaAdmin";        
+        
+        //reporteUI = fijarAtributosReporteUI(reporteUI,"AreaCon");
+        
+        reporteUI.setNumRact(numRact);
+        reporteUI.setCescicloEscolar(cescicloEscolar);
+        reporteUI.setClavepe(clavepe);
+        reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+        
+        //listaAux=filtrosBeanHelper.ATiempoAreaAdmin(reporteUI,aadid);
+        
+        listaAux=filtrosBeanHelper.selectionAreaAdmin(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
+    }
+    
+    //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
+    //para A Tiempo(comparando la fecha límite por numero de ract y ciclo escolar) 
     //por Unidad Aprendizaje con Grupo segun los atributos de consulta de la especificación
     //(Todo esto por un solo numero de Ract)
     public void ATiempoUAGrupo(){
@@ -7358,6 +9997,31 @@ public MeterGaugeChartModel getGaugeModel() {
         //listaAux=filtrosBeanHelper.FueraTiempoAreaCon(reporteUI);
         
         listaAux=filtrosBeanHelper.selectionAreaCon(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaConocimiento);
+    }
+    
+    //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
+    //para "Despues de fecha límite"(comparando la fecha límite por numero de ract y ciclo escolar) 
+    //por Area Conocimiento segun los atributos de consulta de la especificación
+    //(Todo esto por un solo numero de Ract)
+    public void fueraTiempoAreaAdmin(){
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR="fueraTiempoAreaAdmin";
+        
+        //reporteUI = fijarAtributosReporteUI(reporteUI,"AreaCon");
+        
+        reporteUI.setNumRact(numRact);
+        reporteUI.setCescicloEscolar(cescicloEscolar);
+        reporteUI.setClavepe(clavepe);
+        reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+        
+        //listaAux=filtrosBeanHelper.FueraTiempoAreaAdmin(reporteUI,aadid);
+        
+        listaAux=filtrosBeanHelper.selectionAreaAdmin(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
     }
     
     //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
@@ -7512,6 +10176,32 @@ public MeterGaugeChartModel getGaugeModel() {
         //listaAux=filtrosBeanHelper.ATiempoYNoYEnLimiteAreaCon(reporteUI);        
         
         listaAux=filtrosBeanHelper.selectionAreaCon(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaConocimiento);
+    }
+    
+    //metodo auxiliar para obtener por cada ract(*no en una sola linea) 
+    //de todos los registros en ract(no por unico profesor, unidad
+    //de aprendizaje y grupo)
+    //para Area Conocimiento de todos A Tiempo, En Fecha Limite, 
+    // Despues de Fecha Limite(comparando la fecha Limite)
+    public void ATiempoYNoYEnLimiteAreaAdmin(){
+        //objeto para inicializar a ceros y nulos los
+        //atributos que no se necesitan en la consulta
+        //de criteria
+        ReporteAux reporteUI=new ReporteAux();
+        
+        tipoReporteCTR="ATiempoYNoYEnLimiteAreaAdmin";
+        
+        //reporteUI = fijarAtributosReporteUI(reporteUI,"AreaCon");
+        
+        reporteUI.setNumRact(numRact);
+        reporteUI.setCescicloEscolar(cescicloEscolar);
+        reporteUI.setClavepe(clavepe);
+        reporteUI.setPesvigencia(pesvigencia);
+        //reporteUI.setAcoclave(acoclave);
+        
+        //listaAux=filtrosBeanHelper.ATiempoYNoYEnLimiteAreaAdmin(reporteUI,aadid);        
+        
+        listaAux=filtrosBeanHelper.selectionAreaAdmin(reporteUI,tipoReporteCTR,selectCicloEscolarList,selectPlanesEstudio,selectAreaAdministrativa);
     }
     
     //metodo auxiliar para obtener por cada ract(*no en una sola linea) 
@@ -7693,6 +10383,14 @@ public MeterGaugeChartModel getGaugeModel() {
         this.uacclave = uacclave;
     }
 
+    public int getAadid() {
+        return aadid;
+    }
+
+    public void setAadid(int aadid) {
+        this.aadid = aadid;
+    }
+    
     public int getCreid() {
         return creid;
     }
@@ -7744,19 +10442,19 @@ public MeterGaugeChartModel getGaugeModel() {
         this.usuario = usuario;
     }  
 
-//    public LoginBean getLoginBean() {
-//        return loginBean;
-//    }
-//
-//    public void setLoginBean(LoginBean loginBean) {
-//        this.loginBean = loginBean;
-//    }
+    public LoginBean getLoginBean() {
+        return loginBean;
+    }
 
-    public Rol getRolSeleccionado() {
+    public void setLoginBean(LoginBean loginBean) {
+        this.loginBean = loginBean;
+    }
+
+    public String getRolSeleccionado() {
         return rolSeleccionado;
     }
 
-    public void setRolSeleccionado(Rol rolSeleccionado) {
+    public void setRolSeleccionado(String rolSeleccionado) {
         this.rolSeleccionado = rolSeleccionado;
     }        
     

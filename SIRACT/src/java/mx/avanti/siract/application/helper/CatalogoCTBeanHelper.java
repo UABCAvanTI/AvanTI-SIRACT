@@ -7,6 +7,8 @@ package mx.avanti.siract.application.helper;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -258,7 +260,7 @@ public double sumaHorasSubTUni(int idTema, int idUni , String idUA)
                                {
                                    Subtemaunidad subtemaunidadA = it2.next();
                                    nivel3 = new DefaultTreeNode(new NodoMultiClass(subtemaunidadA), nivel2);
-                                   hTotSubTem = hTotSubTem + subtemaunidadA.getSuthoras();
+                                   hTotSubTem = hTotSubTem + (formatoAHoras(horasAFormato((subtemaunidadA.getSuthoras()))));
                     }
                 }
             }
@@ -517,6 +519,8 @@ public boolean minMayor(String buscar){
         return programasEducativos;
     }
     
+    //Metodo que retorna el Id de un profesor en base a su usuario
+    
      public List<Programaeducativo> programasEducativosDeAreaConocimiento(String idAco){
         List<Programaeducativo> programasEducativos=programaEducativoDelegate.getPEDeAreaConocimiento(idAco);
         return programasEducativos;
@@ -535,9 +539,10 @@ public boolean minMayor(String buscar){
         Profesor profesorTemporal=profesorDelegate.findProfesorFromUser(usuarioId);
        programaeducativo=programaEducativoDelegate.getPEdeResponsable(profesorTemporal.getProid());
         
-        
         return programaeducativo;
     }
+    
+    
     
     //Metodos para actualizar la base de datos en casos de horas completas o no para
     //UnidadAprendizaje Unidad Temaunidad
@@ -623,5 +628,79 @@ public boolean minMayor(String buscar){
         return programaEducativoDelegate.obtenerProgramasEducativosDeUA(uaId);
     }
 
+//Formatos de horas
+    public String horasAFormato(float horas) {
+        //Mover variables a globarl y simbolo.setDecimalSeparator a CONSTRUCTOR
+        DecimalFormatSymbols simbolo = new DecimalFormatSymbols();
+        simbolo.setDecimalSeparator('.');
+        DecimalFormat formato = new DecimalFormat("##", simbolo);
+        String formatoDeHora;
+        int valorEntero = (int) horas;
+        float minutos = horas - valorEntero;
+        //Se convierten los decimales a minutos y se multiplica por 100 para poder despreciar la fraccion
+        minutos = (float) (minutos * 30 / 0.5);
+        //HUBO UN CASO DONDE EL RESULTADO MOSTRO 1HR60MIN, YA QUE DESPUES DE APLICAR EL FORMATO (REDONDEAR) 
+        //VALIDABA QUE FUESEN MENOS DE 60 MIN.
+        float minutosAHoras = Float.parseFloat(formato.format(minutos));
+        if (minutosAHoras == 60) {
+            minutos = 0;
+            valorEntero += 1;
+        }
 
+        if (formato.format(minutos).length() < 2) {
+            formatoDeHora = String.valueOf(valorEntero + ":0" + formato.format(minutos));
+        } else {
+            formatoDeHora = String.valueOf(valorEntero + ":" + formato.format(minutos));
+        }
+
+        return formatoDeHora;
+    }
+
+    public String horasAFormatoInputMask(float horas) {
+        //Mover variables a globarl y simbolo.setDecimalSeparator a CONSTRUCTOR
+        DecimalFormatSymbols simbolo = new DecimalFormatSymbols();
+        simbolo.setDecimalSeparator('.');
+        DecimalFormat formato = new DecimalFormat("##", simbolo);
+        String formatoDeHora;
+        int valorEntero = (int) horas;
+        float minutos = horas - valorEntero;
+        //Se convierten los decimales a minutos y se multiplica por 100 para poder despreciar la fraccion
+        minutos = (float) (minutos * 30 / 0.5);
+
+        String strM = String.valueOf(formato.format(minutos));
+        String strH = String.valueOf(valorEntero);
+
+        if (strM.length() < 2) {
+            strM = "0" + strM;
+        }
+        if (strH.length() < 2) {
+            strH = "0" + strH;
+        }
+        formatoDeHora = strH + strM;
+        return formatoDeHora;
+    }
+
+    //Recibe un formato de horas 00:00 y lo convierte a flotante
+    public float formatoAHoras(String formato) {
+        String[] formatoHora = formato.split(":");
+        float minutos = 0;
+        float horas = 0;
+        try {
+            horas = Float.parseFloat(formatoHora[0]);
+            minutos = Float.parseFloat(formatoHora[1]);
+            minutos = (float) ((minutos * 0.5) / 30);
+        } catch (Exception e) {
+        }
+        return horas + minutos;
+    }
+
+    //Metodos nuevos
+    public List<Programaeducativo> programaEducativoDeCoordinadorAreaAdmin(int usuarioId){
+         List<Unidadacademica> unidadesAcademicas=new ArrayList<Unidadacademica>();
+        List<Programaeducativo> programaeducativo;        
+        Profesor profesorTemporal=profesorDelegate.findProfesorFromUser(usuarioId);
+       programaeducativo=programaEducativoDelegate.getPEdeCoordinadorAreaAdmin(profesorTemporal.getProid());
+        
+        return programaeducativo;
+    }
 }

@@ -26,7 +26,7 @@ public class RolesBeanUI implements Serializable {
     private List<String> listPermisos = new ArrayList();
     private List<String> listaPermisosSelected = new ArrayList();
     Rol rolObj = new Rol();
-    
+
     private RolesBeanHelper rolBeanHelp = new RolesBeanHelper();
     private String boton;
     private String deshabilitar = "false";
@@ -65,7 +65,11 @@ public class RolesBeanUI implements Serializable {
 
     public String onRowSelect(SelectEvent event) {
         rolAux = (Rol) event.getObject();
-        ModEl = "false";
+        ModEl = "true";
+        System.out.println(">>>>>>>>>>>>>>OnRowSelect"+rolAux.getRoltipo());
+        if (!rolAux.getRoltipo().equalsIgnoreCase("Administrador")) {
+            ModEl = "false";
+        }
 
         return "";
     }
@@ -117,17 +121,13 @@ public class RolesBeanUI implements Serializable {
     public void setRolObj(Rol rolObj) {
         this.rolObj = rolObj;
     }
-    
+
     public void refrescarForma() {
         ////   u = null;
-        
-        rolObj=new Rol();
-        setRolObj(null);
-        
-        
-        
-    }
 
+        busqueda = "";
+        listaFiltrada = rolBeanHelp.filtrado(busqueda);
+    }
 
     public String getBoton() {
         return boton;
@@ -167,8 +167,11 @@ public class RolesBeanUI implements Serializable {
 
         }
     }
+    boolean nuevo = false;
 
     public void onClick() {
+        boolean banIgual = false;
+
         if (deshabilitar.equals("true")) {
             RequestContext.getCurrentInstance().execute("statusDialog.hide()");
             RequestContext.getCurrentInstance().execute("confirmdlg.show();");
@@ -188,73 +191,90 @@ public class RolesBeanUI implements Serializable {
             rolObj = new Rol();
             listaFiltrada = rolBeanHelp.getRolDelegate().getRol();
         } else {
-            boolean guardar = true;
-            for (Rol rolDel : rolBeanHelp.getRolDelegate().getRol()) {
-                if (rolDel.getRoltipo().equalsIgnoreCase(rolObj.getRoltipo())) {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_FATAL, "", "Rol existente");
-                    RequestContext.getCurrentInstance().showMessageInDialog(message);
-                    RequestContext.getCurrentInstance().execute("statusDialog.hide()");
-                    guardar = false;
-                }
-            }
             if (rolObj.getRoltipo().isEmpty()) {
                 FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_FATAL, "", "Llenar campo Rol");
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
                 RequestContext.getCurrentInstance().execute("statusDialog.hide()");
             } else {
                 for (Rol rolDel : rolBeanHelp.getRolDelegate().getRol()) {
-                    if (rolDel.getRoltipo().equals(nombreRol)) {
+                    if ((rolDel.getRoltipo().equals(rolObj.getRoltipo()) && nuevo == true)){
                         rolObj.setRolid(rolDel.getRolid());
                         rolObj.setRolprioridad(rolDel.getRolprioridad());
                         rolObj.setRolHasPermisos(rolDel.getRolHasPermisos());
                         System.out.println("Entre en nuevo" + rolObj.getRolid());
-                    }
-                }
-                if (guardar) {
-                    rolBeanHelp.getRolDelegate().saveRol(rolObj);
-                }
-                for (Rol rolDel : rolBeanHelp.getRolDelegate().getRol()) {
-                    if (rolDel.getRoltipo().equals(nombreRol)) {
-                        rolObj.setRolid(rolDel.getRolid());
-                        rolObj.setRolprioridad(rolDel.getRolprioridad());
-                        rolObj.setRolHasPermisos(rolDel.getRolHasPermisos());
-                        System.out.println("Entre en nuevo" + rolObj.getRolid());
+                        banIgual = true;
+                        break;
                     }
                 }
 
-                //Se eliminan permisos previos del rol
-                rolBeanHelp.getRolHasPermisoDel().deleteRolHasPermiso("RolHasPermiso", "rol.rolid", String.valueOf(rolObj.getRolid()));
-                RolHasPermisoId rolHasPerID = new RolHasPermisoId();
-                int sumaPermisos = 0;
-                for (String permisosList : listaPermisosSelected) {
-                    String[] auxArray = permisosList.split(" - ");
-                    for (Permiso auxPerm : rolBeanHelp.getPermisoDelegete().getPermiso()) {
-                        if (auxPerm.getPertipo().equals(auxArray[0])) {
-                            rolHasPerID.setPermisoPerid(auxPerm.getPerid());
-                            sumaPermisos += auxPerm.getPervalor();
+                if (!banIgual) {
+
+                    System.out.println("Tipo: " + rolObj.getRoltipo());
+                    System.out.println("Id: " + rolObj.getRolid());
+                    //rolBeanHelp.getRolDelegate().saveRol(rolObj);
+                    for (Rol rolDel : rolBeanHelp.getRolDelegate().getRol()) {
+                        //System.out.println(rolAux.getRoltipo() + "<<<>>>" + rolDel.getRoltipo());
+                        if (rolDel.getRoltipo().equals(rolAux.getRoltipo())) {
+                            rolObj.setRolid(rolDel.getRolid());
+                            rolObj.setRolprioridad(rolDel.getRolprioridad());
+                            rolObj.setRolHasPermisos(rolDel.getRolHasPermisos());
+                            System.out.println("Entre en nuevo" + rolObj.getRolid());
+                            break;
+                        } else {
+                            nuevo = true;
+                            
                         }
                     }
-                    for (Subpermisos auxSperm : rolBeanHelp.getSpDel().getPermiso()) {
-                        if (auxSperm.getSpertipo().equals(auxArray[1])) {
-                            rolHasPerID.setSubpermisosSperid(auxSperm.getSperid());
-                            sumaPermisos += auxSperm.getSpervalor();
+                    if (nuevo == true) {
+                        rolBeanHelp.getRolDelegate().saveRol(rolObj);
+                        for (Rol rolDel : rolBeanHelp.getRolDelegate().getRol()) {
+                            if (rolDel.getRoltipo().equals(rolObj.getRoltipo())) {
+                                rolObj.setRolid(rolDel.getRolid());
+                                rolObj.setRolprioridad(rolDel.getRolprioridad());
+                                rolObj.setRolHasPermisos(rolDel.getRolHasPermisos());
+                                System.out.println("Entre en nuevo" + rolObj.getRolid());
+                                nuevo=false;
+                                break;
+                            }
                         }
                     }
+                    System.out.println("Tipo: " + rolObj.getRoltipo());
+                    System.out.println("Id: " + rolObj.getRolid());
+                    //Se eliminan permisos previos del rol
+                    rolBeanHelp.getRolHasPermisoDel().deleteRolHasPermiso("RolHasPermiso", "rol.rolid", String.valueOf(rolObj.getRolid()));
+                    RolHasPermisoId rolHasPerID = new RolHasPermisoId();
+                    int sumaPermisos = 0;
+                    for (String permisosList : listaPermisosSelected) {
+                        String[] auxArray = permisosList.split(" - ");
+                        for (Permiso auxPerm : rolBeanHelp.getPermisoDelegete().getPermiso()) {
+                            if (auxPerm.getPertipo().equals(auxArray[0])) {
+                                rolHasPerID.setPermisoPerid(auxPerm.getPerid());
+                                sumaPermisos += auxPerm.getPervalor();
+                            }
+                        }
+                        for (Subpermisos auxSperm : rolBeanHelp.getSpDel().getPermiso()) {
+                            if (auxSperm.getSpertipo().equals(auxArray[1])) {
+                                rolHasPerID.setSubpermisosSperid(auxSperm.getSperid());
+                                sumaPermisos += auxSperm.getSpervalor();
+                            }
+                        }
 
-                    rolHasPerID.setRolRolid(rolObj.getRolid());
-                    RolHasPermiso rolHasPer = new RolHasPermiso();
-                    rolHasPer.setId(rolHasPerID);//se añaden permisos y subpermisos al rol
-                    rolBeanHelp.getRolHasPermisoDel().saveRolHasPermiso(rolHasPer);//se guardan los permisos y subperidos
+                        rolHasPerID.setRolRolid(rolObj.getRolid());
+                        RolHasPermiso rolHasPer = new RolHasPermiso();
+                        rolHasPer.setId(rolHasPerID);//se añaden permisos y subpermisos al rol
+                        rolBeanHelp.getRolHasPermisoDel().saveRolHasPermiso(rolHasPer);//se guardan los permisos y subperidos
 
-                }
-                rolObj.setRolprioridad(sumaPermisos);//se le asigna prioridad
-
-                if (guardar) {
-                    rolBeanHelp.getRolDelegate().saveRol(rolObj);
+                    }
+                    rolObj.setRolprioridad(sumaPermisos);//se le asigna prioridad
+                    System.out.println(">>>>>>>>>>>>>>>ID: " + rolObj.getRoltipo());
+                    rolBeanHelp.getRolDelegate().updateRol(rolObj);
                     FacesContext context = FacesContext.getCurrentInstance();
                     context.addMessage(null, new FacesMessage("Se guardó correctamente.", "Se guardó correctamente."));
-                    rolObj = new Rol();
                     RequestContext.getCurrentInstance().execute("window.location.replace(window.location.href='Roles.xhtml');");
+                } else {
+                    FacesContext context = FacesContext.getCurrentInstance();
+                    context.addMessage(null, new FacesMessage("El rol ya existe.", "El rol ya existe"));
+                    banIgual=false;
                 }
 
             }
@@ -268,9 +288,9 @@ public class RolesBeanUI implements Serializable {
         rolObj = null;
         listPermisos = new ArrayList();
         listaPermisosSelected = new ArrayList();
-        header = "Capturar Rol";
+        header = "Agregar Rol";
         deshabilitar = "false";
-
+        nuevo = true;
         return "";
     }
 
@@ -318,7 +338,6 @@ public class RolesBeanUI implements Serializable {
             }
         }
         RequestContext.getCurrentInstance().execute("statusDialog.hide()");
-        rolObj = new Rol();
         return root;
     }
 

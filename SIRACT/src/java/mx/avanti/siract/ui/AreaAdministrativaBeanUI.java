@@ -17,6 +17,7 @@ import javax.faces.context.FacesContext;
 import mx.avanti.siract.application.helper.AreaAdministrativaBeanHelper;
 import mx.avanti.siract.business.entity.Areaadministrativa;
 import mx.avanti.siract.business.entity.Programaeducativo;
+import mx.avanti.siract.business.entity.Rol;
 import org.primefaces.context.RequestContext;
 
 /**
@@ -31,6 +32,7 @@ public class AreaAdministrativaBeanUI implements Serializable{
     private LoginBean loginBean;
     
     AreaAdministrativaBeanHelper areaAdministrativaHelper;
+    AreaAdministrativaBeanHelper areaAdministrativaHelper2;
 
     private List<Areaadministrativa> listaFiltrada;
     private String busqueda;
@@ -42,21 +44,23 @@ public class AreaAdministrativaBeanUI implements Serializable{
     
     public AreaAdministrativaBeanUI() {
         this.areaAdministrativaHelper = new AreaAdministrativaBeanHelper();
+        this.areaAdministrativaHelper2 = new AreaAdministrativaBeanHelper();
         cabecera = "";
         deshabilitar="";
         busqueda="";
     }
+
     @PostConstruct
     public void postConstructor() {
 //        profesorBeanHelper.setListaRol(loginBean.Obtenerrol(loginBean.getUsuario().getUsuid()));
 //        profesorBeanHelper.setRolSeleccionado(loginBean.getSeleccionado());
 //        profesorBeanHelper.setUsuario(loginBean.getUsuario());
         areaAdministrativaHelper.setRol(loginBean.getSeleccionado());
-        areaAdministrativaHelper.setUsuariolog(loginBean.getUsuario());
+        areaAdministrativaHelper.setUsuariolog(loginBean.getLogueado());
         System.out.println("rol desde el BeanUI: " + loginBean.getSeleccionado());
-        System.out.println("id del usuario desde login " + loginBean.getUsuario().getUsuid());
+        System.out.println("id del usuario desde login " + loginBean.getLogueado().getUsuid());
     }
-
+    
     //<editor-fold defaultstate="collapsed" desc="getter setter">
     public AreaAdministrativaBeanHelper getAreaAdministrativaHelper() {
         return areaAdministrativaHelper;
@@ -64,6 +68,15 @@ public class AreaAdministrativaBeanUI implements Serializable{
 
     public void setAreaAdministrativaHelper(AreaAdministrativaBeanHelper areaAdministrativaHelper) {
         this.areaAdministrativaHelper = areaAdministrativaHelper;
+    }
+    
+    
+    public AreaAdministrativaBeanHelper getAreaAdministrativaHelper2() {
+        return areaAdministrativaHelper2;
+    }
+
+    public void setAreaAdministrativaHelper2(AreaAdministrativaBeanHelper areaAdministrativaHelper2) {
+        this.areaAdministrativaHelper2 = areaAdministrativaHelper2;
     }
 
     public List<Areaadministrativa> getListaFiltrada() {
@@ -124,14 +137,14 @@ public class AreaAdministrativaBeanUI implements Serializable{
     
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="ABM">
-      public void nuevo() {
+    public void nuevo() {
         header(1);
         limpiarSeleccion();
         areaAdministrativaHelper.setAreaAdministrativa(new Areaadministrativa(new Programaeducativo(), ""));
         //areaAdministrativaHelper.setProgramaEducativo(new Programaeducativo());
         areaAdministrativaHelper.cargarListaPEdlg();
     }
-          public void eliminar() {
+    public void eliminar() {
         header(2);
         areaAdministrativaHelper.cargarListaPEdlg();
         try {
@@ -140,15 +153,16 @@ public class AreaAdministrativaBeanUI implements Serializable{
                 //areaAdministrativaHelper.setProgramaEducativo(areaAdministrativaHelper.getListaSeleccion().get(0).getProgramaeducativo());
                 
             } else {
-                if (areaAdministrativaHelper.getListaSeleccion().size() < 1) {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "No se selecciono ningun registro");
-                    RequestContext.getCurrentInstance().showMessageInDialog(message);
-                } else {
+//                if (areaAdministrativaHelper.getListaSeleccion().size() < 1) {
+//                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "No se selecciono ningun registro");
+//                    RequestContext.getCurrentInstance().showMessageInDialog(message);
+//                }
+//                else {
                 
                     areaAdministrativaHelper.setAreaAdministrativa(areaAdministrativaHelper.getListaSeleccion().get(0));
                     //areaAdministrativaHelper.setProgramaEducativo(areaAdministrativaHelper.getListaSeleccion().get(0).getProgramaeducativo());
                 
-                }
+//                }
             }
 //           
         } catch (NullPointerException e) {
@@ -170,17 +184,18 @@ public class AreaAdministrativaBeanUI implements Serializable{
                 System.out.println("pedid: " +areaAdministrativaHelper.getProgramaEducativo().getPedid());
                 
             } else {
-                if (areaAdministrativaHelper.getListaSeleccion().size() < 1) {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "No se selecciono ningun registro");
-                    RequestContext.getCurrentInstance().showMessageInDialog(message);
-                } else {
+//                if (areaAdministrativaHelper.getListaSeleccion().size() < 1) {
+//                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "No se selecciono ningun registro");
+//                    RequestContext.getCurrentInstance().showMessageInDialog(message);
+//                } else {
                     areaAdministrativaHelper.setAreaAdministrativa(new Areaadministrativa(new Programaeducativo(), ""));
                     //areaAdministrativaHelper.setProgramaEducativo(new Programaeducativo());
                 
                     areaAdministrativaHelper.setAreaAdministrativa(areaAdministrativaHelper.getListaSeleccion().get(0));
+                    areaAdministrativaHelper.setProgramaEducativo(areaAdministrativaHelper.getListaSeleccion().get(0).getProgramaeducativo());                    
                     //areaAdministrativaHelper.setProgramaEducativo(areaAdministrativaHelper.getListaSeleccion().get(0).getProgramaeducativo());
                 
-                }
+                //}
             }
         } catch (NullPointerException e) {
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "No se selecciono ningun registro");
@@ -188,97 +203,113 @@ public class AreaAdministrativaBeanUI implements Serializable{
         }
     }
 
-      public String onClickSubmit() {
+      public String onClickSubmit() {        
         setMensajeConfirmacion();
         if (deshabilitar.equals("true")) {
-//            if(areaAdministrativaHelper.getAreaAdministrativaDelegate().getAreaAsignada(areaAdministrativaHelper.getAreaAdministrativa().getAadid()).size()<1){
-//                mensajeConfirm="¿Está seguro de eliminar el registro?";
-//                renderCancelar="true";
-//            }else{
-//                System.out.println("ESTA ASIGNADO");
-//                mensajeConfirm="El Programa Educativo tiene uno o mas planes de estudio asignados.";
-//                renderCancelar="false";
-//            }
-//            RequestContext.getCurrentInstance().update("confirmdlg");
-            
             RequestContext.getCurrentInstance().execute("confirmacion.show()");
-        } else {
+        } 
+        else {
             if (areaAdministrativaHelper.getAreaAdministrativa().getAadnombre().isEmpty()
-                    || areaAdministrativaHelper.getProgramaEducativo().getPedid() == 0) {
-
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "Favor de llenar todos los campos");
+                    && areaAdministrativaHelper.getAreaAdministrativa().getProgramaeducativo().getPedid() == 0) {
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Capturar campo(s) vacío(s) Programa Educativo y Nombre ");
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
-            } else {
-                MensajeVal = areaAdministrativaHelper.Validar();//Se manda a llamar el metodo que nos devolvera un mensaje sobre los campos repetidos
-                if (MensajeVal.isEmpty()) {//En caso de que la variable este vacia se le asignara una palabra para represente que no exten campos vacios
-                    MensajeVal = "nada";
+            }
+            else{
+                if(areaAdministrativaHelper.getAreaAdministrativa().getAadnombre().isEmpty()){
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Capturar campo(s) vacío(s) Nombre ");
+                    RequestContext.getCurrentInstance().showMessageInDialog(message);
                 }
-                if (MensajeVal.equals("nada")) {
-                    if (cabecera.equals("Agregar Área Administrativa")) {
-                        //areaAdministrativaHelper.getAreaAdministrativa().setProgramaeducativo(areaAdministrativaHelper.getProgramaEducativo());
-                        areaAdministrativaHelper.getAreaAdministrativaDelegate().agregarAreaAdministrativa(areaAdministrativaHelper.getAreaAdministrativa());
-                        
-                        areaAdministrativaHelper.setAreaAdministrativa(new Areaadministrativa(new Programaeducativo(), ""));
-                        //areaAdministrativaHelper.setProgramaEducativo(new Programaeducativo());                        
-
-                        FacesContext context = FacesContext.getCurrentInstance();
-                        context.addMessage(null, new FacesMessage("Alta", "Se guardó correctamente"));
-                    } else {
-//                        if (profesorBeanHelper.getProfesorDeleagate().getProfAsignado(profesorBeanHelper.getProfesor().getProid()).size() > 0) {
-//                            RequestContext.getCurrentInstance().execute("confirmacion.show()");
-//                        } else {
-
+                else{
+                    if(areaAdministrativaHelper.getAreaAdministrativa().getProgramaeducativo().getPedid() == 0){
+                        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Capturar campo(s) vacío(s) Programa educativo ");
+                        RequestContext.getCurrentInstance().showMessageInDialog(message);
+                    }
+                    else {
+                    MensajeVal = areaAdministrativaHelper.Validar();//Se manda a llamar el metodo que nos devolvera un mensaje sobre los campos repetidos
+                    if (MensajeVal.isEmpty()) {//En caso de que la variable este vacia se le asignara una palabra para represente que no exten campos vacios
+                        MensajeVal = "nada";
+                    }
+                    if (MensajeVal.equals("nada")) {
+                        if (cabecera.equals("Agregar área administrativa")) {
                             //areaAdministrativaHelper.getAreaAdministrativa().setProgramaeducativo(areaAdministrativaHelper.getProgramaEducativo());
                             areaAdministrativaHelper.getAreaAdministrativaDelegate().agregarAreaAdministrativa(areaAdministrativaHelper.getAreaAdministrativa());
-                            
+
+                            areaAdministrativaHelper.setAreaAdministrativa(new Areaadministrativa(new Programaeducativo(), ""));
+                            //areaAdministrativaHelper.setProgramaEducativo(new Programaeducativo());                        
+                            areaAdministrativaHelper.cargarListaPEdlg();
                             FacesContext context = FacesContext.getCurrentInstance();
-                            context.addMessage(null, new FacesMessage("Modificación", "Se guardó correctamente"));
-//                        }
-                    }
+                            context.addMessage(null, new FacesMessage("Se guardó correctamente",""));
+                        } 
+                        else {
+    //                        if (profesorBeanHelper.getProfesorDeleagate().getProfAsignado(profesorBeanHelper.getProfesor().getProid()).size() > 0) {
+    //                            RequestContext.getCurrentInstance().execute("confirmacion.show()");
+    //                        } else {        
+                                FacesContext context = FacesContext.getCurrentInstance();
+                                context.addMessage(null, new FacesMessage("Se guardó correctamente",""));
+                                //areaAdministrativaHelper.getAreaAdministrativa().setProgramaeducativo(areaAdministrativaHelper.getProgramaEducativo());
+                                areaAdministrativaHelper.getAreaAdministrativaDelegate().agregarAreaAdministrativa(areaAdministrativaHelper.getAreaAdministrativa());
+                                areaAdministrativaHelper.seleccionarRegistro();
+                                areaAdministrativaHelper.setListaSeleccion(areaAdministrativaHelper.getListaSeleccion());             
+                                busqueda="";
+                                //areaAdministrativaHelper.cargarListaPEdlg();                                                        
+                                //RequestContext.getCurrentInstance().execute("dlg.show();");                       
+    //                        }
+                        }
                 } else {
 
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", MensajeVal);
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error de validación", MensajeVal);
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                 }
             }
+            }
+            }
         }
         filtrado();
+        busqueda="";
         return "";
     }
       
       public void Confirmacion() {
-        if (deshabilitar.equals("true")) {
+        if (deshabilitar.equals("true")) {            
             if(renderCancelar.equals("true")){
-            FacesContext context = FacesContext.getCurrentInstance();
-            context.addMessage(null, new FacesMessage("Eliminando", "Se eliminó correctamente"));
-
+                FacesContext context = FacesContext.getCurrentInstance();
+                context.addMessage(null, new FacesMessage("Se eliminó correctamente", ""));
+//                System.out.println(areaAdministrativaHelper.getListaSeleccion().size());
             areaAdministrativaHelper.eliminarDeLista(areaAdministrativaHelper.getAreaAdministrativa().getAadid());
             areaAdministrativaHelper.getAreaAdministrativaDelegate().eliminarAreaAdministrativa(areaAdministrativaHelper.getAreaAdministrativa());
             areaAdministrativaHelper.setSeleccionAreaad(new Areaadministrativa(new Programaeducativo(), ""));
             areaAdministrativaHelper.setAreaAdministrativa(new Areaadministrativa(new Programaeducativo(), ""));
             //areaAdministrativaHelper.setProgramaEducativo(new Programaeducativo());
+            
+//                System.out.println(areaAdministrativaHelper.getListaSeleccion().size());
+            RequestContext.getCurrentInstance().update(":formAreaAd:seleccionados");
 
-            RequestContext.getCurrentInstance().execute("confirmacion.hide();");
+            RequestContext.getCurrentInstance().execute("confirmacion.hide();");            
 
+                System.out.println("\n\n"+areaAdministrativaHelper.getListaSeleccion().size());
             if (areaAdministrativaHelper.getListaSeleccion().size() >= 1) {
                 areaAdministrativaHelper.setAreaAdministrativa(areaAdministrativaHelper.getListaSeleccion().get(0));
-                               RequestContext.getCurrentInstance().execute("dlg.show();");
-
+                RequestContext.getCurrentInstance().execute("dlg.show();");                
             }
+            else{                
+                RequestContext.getCurrentInstance().execute("dlg.hide();");                
+            }            
+
             }else{
                 RequestContext.getCurrentInstance().execute("confirmacion.hide();");
                 limpiarSeleccion();
+                RequestContext.getCurrentInstance().execute("dlg.hide();");
             }
-        } else {            
             
+        } else {
             areaAdministrativaHelper.getAreaAdministrativaDelegate().agregarAreaAdministrativa(areaAdministrativaHelper.getAreaAdministrativa());
                         
             RequestContext.getCurrentInstance().execute("confirmacion.hide();");
             FacesContext context = FacesContext.getCurrentInstance();
-            context.addMessage(null, new FacesMessage("Modificación", "Se guardó correctamente"));
-                RequestContext.getCurrentInstance().execute("dlg.show();");
-
+            context.addMessage(null, new FacesMessage("Se guardó correctamente",""));
+            RequestContext.getCurrentInstance().execute("dlg.show();");        
         }
+        
         filtrado();
 //        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "", "Registro eliminado correctamente");
 //        RequestContext.getCurrentInstance().showMessageInDialog(message);
@@ -289,15 +320,15 @@ public class AreaAdministrativaBeanUI implements Serializable{
       
     public String header(int i) {
         if (i == 1) {
-            cabecera = "Agregar Área Administrativa";
+            cabecera = "Agregar área administrativa";
             deshabilitar = "false";
         }
         if (i == 2) {
-            cabecera = "Eliminar Área Administrativa";
+            cabecera = "Eliminar área administrativa";
             deshabilitar = "true";
         }
         if (i == 3) {
-            cabecera = "Modificar Área Administrativa";
+            cabecera = "Modificar área administrativa";
             deshabilitar = "false";
         }
         return cabecera;
@@ -333,7 +364,7 @@ public class AreaAdministrativaBeanUI implements Serializable{
     public void setMensajeConfirmacion() {
         if (deshabilitar.equals("true")) {
             if (areaAdministrativaHelper.getAreaAdministrativaDelegate().getAreaAsignada(areaAdministrativaHelper.getAreaAdministrativa().getAadid()).size() > 0) {
-                mensajeConfirmacion = "El profesor se encuentra asignado a una  unidad de aprendizaje y profesor.";
+                mensajeConfirmacion = "El área tiene un coordinador y unidades de aprendizaje asignadas";
                 renderCancelar = "false";
             } else {
                 mensajeConfirmacion = "¿Está seguro de eliminar el registro?";
@@ -341,7 +372,7 @@ public class AreaAdministrativaBeanUI implements Serializable{
             }
         } else{
             if (cabecera.equals("Modificar Área Administrativa") && areaAdministrativaHelper.getAreaAdministrativaDelegate().getAreaAsignada(areaAdministrativaHelper.getAreaAdministrativa().getAadid()).size() > 0) {
-            mensajeConfirmacion = "El profesor se encuentra asignado a una  unidad de aprendizaje y profesor. ¿Está seguro de guardar los cambios?";
+            mensajeConfirmacion = "El area tiene un coordinador y unidades de aprendizaje asugnadas. ¿Está seguro de guardar los cambios?";
             renderCancelar = "true";
             }
         }
@@ -357,6 +388,32 @@ public class AreaAdministrativaBeanUI implements Serializable{
     }
 //</editor-fold>
     public void filtrado() {
-        listaFiltrada = areaAdministrativaHelper.filtrado(busqueda);
+        List<Rol> list = null;
+        list = loginBean.Obtenerrol(loginBean.getLogueado().getUsuid());
+        String seleccionado=loginBean.getSeleccionado();
+        System.out.println(seleccionado+"ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ");
+        String catalogo="Administración de área administrativa";
+        loginBean.TienePermiso(list, seleccionado, catalogo);
+        //listaFiltrada = areaAdministrativaHelper.filtrado("",busqueda);
+        //System.out.println("-----------------------------"+busqueda);
+        String busqProg="";    
+        areaAdministrativaHelper.getUsuarioTienePE();
+        try{
+            busqProg=areaAdministrativaHelper.buscarNomProedu(areaAdministrativaHelper.getProgramaEducativo().getPedid());            
+        }catch(Exception e){
+            
+        }
+        if(busqProg.equalsIgnoreCase("")){
+            listaFiltrada = areaAdministrativaHelper.filtrado("Nombre", busqueda);            
+        }
+        else{            
+                if(busqueda.equalsIgnoreCase("")){
+                    listaFiltrada = areaAdministrativaHelper.filtrado("Progedu", busqProg);                    
+                }
+                else{
+                    String busqProgNom=busqueda+"--"+busqProg;
+                    listaFiltrada = areaAdministrativaHelper.filtrado("ProgeduNom", busqProgNom);                    
+                }            
+        }        
     }
 }

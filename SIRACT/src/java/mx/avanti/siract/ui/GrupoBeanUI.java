@@ -14,6 +14,7 @@ import mx.avanti.siract.application.helper.ProgramaEducativoBeanHelper;
 import mx.avanti.siract.business.entity.Grupo;
 import mx.avanti.siract.business.entity.Planestudio;
 import mx.avanti.siract.business.entity.Programaeducativo;
+import mx.avanti.siract.business.entity.Rol;
 import org.primefaces.context.RequestContext;
 import org.primefaces.event.UnselectEvent;
 
@@ -43,6 +44,7 @@ public class GrupoBeanUI implements Serializable {
     private String deshabilitarAceptar;
 
     private String mensajeConfirm;
+    private String botonAceptar;
 
     /* variables para la busqueda por filtro y la lista de resultados */
     private String busqueda = "";
@@ -53,11 +55,12 @@ public class GrupoBeanUI implements Serializable {
 
     /* variable para obtener el mensaje de los datos repetidos */
     private String mensajeRep;
+    private String mensajeVacio = "";
 
     @PostConstruct
     public void postConstructor() {
         grupoBeanHelper.setRolSeleccionado(loginBean.getSeleccionado());
-        grupoBeanHelper.setUsuario(loginBean.getUsuario());
+        grupoBeanHelper.setUsuario(loginBean.getLogueado());
         filtrado();
     }
 
@@ -184,12 +187,28 @@ public class GrupoBeanUI implements Serializable {
         this.mensajeConfirm = mensajeConfirm;
     }
 
+    public String getBotonAceptar() {
+        return botonAceptar;
+    }
+
+    public void setBotonAceptar(String botonAceptar) {
+        this.botonAceptar = botonAceptar;
+    }
+
     public String getMensajeRep() {
         return mensajeRep;
     }
 
     public void setMensajeRep(String mensajeRep) {
         this.mensajeRep = mensajeRep;
+    }
+
+    public String getMensajeVacio() {
+        return mensajeVacio;
+    }
+
+    public void setMensajeVacio(String mensajeVacio) {
+        this.mensajeVacio = mensajeVacio;
     }
 
     public LoginBean getLoginBean() {
@@ -206,8 +225,10 @@ public class GrupoBeanUI implements Serializable {
         if (deshabilitar.equals("true")) {
             if (grupoBeanHelper.getGrupoDelegate().getGrupoAsignado(grupoBeanHelper.getGrupo().getGpoid()).size() > 0) {
                 mensajeConfirm = "El grupo se encuentra asignado a una  unidad de aprendizaje y profesor.";
+                botonAceptar = "false";
             } else {
                 mensajeConfirm = "¿Está seguro de eliminar el registro?";
+                botonAceptar = "true";
             }
         } else if (header.equals("Modificar Grupo") && grupoBeanHelper.getGrupoDelegate().getGrupoAsignado(grupoBeanHelper.getGrupo().getGpoid()).size() > 0) {
             mensajeConfirm = "El grupo se encuentra asignado a una  unidad de aprendizaje y profesor. ¿Está seguro de guardar los cambios?";
@@ -254,7 +275,7 @@ public class GrupoBeanUI implements Serializable {
                 grupoBeanHelper.setGrupo(grupoBeanHelper.getListaGpoSeleccionada().get(0));
                 grupoBeanHelper.setPlanestudio(grupoBeanHelper.getListaGpoSeleccionada().get(0).getPlanestudio());
                 grupoBeanHelper.setProgramaEducativo(programaEducativoBeanHelper.getProgramaEducativoDelegate().findProgramaEducativoById(grupoBeanHelper.getPlanestudio().getProgramaeducativo().getPedid()));
-
+                dialogFiltrarPlan();
 //                grupoBeanHelper.setProgramaEducativo();
 //                deshabilitarAceptar = "false";
             } else {
@@ -265,7 +286,7 @@ public class GrupoBeanUI implements Serializable {
                     grupoBeanHelper.setGrupo(grupoBeanHelper.getListaGpoSeleccionada().get(0));
                     grupoBeanHelper.setPlanestudio(grupoBeanHelper.getListaGpoSeleccionada().get(0).getPlanestudio());
                     grupoBeanHelper.setProgramaEducativo(programaEducativoBeanHelper.getProgramaEducativoDelegate().findProgramaEducativoById(grupoBeanHelper.getPlanestudio().getProgramaeducativo().getPedid()));
-
+                    dialogFiltrarPlan();
                 }
             }
         } catch (NullPointerException e) {
@@ -304,14 +325,24 @@ public class GrupoBeanUI implements Serializable {
     /*se termina de agregar la linea del metodo dlgCabecera */
 
     /* metodo para validar si algun campos esta vacio y muestre un mensaje */
-    public boolean validacion() {
-        if (grupoBeanHelper.getGrupo().getGponumero() == 0
-                || String.valueOf(grupoBeanHelper.getGrupo().getGponumero()).isEmpty()
-                || grupoBeanHelper.getPlanestudio().getPesid() == 0) {
-            return true;
-        } else {
-            return false;
+    public String validacion() {
+        mensajeVacio = "";
+        if (grupoBeanHelper.getGrupo().getGponumero() == 0 || String.valueOf(grupoBeanHelper.getGrupo().getGponumero()).isEmpty()){
+            mensajeVacio = mensajeVacio + "Numero de grupo,";
         }
+        
+        if(grupoBeanHelper.getPlanestudio().getPesid() == 0) {
+           mensajeVacio = mensajeVacio + " Plan de estudio,";
+        }
+        
+//        if(grupoBeanHelper.getProgramaEducativo().getPedid() == 0){
+//            mensajeVacio = mensajeVacio + " Programa educativo";
+//        }
+        
+        return mensajeVacio;
+//        } else {
+//            return false;
+//        }
 
     }
 
@@ -328,6 +359,7 @@ public class GrupoBeanUI implements Serializable {
         if (grupoBeanHelper.getListaGpoSeleccionada().size() == 1) {
             grupoBeanHelper.setGrupo(grupoBeanHelper.getListaGpoSeleccionada().get(0));
             grupoBeanHelper.setPlanestudio(grupoBeanHelper.getListaGpoSeleccionada().get(0).getPlanestudio());
+
         }
         filtrado();
     }
@@ -348,27 +380,37 @@ public class GrupoBeanUI implements Serializable {
     public void confirmacionAceptada() {
         //deshabilitarAceptar = "false";
         if (deshabilitar.equals("true")) {
-            FacesContext context = FacesContext.getCurrentInstance();
-            context.addMessage(null, new FacesMessage("Eliminando", "Se eliminó correctamente"));
+            if (botonAceptar.equals("true")) {
+                esconderBotones();
+                FacesContext context = FacesContext.getCurrentInstance();
+                context.addMessage(null, new FacesMessage("", "Se eliminó correctamente"));
 
-            grupoBeanHelper.eliminarDeLista(grupoBeanHelper.getGrupo().getGpoid());
-            grupoBeanHelper.getGrupoDelegate().eliminarGrupo(grupoBeanHelper.getGrupo());
-            grupoBeanHelper.setSelecGrupo(new Grupo());
-            grupoBeanHelper.setGrupo(new Grupo());
-            grupoBeanHelper.setSelecGrupo(new Grupo());
-            RequestContext.getCurrentInstance().execute("confirmdlg.hide();");
+                grupoBeanHelper.eliminarDeLista(grupoBeanHelper.getGrupo().getGpoid());
+                grupoBeanHelper.getGrupoDelegate().eliminarGrupo(grupoBeanHelper.getGrupo());
+                grupoBeanHelper.setSelecGrupo(new Grupo());
+                grupoBeanHelper.setGrupo(new Grupo());
+//                grupoBeanHelper.setPlanestudio(new Planestudio());
+//                grupoBeanHelper.setProgramaEducativo(new Programaeducativo());
+//                grupoBeanHelper.setSelecGrupo(new Grupo());
 
-            if (grupoBeanHelper.getListaGpoSeleccionada().size() >= 1) {
-                grupoBeanHelper.setGrupo(grupoBeanHelper.getListaGpoSeleccionada().get(0));
-                grupoBeanHelper.setPlanestudio(grupoBeanHelper.getListaGpoSeleccionada().get(0).getPlanestudio());
-                RequestContext.getCurrentInstance().execute("dlg.show();");
-                //deshabilitarAceptar = "true";
+                RequestContext.getCurrentInstance().execute("confirmdlg.hide();");
+
+                if (grupoBeanHelper.getListaGpoSeleccionada().size() >= 1) {
+                    grupoBeanHelper.setGrupo(grupoBeanHelper.getListaGpoSeleccionada().get(0));
+                    grupoBeanHelper.setPlanestudio(grupoBeanHelper.getListaGpoSeleccionada().get(0).getPlanestudio());
+                    grupoBeanHelper.setProgramaEducativo(programaEducativoBeanHelper.getProgramaEducativoDelegate().findProgramaEducativoById(grupoBeanHelper.getPlanestudio().getProgramaeducativo().getPedid()));
+                    RequestContext.getCurrentInstance().execute("dlg.show();");
+                    //deshabilitarAceptar = "true";
+                }
+            } else {
+                RequestContext.getCurrentInstance().execute("confirmdlg.hide();");
+                limpiarSeleccion();
             }
 
         } else {
 
             FacesContext context = FacesContext.getCurrentInstance();
-            context.addMessage(null, new FacesMessage("Modificando", "Se guardó correctamente"));
+            context.addMessage(null, new FacesMessage("", "Se guardó correctamente"));
 
             grupoBeanHelper.getGrupoDelegate().agregarGrupo(grupoBeanHelper.getGrupo());
             grupoBeanHelper.seleccionarRegistro();
@@ -389,16 +431,18 @@ public class GrupoBeanUI implements Serializable {
     public String onClickSubmit() {
 
         String resultado = "";
+
         setMensajeConfirm();
+        RequestContext.getCurrentInstance().update("confirmdlg");
 
         if (deshabilitar.equals("true")) {
             //System.out.println("point here");
             //boolean res = validacion();                    }else if(header.equals("Eliminar Grupo")){
             RequestContext.getCurrentInstance().execute("confirmdlg.show()");
         } else {
-            if (validacion()) {
+            if (!validacion().isEmpty()) {
                 //System.out.println("point here 2");
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Favor de llenar todos los campos vacios");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Favor de llenar " + mensajeVacio);
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
             } else {
 
@@ -413,7 +457,7 @@ public class GrupoBeanUI implements Serializable {
                     if (header.equals("Agregar Grupo")) {
 
                         FacesContext context = FacesContext.getCurrentInstance();
-                        context.addMessage(null, new FacesMessage("Agregando", "Se guardó correctamente"));
+                        context.addMessage(null, new FacesMessage("", "Se guardó correctamente"));
 
                         grupoBeanHelper.getGrupoDelegate().agregarGrupo(grupoBeanHelper.getGrupo());
                         grupoBeanHelper.setGrupo(new Grupo());
@@ -423,10 +467,12 @@ public class GrupoBeanUI implements Serializable {
                         grupoBeanHelper.getPlanestudio().setPesid(0);
                     } else if (header.equals("Modificar Grupo")) {
                         if (grupoBeanHelper.getGrupoDelegate().getGrupoAsignado(grupoBeanHelper.getGrupo().getGpoid()).size() > 0) {
+                            botonAceptar = "true";
+                            RequestContext.getCurrentInstance().update("confirmdlg");
                             RequestContext.getCurrentInstance().execute("confirmdlg.show()");
                         } else {
                             FacesContext context = FacesContext.getCurrentInstance();
-                            context.addMessage(null, new FacesMessage("Modificando", "Se guardó correctamente"));
+                            context.addMessage(null, new FacesMessage("", "Se guardó correctamente"));
 
                             grupoBeanHelper.getGrupoDelegate().agregarGrupo(grupoBeanHelper.getGrupo());
                             grupoBeanHelper.seleccionarRegistro();
@@ -439,7 +485,7 @@ public class GrupoBeanUI implements Serializable {
                     RequestContext.getCurrentInstance().update(":frmGrupo:idSelecPE");
                     RequestContext.getCurrentInstance().update(":frmGrupo:idSelectPlan");
                 } else {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "Campos repetidos en:" + mensajeRep);
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "El: " + mensajeRep + " ya existe");
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                 }
 
@@ -452,6 +498,12 @@ public class GrupoBeanUI implements Serializable {
     /* metodo para llamar al metodo de filtrado en el Helper */
 
     public void filtrado() {
+        List<Rol> list = null;
+        list = loginBean.Obtenerrol(loginBean.getLogueado().getUsuid());
+        String seleccionado=loginBean.getSeleccionado();
+        System.out.println(seleccionado+"ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ");
+        String catalogo="Administración grupo";
+        loginBean.TienePermiso(list, seleccionado, catalogo);
         listaFiltrada = grupoBeanHelper.filtrado("Nombre", busqueda);
     }
 

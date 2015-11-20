@@ -7,6 +7,7 @@ package mx.avanti.siract.business;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import mx.avanti.siract.business.entity.Programaeducativo;
 import mx.avanti.siract.business.entity.Unidadacademica;
 import mx.avanti.siract.business.services.ServiceFacadeLocator;
 import mx.avanti.siract.common.integration.ServiceLocator;
@@ -50,7 +51,7 @@ public class UnidadAcademicaDelegate implements Serializable{
     
     public List<Unidadacademica> getUAasignado(Integer uacid){
         List<Unidadacademica> listaUAC;
-        ServiceLocator.getInstanceBaseDAO().setTipo(Unidadacademica.class);
+        ServiceLocator.getInstanceBaseDAO().setTipo(Programaeducativo.class);
         listaUAC = ServiceLocator.getInstanceBaseDAO().findFromWhereB("unidadacademica","uacid",String.valueOf(uacid),"pedid");
         return listaUAC;
     }  

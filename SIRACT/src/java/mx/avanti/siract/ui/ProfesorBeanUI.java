@@ -17,6 +17,7 @@ import mx.avanti.siract.application.helper.ProfesorBeanHelper;
 import mx.avanti.siract.application.helper.UsuarioBeanHelper;
 import mx.avanti.siract.business.entity.Profesor;
 import mx.avanti.siract.business.entity.Programaeducativo;
+import mx.avanti.siract.business.entity.Rol;
 //import mx.avanti.siract.business.entity.Puesto;
 import mx.avanti.siract.business.entity.Usuario;
 import org.primefaces.context.RequestContext;
@@ -48,6 +49,8 @@ public class ProfesorBeanUI implements Serializable {
     private Profesor profesor;
     private String MensajeVal = "";//variable que tendra el mensaje sobre los datos repetidos
     private String mensajeConfirmacion;
+    private String renderCancelar;
+    private String mensajeVacio;
 
     public ProfesorBeanUI() {
         init();
@@ -143,6 +146,22 @@ public class ProfesorBeanUI implements Serializable {
         this.busqueda = busqueda;
     }
 
+    public String getRenderCancelar() {
+        return renderCancelar;
+    }
+
+    public void setRenderCancelar(String renderCancelar) {
+        this.renderCancelar = renderCancelar;
+    }
+
+    public String getMensajeVacio() {
+        return mensajeVacio;
+    }
+
+    public void setMensajeVacio(String mensajeVacio) {
+        this.mensajeVacio = mensajeVacio;
+    }
+
     public List<Profesor> getListaFiltrada() {
         return listaFiltrada;
     }
@@ -178,12 +197,18 @@ public class ProfesorBeanUI implements Serializable {
     public void postConstructor() {
 //        profesorBeanHelper.setListaRol(loginBean.Obtenerrol(loginBean.getUsuario().getUsuid()));
         profesorBeanHelper.setRolSeleccionado(loginBean.getSeleccionado());
-        profesorBeanHelper.setUsuario(loginBean.getUsuario());
+        profesorBeanHelper.setUsuario(loginBean.getLogueado());
         System.out.println("rol desde el BeanUI: " + loginBean.getSeleccionado());
-        System.out.println("id del usuario desde login " + loginBean.getUsuario().getUsuid());
+        System.out.println("id del usuario desde login " + loginBean.getLogueado().getUsuid());
     }
 
     public void filtrado() {
+        List<Rol> list = null;
+        list = loginBean.Obtenerrol(loginBean.getLogueado().getUsuid());
+        String seleccionado=loginBean.getSeleccionado();
+        System.out.println(seleccionado+"ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ");
+        String catalogo="Administración de profesores";
+        loginBean.TienePermiso(list, seleccionado, catalogo);
         listaFiltrada = profesorBeanHelper.filtrado("Nombre", busqueda);
 //        RequestContext.getCurrentInstance().update(":frmProfesor:seleccionados");
 //        RequestContext.getCurrentInstance().update("frmProfesor:seleccionados");
@@ -270,8 +295,9 @@ public class ProfesorBeanUI implements Serializable {
 
     public void Confirmacion() {
         if (deshabilitar.equals("true")) {
+            if(renderCancelar.equals("true")){
             FacesContext context = FacesContext.getCurrentInstance();
-            context.addMessage(null, new FacesMessage("Eliminando", "Se eliminó correctamente"));
+            context.addMessage(null, new FacesMessage("", "Se eliminó correctamente"));
 
             profesorBeanHelper.eliminarDeLista(profesorBeanHelper.getProfesor().getProid());
             profesorBeanHelper.getProfesorDeleagate().eliminarProfesor(profesorBeanHelper.getProfesor());
@@ -286,6 +312,11 @@ public class ProfesorBeanUI implements Serializable {
             if (profesorBeanHelper.getListaSeleccionProfesores().size() >= 1) {
                 profesorBeanHelper.setProfesor(profesorBeanHelper.getListaSeleccionProfesores().get(0));
                 profesorBeanHelper.setUsuario2(profesorBeanHelper.getListaSeleccionProfesores().get(0).getUsuario());
+                RequestContext.getCurrentInstance().execute("dlg.show();");
+            }
+            } else {
+                RequestContext.getCurrentInstance().execute("confirmacion.hide();");
+                limpiarSeleccion();                
             }
         } else {
             HashSet setPE = new HashSet();
@@ -309,7 +340,7 @@ public class ProfesorBeanUI implements Serializable {
             }
             RequestContext.getCurrentInstance().execute("confirmacion.hide();");
             FacesContext context = FacesContext.getCurrentInstance();
-            context.addMessage(null, new FacesMessage("Modificación", "Se guardó correctamente"));
+            context.addMessage(null, new FacesMessage("", "Se guardó correctamente"));
 
         }
         filtrado();
@@ -323,16 +354,9 @@ public class ProfesorBeanUI implements Serializable {
         if (deshabilitar.equals("true")) {
             RequestContext.getCurrentInstance().execute("confirmacion.show()");
         } else {
-            if (profesorBeanHelper.getProfesor().getPronumeroEmpleado() == 0
-                    || profesorBeanHelper.getProfesor().getPronumeroEmpleado() < 1
-                    || profesorBeanHelper.getProfesor().getProrfc().isEmpty()
-                    || profesorBeanHelper.getProfesor().getPronombre().isEmpty()
-                    || profesorBeanHelper.getProfesor().getProapellidoPaterno().isEmpty()
-                    || profesorBeanHelper.getProfesor().getProapellidoMaterno().isEmpty()
-                    || profesorBeanHelper.getUsuario2().getUsuid() == 0
-                    || obtenerListaPE.isEmpty()) {
+            if (!validarCamposVacios().isEmpty()) {
 
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "Favor de llenar todos los campos");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "Favor de llenar: " + mensajeVacio);
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
             } else {
                 MensajeVal = profesorBeanHelper.Validar();//Se manda a llamar el metodo que nos devolvera un mensaje sobre los campos repetidos
@@ -363,7 +387,7 @@ public class ProfesorBeanUI implements Serializable {
                         obtenerListaPE.clear();
 
                         FacesContext context = FacesContext.getCurrentInstance();
-                        context.addMessage(null, new FacesMessage("Alta", "Se guardó correctamente"));
+                        context.addMessage(null, new FacesMessage("", "Se guardó correctamente"));
                     } else {
                         if (profesorBeanHelper.getProfesorDeleagate().getProfAsignado(profesorBeanHelper.getProfesor().getProid()).size() > 0) {
                             RequestContext.getCurrentInstance().execute("confirmacion.show()");
@@ -390,7 +414,7 @@ public class ProfesorBeanUI implements Serializable {
                             }
 
                             FacesContext context = FacesContext.getCurrentInstance();
-                            context.addMessage(null, new FacesMessage("Modificación", "Se guardó correctamente"));
+                            context.addMessage(null, new FacesMessage("", "Se guardó correctamente"));
                         }
 //                        profesorBeanHelper.seleccionarRegistro();                        
 
@@ -403,7 +427,7 @@ public class ProfesorBeanUI implements Serializable {
 //            RequestContext.getCurrentInstance().showMessageInDialog(message);   
                 } else {
 
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "Campos repetidos en:" + MensajeVal);
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "El: " + MensajeVal + " ya exite");
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                 }
             }
@@ -539,12 +563,14 @@ public class ProfesorBeanUI implements Serializable {
         if (deshabilitar.equals("true")) {
             if (profesorBeanHelper.getProfesorDeleagate().getProfAsignado(profesorBeanHelper.getProfesor().getProid()).size() > 0) {
                 mensajeConfirmacion = "El profesor se encuentra asignado a una  unidad de aprendizaje y profesor.";
+                renderCancelar = "false";
             } else {
                 mensajeConfirmacion = "¿Está seguro de eliminar el registro?";
+                renderCancelar = "true";
             }
         } else if (cabecera.equals("Modificar Profesor") && profesorBeanHelper.getProfesorDeleagate().getProfAsignado(profesorBeanHelper.getProfesor().getProid()).size() > 0) {
             mensajeConfirmacion = "El profesor se encuentra asignado a una  unidad de aprendizaje y profesor. ¿Está seguro de guardar los cambios?";
-
+            renderCancelar = "true";
         }
         RequestContext.getCurrentInstance().update("confirmacionId");
     }
@@ -569,5 +595,40 @@ public class ProfesorBeanUI implements Serializable {
         for (Programaeducativo pe : profesorBeanHelper.getListaPEMod()) {
             obtenerListaPE.add(pe.getPednombre());
         }
+    }
+    
+    public String validarCamposVacios(){
+        mensajeVacio = "";
+        
+        if(profesorBeanHelper.getProfesor().getPronumeroEmpleado() == 0
+                || profesorBeanHelper.getProfesor().getPronumeroEmpleado() < 1){
+            mensajeVacio = mensajeVacio + "numero de empleado, ";
+        }       
+        
+        if(profesorBeanHelper.getProfesor().getProrfc().isEmpty()){
+            mensajeVacio = mensajeVacio + "RFC, ";
+        }
+        
+        if(profesorBeanHelper.getProfesor().getPronombre().isEmpty()){
+            mensajeVacio = mensajeVacio + "nombre del profesor, ";
+        }
+        
+        if(profesorBeanHelper.getProfesor().getProapellidoPaterno().isEmpty()){
+            mensajeVacio = mensajeVacio + "apellido paterno, ";
+        }
+        
+        if(profesorBeanHelper.getProfesor().getProapellidoMaterno().isEmpty()){
+            mensajeVacio = mensajeVacio + "apellido materno, ";
+        }
+        
+        if(profesorBeanHelper.getUsuario2().getUsuid() == 0){
+            mensajeVacio = mensajeVacio + "usuario, ";
+        }
+        
+        if(obtenerListaPE.isEmpty()){
+            mensajeVacio = mensajeVacio + "programa educativo";
+        }
+                    
+        return mensajeVacio;   
     }
 }

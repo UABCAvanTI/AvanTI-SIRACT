@@ -413,9 +413,9 @@ public class ConfiguracionBeanUI implements Serializable{
     }
     
 //Alertas
-    EnvioAlertaThread envioAlertaThread=new EnvioAlertaThread();
-    public void ejecutarAlertas(boolean estado){
-       // envioAlertaThread.revisarAlertas(estado);
-        envioAlertaThread.estatusAlertas(estado);
-    }
+//    EnvioAlertaThread envioAlertaThread=new EnvioAlertaThread();
+//    public void ejecutarAlertas(boolean estado){
+//       // envioAlertaThread.revisarAlertas(estado);
+//        envioAlertaThread.estatusAlertas(estado);
+//    }
 }

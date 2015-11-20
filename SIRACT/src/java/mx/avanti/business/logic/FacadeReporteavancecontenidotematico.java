@@ -14,6 +14,7 @@ import mx.avanti.siract.business.entity.Areaconocimiento;
 import mx.avanti.siract.business.entity.Calendarioreporte;
 import mx.avanti.siract.business.entity.CalendarioreporteTieneAlerta;
 import mx.avanti.siract.business.entity.Configuracion;
+import mx.avanti.siract.business.entity.Coordinadorareaadministrativa;
 import mx.avanti.siract.business.entity.Reporteavancecontenidotematico;
 import mx.avanti.siract.business.entity.UnidadaprendizajeImparteProfesor;
 import mx.avanti.siract.common.integration.ServiceLocator;
@@ -59,7 +60,7 @@ public class FacadeReporteavancecontenidotematico {
 //                    criterio+="unidadaprendizajeImparteProfesor.grupo.gpoid = "+id_grupo+" AND ";
                     criterio+="unidadaprendizajeImparteProfesor.unidadaprendizaje.uapclave = "+id_unidadAprendizaje+" AND ";
                     criterio+="unidadaprendizajeImparteProfesor.uipsubgrupo = "+subGrupo+"";
-            resultado = (Reporteavancecontenidotematico) ServiceLocator.getInstanceBaseDAO().findMultipleIDExtra(id_grupo,criterio,"unidadaprendizajeImparteProfesor.grupo.gponumero","order by racnumero desc","Reporteavancecontenidotematico");
+            resultado = (Reporteavancecontenidotematico) ServiceLocator.getInstanceBaseDAO().findMultipleIDExtra(id_grupo,criterio,"unidadaprendizajeImparteProfesor.grupo.gponumero","order by racnumero desc, racid desc","Reporteavancecontenidotematico");
             return resultado;
       }
         
@@ -156,4 +157,19 @@ public class FacadeReporteavancecontenidotematico {
         resultado = ServiceLocator.getInstanceReportes().findByUnidadImparte(uipid);
         return resultado;
     }
+    
+
+
+    
+    public List<Coordinadorareaadministrativa> consultaCoordAreaAdminProfUAprend(int uapclave){
+        List<Coordinadorareaadministrativa> resultado=null;
+        resultado = ServiceLocator.getInstanceReportes().findByCriteriaDetalladoCordAreaAdminProfUAprend(uapclave);
+        return resultado;
+    }
+       public List<Coordinadorareaadministrativa> consultaCoordAreaAdminProfUAprend(int uapclave,int pedclave,int aadid){
+        List<Coordinadorareaadministrativa> resultado=null;
+        resultado = ServiceLocator.getInstanceReportes().findByCriteriaDetalladoCordAreaAdminProfUAprend(uapclave,pedclave,aadid);
+        return resultado;
+    }
+ 
 }

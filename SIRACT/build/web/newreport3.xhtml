@@ -6,14 +6,16 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:pe="http://primefaces.org/ui/extensions">
-    <h:head> 
+    <h:head>
         <title>SIRACT - Generar Reportes</title> 
          <script type="text/javascript"> 
             function showBtnCriterio(criterio){
                 $('.opcionesCriterio').css('display','none');
                 $("#forma\\:formulario_"+criterio).css('display','block'); 
             }
-             
+            function redireccionar(){
+                location.href="http://localhost:8085/Siract_reportes/faces/GaugeMetersProgEdu.xhtml";
+            } 
             function exportChart() {
                //convierte la grafica del canvas en imagen
                img = barrasResultado.exportAsImage();
@@ -61,11 +63,11 @@
         <h:outputStylesheet library="css" name="Style_2.css" />
     </h:head>
     <h:body>
-        <h:form id="forma">
+        <h:form id="forma"> 
             
             <p:growl id="growl" showDetail="false" sticky="false" life="5000"/> 
             
-            <p:panel id="nav" header="Reportes">                    
+            <p:panel id="nav" header="Reportes">                   
                                                       
                     <p:commandButton actionListener="#" value="Consultas" styleClass="btnCONS" onclick="comunes.show(); showBtnCriterio('#{filtrosBeanUI.criterio}');"/>
                     <p:commandButton actionListener="#" value=""  id="btnGC" styleClass="btnAU" onclick="guardarReport.show()" update=":formGuardar :formModificar :formEliminar :formEjecutarQueryConsultaGuardada" disabled="#{filtrosBeanUI.disableBtnGenerarGrafico()}"/>
@@ -164,12 +166,13 @@
                     <p:row>
                         <p:column>Criterio de Búsqueda: </p:column>
                         <p:column>
-                            <p:selectOneMenu id="criterio" value="#{filtrosBeanUI.criterio}" onchange="showBtnCriterio(this.value);">  
+                            <p:selectOneMenu id="criterio" value="#{filtrosBeanUI.criterio}" onchange="showBtnCriterio(this.value);" valueChangeListener="#{filtrosBeanUI.limpiarFiltrosByCriterio()}">  
                                 <f:selectItem itemLabel="Selecciona uno" itemValue=" "/>
                                 <f:selectItem itemLabel="Programa educativo" itemValue="programa_educativo"/>
                                 <f:selectItem itemLabel="Área de conocimientos" itemValue="area_conocimiento"/>
                                 <f:selectItem itemLabel="Unidad de aprendizaje" itemValue="unidad_aprendizaje"/>
                                 <f:selectItem itemLabel="Profesor" itemValue="profesor"/>
+                                <p:ajax update=":forma:proged2 :forma:proged3 :forma:proged4 :forma:planesestudios :forma:unidad_aprendizaje_planesestudios :forma:profesor_planesestudios :forma:areasconimiento_form_area :forma:unidad_aprendizaje_areas :forma:profesor_areas :forma:unidad_aprendizaje_form :forma:profesor_profesorunidades :forma:unidad_aprendizaje_grupos :forma:profesor_grupos :forma:profesor_profesor"/>
                             </p:selectOneMenu>
                            
                         </p:column>
@@ -192,7 +195,7 @@
                             <h:outputText value="Programa educativo:"/>
                         </p:column>
                         <p:column>
-                            <p:selectCheckboxMenu id="programasporclave"  value="#{filtrosBeanUI.selectProgramEducativo}" label="Selecciona programa educativo" filter="true"  >                                                              
+                            <p:selectCheckboxMenu id="programasporclave"  value="#{filtrosBeanUI.selectProgramEducativo}" label="Selecciona programa educativo" filter="true" >                                                              
                                 <p:ajax update=":forma:btnGenerarReporte" />
                                 <p:ajax event="toggleSelect" update=":forma:btnGenerarReporte" />
                                 <p:ajax event="change" update=":forma:btnGenerarReporte" />
@@ -210,10 +213,10 @@
                             <h:outputText value="Programa educativo:"/>
                         </p:column>
                         <p:column>                            
-                            <p:selectOneMenu value="#{filtrosBeanUI.programaeducativo.pedclave}">
+                            <p:selectOneMenu id="proged2" value="#{filtrosBeanUI.programaeducativo.pedclave}" valueChangeListener="#{filtrosBeanUI.limpiarFiltrosByProgEd()}" >
                                 <f:selectItem itemLabel="Selecciona uno" itemValue="#{0}"/>
                                 <f:selectItems value="#{filtrosBeanUI.programasByUnidadClave}" var="programa" itemLabel="#{programa.pednombre}" itemValue="#{programa.pedclave}" />
-                                <p:ajax update=":forma:planesestudios :forma:btnGenerarReporte :forma:formulario_unidad_aprendizaje :forma:formulario_profesor"/>
+                                <p:ajax update=":forma:planesestudios :forma:btnGenerarReporte :forma:formulario_unidad_aprendizaje :forma:formulario_profesor :forma:planesestudios :forma:unidad_aprendizaje_planesestudios :forma:profesor_planesestudios :forma:areasconimiento_form_area :forma:unidad_aprendizaje_areas :forma:profesor_areas :forma:unidad_aprendizaje_form :forma:profesor_profesorunidades :forma:unidad_aprendizaje_grupos :forma:profesor_grupos :forma:profesor_profesor"/>
                             </p:selectOneMenu>
                         </p:column>
                     </p:row>
@@ -250,10 +253,10 @@
                             <h:outputText value="Programa educativo:"/>
                         </p:column>
                         <p:column>                            
-                            <p:selectOneMenu value="#{filtrosBeanUI.programaeducativo.pedclave}">
+                            <p:selectOneMenu id="proged3" value="#{filtrosBeanUI.programaeducativo.pedclave}" valueChangeListener="#{filtrosBeanUI.limpiarFiltrosByProgEd()}">
                                 <f:selectItem itemLabel="Selecciona uno" itemValue="#{0}"/>
                                 <f:selectItems value="#{filtrosBeanUI.programasByUnidadClave}" var="programa" itemLabel="#{programa.pednombre}" itemValue="#{programa.pedclave}" />
-                                <p:ajax update=":forma:unidad_aprendizaje_planesestudios :forma:btnGenerarReporte  :forma:formulario_area_conocimiento :forma:formulario_profesor"/>
+                                <p:ajax update=":forma:unidad_aprendizaje_planesestudios :forma:btnGenerarReporte  :forma:formulario_area_conocimiento :forma:formulario_profesor :forma:planesestudios :forma:unidad_aprendizaje_planesestudios :forma:profesor_planesestudios :forma:areasconimiento_form_area :forma:unidad_aprendizaje_areas :forma:profesor_areas :forma:unidad_aprendizaje_form :forma:profesor_profesorunidades :forma:unidad_aprendizaje_grupos :forma:profesor_grupos :forma:profesor_profesor"/>
                             </p:selectOneMenu>
                         </p:column>
                     </p:row>
@@ -310,10 +313,10 @@
                             <h:outputText value="Programa educativo:"/> 
                         </p:column>
                         <p:column>                            
-                            <p:selectOneMenu value="#{filtrosBeanUI.programaeducativo.pedclave}">
+                            <p:selectOneMenu id="proged4" value="#{filtrosBeanUI.programaeducativo.pedclave}" valueChangeListener="#{filtrosBeanUI.limpiarFiltrosByProgEd()}">
                                 <f:selectItem itemLabel="Selecciona uno" itemValue="#{0}"/>
                                 <f:selectItems value="#{filtrosBeanUI.programasByUnidadClave}" var="programa" itemLabel="#{programa.pednombre}" itemValue="#{programa.pedclave}" />
-                                <p:ajax update=":forma:profesor_planesestudios :forma:btnGenerarReporte :forma:formulario_unidad_aprendizaje :forma:formulario_area_conocimiento"/>
+                                <p:ajax update=":forma:profesor_planesestudios :forma:btnGenerarReporte :forma:formulario_unidad_aprendizaje :forma:formulario_area_conocimiento :forma:planesestudios :forma:unidad_aprendizaje_planesestudios :forma:profesor_planesestudios :forma:areasconimiento_form_area :forma:unidad_aprendizaje_areas :forma:profesor_areas :forma:unidad_aprendizaje_form :forma:profesor_profesorunidades :forma:unidad_aprendizaje_grupos :forma:profesor_grupos :forma:profesor_profesor"/>
                             </p:selectOneMenu>
                         </p:column>
                     </p:row>
@@ -376,9 +379,8 @@
                         </p:column>
                   
                     </p:row>
-                </p:panelGrid> 
-                
-                
+                </p:panelGrid>
+                        
                 <!-- ejecusion de formulario y seleccion de grafica -->
                 <p:panelGrid>
                     <p:row>
@@ -451,6 +453,13 @@
                                 legendPosition="w" showDataLabels="true" dataFormat="value"/>
             </p:panel>
 
+            <p:panel widgetVar="panelGauge" id="panel_semaforo" rendered="#{filtrosBeanUI.mostrarBar}">      
+                    <h:outputText value="semaforo"/>
+                    <p:meterGaugeChart rendered="#{filtrosBeanUI.mostrarBar}" rendererType="value" id="sample" value="#{filtrosBeanUI.gaugeModel}" style="height:250px" 
+                                       seriesColors="F00000,F00000,F7FE2E,00FF00" label="Ingenieria" showTickLabels="true" labelHeightAdjust="90" intervalOuterRadius="100"/>
+                    <center><p:commandButton value="Expandir" onclick="redireccionar()" ></p:commandButton></center>
+            </p:panel>
+            
             <p:panel widgetVar="panelReporte" id="panel_reporte">
                 <p:fieldset legend=" Captura de profesor - #{filtrosBeanUI.tipoReporteCTR} ">
 
@@ -469,6 +478,7 @@
                         <p:column headerText="Programa educativo">
                             <h:outputText value="#{var.reporteAvance.unidadaprendizajeImparteProfesor.grupo.planestudio.programaeducativo.pednombre}" />
                         </p:column>
+                       
                         <p:column headerText="Área de Conocimiento ">
                             <h:outputText value="#{var.areaConocimiento.aconombre}" />
                         </p:column>

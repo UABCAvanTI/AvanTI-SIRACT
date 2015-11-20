@@ -51,6 +51,7 @@ public class GrupoBeanHelper implements Serializable {
 
     private boolean blnGrupo;
     private boolean blnPlan;
+    private boolean blnPE;
 
     private String mensaje;
     private String rolSeleccionado;
@@ -170,18 +171,19 @@ public class GrupoBeanHelper implements Serializable {
             listaPlanEstudio = planEstudioDelegate.buscarPlanEstudio(programaEducativo.getPedid());
         }
 //            listaFiltrada = grupoDelegate.getListaGrupo();
-        for (Grupo gpo : grupoDelegate.getListaGrupo()) {
-            gpo.setPlanestudio(planEstudioDelegate.findByPlanEstudioId(gpo.getPlanestudio().getPesid()));
-        }           
+//        for (Grupo gpo : grupoDelegate.getListaGrupo()) {
+//            gpo.setPlanestudio(planEstudioDelegate.findByPlanEstudioId(gpo.getPlanestudio().getPesid()));
+//        }           
     }
 
     public void filtrarGpoPorPlan() {
-        List<Grupo> listaGpo = grupoDelegate.getListaGrupo();
+//        List<Grupo> listaGpo = grupoDelegate.getListaGrupo();
 
         try {
             listaFiltrada.clear();
         } catch (NullPointerException e) {
-
+                listaFiltrada = grupoDelegate.getListaGrupo();
+                listaFiltrada.clear();
         }
         if (planestudio.getPesid() != 0) {
             renderPlan = "false";
@@ -190,19 +192,21 @@ public class GrupoBeanHelper implements Serializable {
 //            for (Grupo grupo : listaFiltrada) {
 //                System.out.println("asdasda" + grupo.getGponumero());
 //            }
-        } else if (planestudio.getPesid() == 0) {
-            renderPlan = "true";
-            for (Planestudio plan : listaPlanEstudio) {
-                for (Grupo grup : grupoDelegate.getListaGrupo()) {
-                    if (plan.getPesid() == grup.getPlanestudio().getPesid()) {
-                        listaFiltrada.add(grup);
+        } else { 
+            if (planestudio.getPesid() == 0) {
+                renderPlan = "true";
+                for (Planestudio plan : listaPlanEstudio) {
+                    for (Grupo grup : grupoDelegate.getListaGrupo()) {
+                        if (plan.getPesid() == grup.getPlanestudio().getPesid()) {
+                            listaFiltrada.add(grup);
+                        }
                     }
                 }
             }
         }
-        for (Grupo gpo : grupoDelegate.getListaGrupo()) {
-            gpo.setPlanestudio(planEstudioDelegate.findByPlanEstudioId(gpo.getPlanestudio().getPesid()));
-        }
+//        for (Grupo gpo : grupoDelegate.getListaGrupo()) {
+//            gpo.setPlanestudio(planEstudioDelegate.findByPlanEstudioId(gpo.getPlanestudio().getPesid()));
+//        }
 
     }
 
@@ -221,6 +225,31 @@ public class GrupoBeanHelper implements Serializable {
                     if (uac.getUacid() == pe.getUnidadacademica().getUacid()) {
                         listaProgramaEducativo.add(pe);
                     }
+                }
+            }
+        } else{
+            if(rolSeleccionado.equalsIgnoreCase("Responsable de Programa Educativo")
+                    ||rolSeleccionado.equalsIgnoreCase("Coordinador de Formación Básica")){
+            profesor = profesorDelegate.findProfesorFromUser(usuario.getUsuid());
+            listaProgramaEducativo.add(programaEducativoDelegate.findProgramaEducativoById(programaEducativoDelegate.getResponsablePE(profesor.getProid()).get(0).getPedid()));
+            programaEducativo = listaProgramaEducativo.get(0);
+//            listaFiltrada = profesorDeleagate.getProfPE(listaProgramaEducativo.get(0).getPedid());
+//            
+//            for (Profesor prof : listaFiltrada) {
+//                prof.setUsuario(usuarioDelegate.findUsuarioById(prof.getUsuario().getUsuid()));
+//            }            
+//            for(Profesor prof : profesor2)
+//            listaProgramaEducativo = programaEducativoDelegate.getPEdeResponsable(profesor2.getProid());
+//            if(profesor2.getProid() == responsableProgramaEducativo.getProfesor().getProid()){
+//                listaProgramaEducativo.add(programaEducativoDelegate.findProgramaEducativoById(responsableProgramaEducativo.getProgramaeducativo().getPedid()));
+//            }
+        }else{
+                
+            if(rolSeleccionado.equalsIgnoreCase("Coordinador de Área de Conocimiento")){
+                    profesor = profesorDelegate.findProfesorFromUser(usuario.getUsuid());
+                    listaProgramaEducativo = programaEducativoDelegate.getPEdeCoordinadorAreaAdmin(profesor.getProid());
+                    programaEducativo = listaProgramaEducativo.get(0);
+                    
                 }
             }
         }
@@ -254,19 +283,20 @@ public class GrupoBeanHelper implements Serializable {
     public String validarRepetidos() {
         blnGrupo = true;
         blnPlan = true;
+        blnPE = true;
         mensaje = "";
+        
+        System.out.println("imprimiendo PE para datos repetidos " + programaEducativo.getPedid());
         for (Grupo gpo : grupoDelegate.getListaGrupo()) {
             
             if(gpo.getGponumero() == grupo.getGponumero() && blnGrupo == true
-                        && !gpo.getGpoid().equals(grupo.getGpoid())){
+                    && !gpo.getGpoid().equals(grupo.getGpoid())
+//                    && !programaEducativo.getPedid().equals("0") && blnPE == true
+                    && gpo.getPlanestudio().getPesid().equals(planestudio.getPesid()) && blnPlan == true){                
                 blnGrupo = false;
-            
-            
-            if (gpo.getPlanestudio().getPesid().equals(planestudio.getPesid()) && blnPlan == true) {
                 blnPlan = false;
-                mensaje = mensaje + "[Grupo]";
-//                    break;
-                }
+                blnPE = false;
+                mensaje = mensaje + "Grupo, Plan de estudio";                
             }
         }
         return mensaje;

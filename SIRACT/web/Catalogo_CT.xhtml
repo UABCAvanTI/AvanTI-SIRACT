@@ -1,4 +1,3 @@
-
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
@@ -18,11 +17,13 @@
                 </f:facet>
 
             </h:head>
-            <h:body >
+            <h:body>
                
                 <center>
-                    <h:form id="form" styleClass="formulario" style="width: 90%"  rendered="#{loginBean.tienePermiso}">                      
-                       <p:growl id="growl" showDetail="true" life="10000" />
+                    <h:form id="form" styleClass="formulario" style="width: 90%"  rendered="#{loginBean.tienePermiso}" onkeypress="if (event.keyCode == 13) { return false; }">                      
+                      
+                        
+                        <p:growl id="growl" showDetail="true" life="10000" />
                         <p:fieldset id="field" legend="Catálogo de contenido temático" styleClass="myFieldset" style="width: 100%">
                             <p:outputPanel >
                                 <div>
@@ -204,7 +205,7 @@
                         </p:fieldset>
                     </h:form>
 
-                    <h:form id="formDlg"> 
+                    <h:form id="formDlg" onkeypress="if (event.keyCode == 13) { return false; }"> 
 
                         <p:dialog header="Agregar Unidades" widgetVar="dlgUnidades" resizable="false" showEffect="fade" hideEffect="explode" modal="true">
                             <p:ajax event="close" update="formDlg" listener="#{catalogoCTBeanUI.limpiarCampos()}" resetValues="true"/>
@@ -226,14 +227,14 @@
                                                     <td>Nombre:</td>
                                                     <td>  
                                                         <p:inputText id="nombreU"  maxlength="120" value="#{catalogoCTBeanUI.nuevaUnidad.uninombre}"  size="60"  autocomplete="false" >
-                                                            <pe:keyFilter regEx="/[A-Za-z áéóúíñÁÉÍÓÚÑ,&quot;()]/"/> 
+                                                            <pe:keyFilter regEx="/[A-Za-z0-9 áéóúíñÁÉÍÓÚÑ,&quot;()]/"/> 
                                                         </p:inputText>
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td>Horas:</td>
 
-                                                    <td><p:inputMask id="horasUni" rendered="true" value="#{catalogoCTBeanUI.buscar}" mask="99:00" size="3" autocomplete="false">
+                                                    <td><p:inputMask id="horasUni" rendered="true" value="#{catalogoCTBeanUI.buscar}" mask="99:00" size="4" autocomplete="false">
 
                                                             <p:ajax event="keyup" update="paU " listener="#{catalogoCTBeanUI.calculoHorasUnidad()}" process="@this"/>                                                            
 
@@ -294,12 +295,12 @@
                                                 </tr>
                                                 <tr><td>Nombre:</td><td>
                                                     <p:inputText id="nombreT" maxlength="120" value="#{catalogoCTBeanUI.nuevoTemaunidad.tunnombre}" size="60">
-                                                        <pe:keyFilter regEx="/[A-Za-z áéóúíñÁÉÍÓÚÑ,&quot;()]/"/> 
+                                                        <pe:keyFilter regEx="/[A-Za-z0-9 áéóúíñÁÉÍÓÚÑ,&quot;()]/"/> 
                                                     </p:inputText>
                                                     </td>
                                                 </tr>
                                                 <tr><td>Horas:</td><td>
-                                                    <p:inputMask id="horasT" mask="99:99" size="1" rendered="true" value="#{catalogoCTBeanUI.buscar}">
+                                                    <p:inputMask id="horasT" mask="99:99" size="4" rendered="true" value="#{catalogoCTBeanUI.buscar}">
 
                                                         <p:ajax event="keypress"  update="paT" listener="#{catalogoCTBeanUI.valorcVonvertido(2)}" />
                                                     </p:inputMask>
@@ -362,12 +363,12 @@
                                                 </tr>
                                                 <tr><td>Nombre:</td><td>
                                                         <p:inputText maxlength="120" id="nombreS" value="#{catalogoCTBeanUI.nuevoSubtemaunidad.sutnombre}" size="60">
-                                                            <pe:keyFilter regEx="/[A-Za-z áéóúíñÁÉÍÓÚÑ,&quot;()]/"/> 
+                                                            <pe:keyFilter regEx="/[A-Za-z0-9 áéóúíñÁÉÍÓÚÑ,&quot;()]/"/> 
                                                         </p:inputText>    
                                                     </td>
                                                 </tr>
                                                 <tr><td>Horas:</td><td>
-                                                        <p:inputMask id="horasS" mask="99:99" size="1" rendered="true" value="#{catalogoCTBeanUI.buscar}">
+                                                        <p:inputMask id="horasS" mask="99:99" size="4" rendered="true" value="#{catalogoCTBeanUI.buscar}">
                                                             <p:ajax event="keypress" update="paS " listener="#{catalogoCTBeanUI.valorcVonvertido(3)}" />
                                                         </p:inputMask>
                                                     </td>
@@ -423,7 +424,7 @@
                                     <p:column style="font-weight: bold;"><center>Nombre:</center></p:column>
                                     <p:column width="60">
                                         <p:inputText id="nombrePL" maxlength="120" value="#{catalogoCTBeanUI.nuevaPracticaL.prlnombre}" size="60">
-                                            <pe:keyFilter regEx="/[A-Za-z áéóúíñÁÉÍÓÚÑ,&quot;()]/"/> 
+                                            <pe:keyFilter regEx="/[A-Za-z0-9 áéóúíñÁÉÍÓÚÑ,&quot;()]/"/> 
                                         </p:inputText>                                            
                                     </p:column>
                                 </p:row>
@@ -431,7 +432,7 @@
                                     <!--se ingresan las horas en el input y se manda clacular el promerio -->
                                     <p:column style="font-weight: bold;"><center>Horas:</center></p:column>
                                     <p:column>
-                                        <p:inputMask id="horasPL" mask="99:00" value="#{catalogoCTBeanUI.buscar}" size="1" >
+                                        <p:inputMask id="horasPL" mask="99:00" value="#{catalogoCTBeanUI.buscar}" size="4" >
                                             <p:ajax event="keyup" update="paPL " listener="#{catalogoCTBeanUI.valorcVonvertido(4)}" />
                                         </p:inputMask>
                                     </p:column></p:row>
@@ -498,7 +499,7 @@
                                     <p:column style="font-weight: bold;"><center>Nombre:</center></p:column>
                                     <p:column width="60">
                                         <p:inputText id="nombrePT" value="#{catalogoCTBeanUI.nuevaPracticaT.prtnombre}"   autocomplete="false" maxlength="120" size="60">
-                                            <pe:keyFilter regEx="/[A-Za-z áéóúíñÁÉÍÓÚÑ,&quot;()]/"/>   
+                                            <pe:keyFilter regEx="/[A-Za-z0-9 áéóúíñÁÉÍÓÚÑ,&quot;()]/"/>   
                                         </p:inputText>
                                     </p:column>
                                 </p:row>
@@ -506,7 +507,7 @@
                                     <!--se ingresan las horas en el input y se manda clacular el promerio -->
                                     <p:column style="font-weight: bold;"><center>Horas:</center></p:column>
                                     <p:column>
-                                        <p:inputMask  id="horasPT" mask="99:00" value ="#{catalogoCTBeanUI.buscar}"  size="1"  style="margin-right: 15px" autocomplete="false">
+                                        <p:inputMask  id="horasPT" mask="99:00" value ="#{catalogoCTBeanUI.buscar}"  size="4"  style="margin-right: 15px" autocomplete="false">
                                             <p:ajax event="keypress"  update="paPT " listener="#{catalogoCTBeanUI.valorcVonvertido(5)}" />
                                             <!--<p:ajax event="keyup"  update="paVPT " listener="{catalogoCTBeanUI.calculoPracticaT()}" process="@this"/>-->
                                         </p:inputMask >
@@ -588,7 +589,7 @@
                                 <p:ajax update=":form:arbol,:formDlg:numeroPC,:formDlg:nombrePC,:formDlg:horasPC,:formDlg:paPC" listener="#{catalogoCTBeanUI.limpiarCampos()}" resetValues="true"/>
                             </p:commandButton>      
                         </p:dialog>                    
-                        <p:dialog id="dlgElim" header="Eliminado #{catalogoCTBeanUI.tipo}" widgetVar="dlgEliminar" resizable="false" showEffect="fade" hideEffect="explode" modal="true">
+                        <p:dialog id="dlgElim" header="Eliminar #{catalogoCTBeanUI.tipo}" widgetVar="dlgEliminar" resizable="false" showEffect="fade" hideEffect="explode" modal="true">
                             <p:outputLabel>¿Seguro que quieres eliminar este #{catalogoCTBeanUI.tipo}?</p:outputLabel>
                             <p:panelGrid style="margin-top: 20px; position: relative;"> 
                                 <p:row>  
@@ -623,7 +624,7 @@
 
                         </p:dialog>
 
-                        <p:dialog id="dlgActualizar" header="Actualizando #{catalogoCTBeanUI.tipo}" widgetVar="dlgActualizacion"  resizable="false" showEffect="fade" hideEffect="explode" modal="true">
+                        <p:dialog id="dlgActualizar" header="Actualizar #{catalogoCTBeanUI.tipo}" widgetVar="dlgActualizacion"  resizable="false" showEffect="fade" hideEffect="explode" modal="true">
                             <p:panelGrid id="cap4" style="margin-top: 20px; position: relative">
                                 <p:row>  
                                     <p:column style="font-weight: bold;">Número: </p:column>  
@@ -637,7 +638,7 @@
                                     <p:column style="font-weight: bold;">Nombre: </p:column>  
                                     <p:column width="60">
                                         <p:inputText id="nombreA" value="#{catalogoCTBeanUI.nombre}"  maxlength="120" size="60">
-                                            <pe:keyFilter regEx="/[A-Za-z áéóúíñÁÉÍÓÚÑ,&quot;()]/"/> 
+                                            <pe:keyFilter regEx="/[A-Za-z0-9 áéóúíñÁÉÍÓÚÑ,&quot;()]/"/> 
                                         </p:inputText>
                                     </p:column>
                                 </p:row>
@@ -672,13 +673,10 @@
                             <p:commandButton value="Cancelar" type="button" icon="ui-icon-circle-close" update=":form:arbol,:formDlg:numeroA,:formDlg:nombreA,:formDlg:horasA,:formDlg:paA,:formDlg:hdis"  
                                              process=":formDlg:numeroA,:formDlg:nombreA,:formDlg:horasA,:formDlg:paA,@this" onclick="dlgActualizacion.hide();"/>  
                         </p:dialog>
-
-
-
-
+           
                     </h:form>
 
-                    <h:form rendered="#{loginBean.formano}">
+                    <h:form rendered="#{loginBean.formano}" onkeypress="if (event.keyCode == 13) { return false; }">
                         <center><h1>No tienes permisos para ver esto</h1></center>
 
                     </h:form>

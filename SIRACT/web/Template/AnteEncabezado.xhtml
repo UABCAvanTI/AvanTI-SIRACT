@@ -16,7 +16,7 @@ and open the template in the editor.
         <!--<p:commandLink value="Inicio"/> | <p:commandLink value="Cerrar sesión"/>-->
         <h:body>
             <h:form  onkeydown="return false;" style="margin-left: 60%">
-                <h:graphicImage library="imagenes" name="go-home.png" styleClass="logocasa" title="SIRACT-casa"/><p:commandLink value="Inicio" action="#{loginBean.index()}"/> <p:outputLabel value=" | " rendered="#{loginBean.cambioUsuario()}" /> <h:graphicImage library="imagenes" name="user-group.png" title="SIRACT-casa" rendered="#{loginBean.cambioUsuario()}"/>
+                <h:graphicImage library="imagenes" name="go-home.png" styleClass="logocasa" title="SIRACT-casa"/><p:commandLink value="Inicio" action="#{loginBean.index()}"/> <p:outputLabel value=" | "  /> <h:graphicImage library="imagenes" name="user-group.png" title="SIRACT-casa"/>
 
 
                 <p:selectOneMenu style="width: 35%"  id="r"  value="#{loginBean.rolMenu}" effect="fold" rendered="#{loginBean.selectRol}" maxlength="0" editable="true"  label="-- Seleccione otro rol -- " >
@@ -26,7 +26,8 @@ and open the template in the editor.
                     
                 </p:selectOneMenu>
 <!--                <p:commandButton value="Seleccionar"   icon="ui-icon-check" rendered="#{loginBean.selectRol}"/>-->
-                <h:graphicImage library="imagenes" name="cerrarsesion.png" styleClass="logocerrarsesion" title="SIRACT-cerrarsesion"/><p:commandLink value="Cerrar sesión" actionListener="#{loginBean.logout()}" oncomplete="handleLoginRequest(xhr, status, args)"/>
+                <h:graphicImage library="imagenes" name="cerrarsesion.png" styleClass="logocerrarsesion" title="SIRACT-cerrarsesion"/><p:commandLink value="Cerrar sesión" actionListener="#{loginBean.doActionSalir()}" oncomplete=""/>
+                
 
             </h:form>     
         </h:body>

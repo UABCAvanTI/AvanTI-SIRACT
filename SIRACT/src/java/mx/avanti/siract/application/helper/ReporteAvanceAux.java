@@ -33,12 +33,17 @@ public class ReporteAvanceAux implements Serializable{
     public Date fechaElaboracRact1;
     public Date fechaElaboracRact2;
     public Date fechaElaboracRact3;
+    public Date fechaCorteRact1;
+    public Date fechaCorteRact2;
+    public Date fechaCorteRact3;
     public Date fechaLimiteRact1;
     public Date fechaLimiteRact2;
     public Date fechaLimiteRact3;
     public String tipoReporteSelecRact1;
     public String tipoReporteSelecRact2;
     public String tipoReporteSelecRact3;
+    public String responsableCAA;
+    public String CAAnombre;
 
     public ReporteAvanceAux(Reporteavancecontenidotematico reporteAvance,Areaconocimiento areaConocimiento, int contUipid, int contResultCriteria, float auxPAvance) {
         this.reporteAvance = reporteAvance;
@@ -50,6 +55,18 @@ public class ReporteAvanceAux implements Serializable{
         this.fechaLimite = null;
     }
     
+    public ReporteAvanceAux(Reporteavancecontenidotematico reporteAvance,Areaconocimiento areaConocimiento, int contUipid, int contResultCriteria, float auxPAvance,String responsableCAA,String CAAnombre) {
+        this.reporteAvance = reporteAvance;
+        this.areaConocimiento = areaConocimiento;
+        this.contUipid = contUipid;
+        this.contResultCriteria = contResultCriteria;
+        this.auxPAvance = auxPAvance;
+        this.fechaCorte = null;
+        this.fechaLimite = null;
+        this.responsableCAA = responsableCAA;
+        this.CAAnombre = CAAnombre;
+    }
+    
     public ReporteAvanceAux(Reporteavancecontenidotematico reporteAvance,Areaconocimiento areaConocimiento, int contResultCriteria, float auxPAvance) {
         this.reporteAvance = reporteAvance;
         this.areaConocimiento = areaConocimiento;
@@ -57,7 +74,20 @@ public class ReporteAvanceAux implements Serializable{
         this.contResultCriteria = contResultCriteria;
         this.auxPAvance = auxPAvance;
         this.fechaCorte = null;
+        //this.fechaLimite = null;
+        //this.responsableCAA = responsableCAA;
+    }
+    
+    public ReporteAvanceAux(Reporteavancecontenidotematico reporteAvance,Areaconocimiento areaConocimiento, int contResultCriteria, float auxPAvance,String responsableCAA,String CAAnombre) {
+        this.reporteAvance = reporteAvance;
+        this.areaConocimiento = areaConocimiento;
+        this.contUipid = 0;
+        this.contResultCriteria = contResultCriteria;
+        this.auxPAvance = auxPAvance;
+        this.fechaCorte = null;
         this.fechaLimite = null;
+        this.responsableCAA = responsableCAA;
+        this.CAAnombre = CAAnombre;
     }
 
     public ReporteAvanceAux(Reporteavancecontenidotematico reporteAvance,Areaconocimiento areaConocimiento, int contUipid, int contResultCriteria, float auxPAvance, Date fechaCorte, Date fechaLimite) {
@@ -79,6 +109,19 @@ public class ReporteAvanceAux implements Serializable{
         this.fechaCorte = fechaCorte;
         this.fechaLimite = fechaLimite;
     }
+    
+    public ReporteAvanceAux(Reporteavancecontenidotematico reporteAvance,Areaconocimiento areaConocimiento, int contResultCriteria, float auxPAvance, Date fechaCorte, Date fechaLimite,String responsableCAA,String CAAnombre) {
+        ////
+        this.reporteAvance = reporteAvance;
+        this.areaConocimiento = areaConocimiento;
+        this.contUipid = 0;
+        this.contResultCriteria = contResultCriteria;
+        this.auxPAvance = auxPAvance;
+        this.fechaCorte = fechaCorte;
+        this.fechaLimite = fechaLimite;
+        this.responsableCAA = responsableCAA;
+        this.CAAnombre = CAAnombre;
+    }
 
     public ReporteAvanceAux(Reporteavancecontenidotematico reporteAvance,Areaconocimiento areaConocimiento, int contUipid, int contResultCriteria, float auxPAvance, Date fechaCorte, Date fechaLimite, String tipoReporteSelec) {
         this.reporteAvance = reporteAvance;
@@ -89,6 +132,19 @@ public class ReporteAvanceAux implements Serializable{
         this.fechaCorte = fechaCorte;
         this.fechaLimite = fechaLimite;
         this.tipoReporteSelec = tipoReporteSelec;
+    }
+    
+    public ReporteAvanceAux(Reporteavancecontenidotematico reporteAvance,Areaconocimiento areaConocimiento, int contUipid, int contResultCriteria, float auxPAvance, Date fechaCorte, Date fechaLimite, String tipoReporteSelec,String responsableCAA,String CAAnombre) {
+        this.reporteAvance = reporteAvance;
+        this.areaConocimiento = areaConocimiento;
+        this.contUipid = contUipid;
+        this.contResultCriteria = contResultCriteria;
+        this.auxPAvance = auxPAvance;
+        this.fechaCorte = fechaCorte;
+        this.fechaLimite = fechaLimite;
+        this.tipoReporteSelec = tipoReporteSelec;
+        this.responsableCAA = responsableCAA;
+        this.CAAnombre = CAAnombre;
     }
     
     public ReporteAvanceAux() {
@@ -109,6 +165,9 @@ public class ReporteAvanceAux implements Serializable{
         this.fechaElaboracRact1 = null;
         this.fechaElaboracRact2 = null;
         this.fechaElaboracRact3 = null;
+        this.fechaCorteRact1 = null;
+        this.fechaCorteRact2 = null;
+        this.fechaCorteRact3 = null;
         this.fechaLimiteRact1 = null;
         this.fechaLimiteRact2 = null;
         this.fechaLimiteRact3 = null;
@@ -304,6 +363,45 @@ public class ReporteAvanceAux implements Serializable{
     public void setAreaConocimiento(Areaconocimiento areaConocimiento) {
         this.areaConocimiento = areaConocimiento;
     }
-    
-    
+
+    public String getResponsableCAA() {
+        return responsableCAA;
+    }
+
+    public void setResponsableCAA(String responsableCAA) {
+        this.responsableCAA = responsableCAA;
+    }
+
+    public String getCAAnombre() {
+        return CAAnombre;
+    }
+
+    public void setCAAnombre(String CAAnombre) {
+        this.CAAnombre = CAAnombre;
+    }
+
+    public Date getFechaCorteRact1() {
+        return fechaCorteRact1;
+    }
+
+    public void setFechaCorteRact1(Date fechaCorteRact1) {
+        this.fechaCorteRact1 = fechaCorteRact1;
+    }
+
+    public Date getFechaCorteRact2() {
+        return fechaCorteRact2;
+    }
+
+    public void setFechaCorteRact2(Date fechaCorteRact2) {
+        this.fechaCorteRact2 = fechaCorteRact2;
+    }
+
+    public Date getFechaCorteRact3() {
+        return fechaCorteRact3;
+    }
+
+    public void setFechaCorteRact3(Date fechaCorteRact3) {
+        this.fechaCorteRact3 = fechaCorteRact3;
+    }
+        
 }

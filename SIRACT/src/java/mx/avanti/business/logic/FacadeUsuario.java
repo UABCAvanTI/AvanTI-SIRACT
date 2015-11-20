@@ -159,6 +159,15 @@ public class FacadeUsuario {
           resultado.add(usuario.getUsuusuario());
         }
         return resultado;
-    }        
-
+    }           
+    
+    //paco
+    public List<Usuario> getUsuariobyRol(int rolid){
+        List<Usuario> listaUsuario = null;
+        ServiceLocator.getInstanceBaseDAO().setTipo(Usuario.class);
+        listaUsuario = ServiceLocator.getInstanceBaseDAO().findFromWhere("rols","rolid", String.valueOf(rolid));
+                
+        return listaUsuario;
+    }
+    
 }

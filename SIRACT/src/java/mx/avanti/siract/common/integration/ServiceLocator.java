@@ -5,6 +5,7 @@
 package mx.avanti.siract.common.integration;
 
 
+import mx.avanti.siract.integration.persistence.AreaadministrativaDAO;
 import mx.avanti.siract.integration.persistence.AreaconocimientoDAO;
 import mx.avanti.siract.integration.persistence.BaseDAO;
 import mx.avanti.siract.integration.persistence.CatalogoreportesDAO;
@@ -41,6 +42,7 @@ public class ServiceLocator {
     private static CatalogoreportesDAO catalogoreportesDAO;
         private static reportesDAO reportesDAO;
     private static EsperadosDAO esperadosDAO;
+    private static AreaadministrativaDAO areaAdministrativaDAO;
 
     
     /*public static BaseDAO getInstanceBaseDAO(Class t){
@@ -195,4 +197,14 @@ public class ServiceLocator {
             return esperadosDAO;
         }
     }  
+     
+     public static AreaadministrativaDAO getInstanceAreaadministrativa(){
+        if(areaAdministrativaDAO == null){
+            areaAdministrativaDAO = new AreaadministrativaDAO();
+            return areaAdministrativaDAO;
+        }else{
+            return areaAdministrativaDAO;
+        }
+    } 
+     
 }

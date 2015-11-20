@@ -140,6 +140,18 @@ public class ProfesorDelegate implements Serializable{
      public List<Profesor> getProfAsignado(int idProf){
          return ServiceFacadeLocator.getInstanceFacadeProfesor().getProfAsignado(idProf);
      }
+       
+    
           
+    
+     public List<Profesor> getProfbyUsuario(int usuid){
+         return ServiceFacadeLocator.getInstanceFacadeProfesor().getProfbyUsuario(usuid);
+     }
+      
+     public List<Profesor> getRPEbyPE(int peid){
+         return ServiceFacadeLocator.getInstanceFacadeProfesor().findProfesor(peid);
+     }   
+
+
     
 }

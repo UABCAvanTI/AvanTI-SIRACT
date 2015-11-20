@@ -94,6 +94,18 @@ public class FacadeUnidadaprendisajeimparteprofesor {
         ServiceLocator.getInstanceBaseDAO().delete(imaparteProfesor);
     }
     
+    public List<UnidadaprendizajeImparteProfesor> getUAIPDeProfesor(int idProfesor) {
+        List<UnidadaprendizajeImparteProfesor> listaGpo = null;
+        ServiceLocator.getInstanceBaseDAO().setTipo(UnidadaprendizajeImparteProfesor.class);
+        listaGpo = ServiceLocator.getInstanceBaseDAO().findFromWhereB("profesor", "proid", String.valueOf(idProfesor),"uipid");
+        return listaGpo;
+    }  
 
+    public List<UnidadaprendizajeImparteProfesor> getAsignacionPorGPO(int idGrupo) {
+        List<UnidadaprendizajeImparteProfesor> listaGpo = null;
+        ServiceLocator.getInstanceBaseDAO().setTipo(UnidadaprendizajeImparteProfesor.class);
+        listaGpo = ServiceLocator.getInstanceBaseDAO().findFromWhere("grupo", "gpoid", String.valueOf(idGrupo));
+        return listaGpo;
+    }
     
 }

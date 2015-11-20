@@ -22,6 +22,7 @@ import javax.faces.context.FacesContext;
 import mx.avanti.siract.application.helper.CatalogoCTBeanHelper;
 import mx.avanti.siract.application.helper.FiltrosBeanHelper;
 import mx.avanti.siract.application.helper.NodoMultiClass;
+import mx.avanti.siract.business.CTDelegate;
 import mx.avanti.siract.business.ConsultaDelegate;
 import mx.avanti.siract.business.UnidadAprendizajeDelegate;
 import mx.avanti.siract.business.entity.Areaconocimiento;
@@ -35,6 +36,7 @@ import mx.avanti.siract.business.entity.Temaunidad;
 import mx.avanti.siract.business.entity.Unidad;
 import mx.avanti.siract.business.entity.Unidadacademica;
 import mx.avanti.siract.business.entity.Unidadaprendizaje;
+import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.primefaces.context.RequestContext;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.DefaultTreeNode;
@@ -48,6 +50,7 @@ import org.primefaces.model.TreeNode;
 @ViewScoped
 public class CatalogoCTBeanUI implements Serializable {
 
+    CTDelegate ctDelegate=new CTDelegate();
     private CatalogoCTBeanHelper catalogoCTBeanHelper;
     private FiltrosBeanHelper filtrosHelper;
 
@@ -115,7 +118,10 @@ public class CatalogoCTBeanUI implements Serializable {
     private Practicascampo nuevaPracticaC;
 
     private boolean deshabilitarPlan = false;
-
+    
+    
+    private boolean isCoordinadorAreaAdmin=false;
+    
     //Propiedad utilizada para acceder a los datos de LoginBean_2
     @ManagedProperty(value = "#{loginBean}")
     private LoginBean loginBean;
@@ -156,7 +162,7 @@ public class CatalogoCTBeanUI implements Serializable {
 
     /////Parte encargada del filtro de programas educativos
     //Variable que decide si se presenta o no el filtro Programa Educativo
-    boolean filtroPE = false;
+    boolean isAdmin = false;
     String programaESeleccionado = "0";//Variable encargada de guardar id de programa educativo seleccionado
 
     public String getProgramaESeleccionado() {
@@ -170,11 +176,11 @@ public class CatalogoCTBeanUI implements Serializable {
     List<Programaeducativo> programasEducativos = new ArrayList<Programaeducativo>();
 
     public boolean isFiltroPE() {
-        return filtroPE;
+        return isAdmin;
     }
 
     public void setFiltroPE(boolean filtroPE) {
-        this.filtroPE = filtroPE;
+        this.isAdmin = filtroPE;
     }
 
     public List<Programaeducativo> getProgramasEducativos() {
@@ -185,32 +191,58 @@ public class CatalogoCTBeanUI implements Serializable {
         this.programasEducativos = programasEducativos;
     }
 
+    
+    //Variable que guarda el Id del profesor del usuario en Sesion
+    int usuId=0;
+    
     //Post constructor necesario para usar ManagedProperty
     @PostConstruct
     public void postConstructor() {
 
-        if (loginBean == null && loginBean.getUsuario() != null) {
-            System.out.println("No hay loginbean");
+        if (loginBean == null && loginBean.getLogueado()!= null) {
         } else {
+            usuId=loginBean.getLogueado().getUsuid();
             String rolSeleccionado = loginBean.getSeleccionado();
 
             //Roles que presentaran seleccion de Programa educativo
             String[] rolesAdministradores = {"Director", "Subdirector", "Administrador"};
             for (String stringTmp : rolesAdministradores) {
                 if (rolSeleccionado.equals(stringTmp)) {
-                    filtroPE = true;
+                    isAdmin = true;
                 }
             }
-            if (filtroPE) {
+            if (isAdmin) {
 
-                programasEducativos = catalogoCTBeanHelper.programasEducativosDeUsuario(loginBean.getUsuario().getUsuid());
+                programasEducativos = catalogoCTBeanHelper.programasEducativosDeUsuario(loginBean.getLogueado().getUsuid());
             }
             if (rolSeleccionado.equals("Responsable de Programa Educativo")) {
-                Programaeducativo programaeducativoTemporal = catalogoCTBeanHelper.programaEducativoDeResponsable(loginBean.getUsuario().getUsuid());
+                Programaeducativo programaeducativoTemporal = catalogoCTBeanHelper.programaEducativoDeResponsable(loginBean.getLogueado().getUsuid());
+                if(programaeducativoTemporal==null){
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "No ha sido asignado como responsable de algun Programa educativo <br/></center>");
+                RequestContext.getCurrentInstance().showMessageInDialog(message);
+                }else{
                 programaESeleccionado = programaeducativoTemporal.getPedid().toString();
                 programasEducativos.add(programaeducativoTemporal);
+                }
                 deshabilitarComponentes();
             }
+            
+            if (rolSeleccionado.equalsIgnoreCase("Coordinador de Área de Conocimiento")) {
+                isCoordinadorAreaAdmin=true;
+                List<Programaeducativo> programaeducativoTemporal = catalogoCTBeanHelper.programaEducativoDeCoordinadorAreaAdmin(loginBean.getLogueado().getUsuid());
+                if(programaeducativoTemporal==null){
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "No ha sido asignado como Coordinador de un area administrativa<br/></center>");
+                RequestContext.getCurrentInstance().showMessageInDialog(message);
+                }else{
+                 programasEducativos = catalogoCTBeanHelper.programaEducativoDeCoordinadorAreaAdmin(usuId);
+                programasEducativos=programaeducativoTemporal;
+                programaESeleccionado = programaeducativoTemporal.get(0).getPedid().toString();
+                }
+                deshabilitarComponentes();
+            }
+
+            
+            
 
         }
         areasConocimiento = getAreasByPlan();
@@ -282,7 +314,6 @@ public class CatalogoCTBeanUI implements Serializable {
     }
 
     public void setSeleccionarUA(String seleccionarUA) {
-        System.out.println("UA SELECCIONADA------------------------" + seleccionarUA);
         if (!seleccionarUA.equalsIgnoreCase("algo") && !seleccionarUA.equalsIgnoreCase("0")) {
             String[] valores = seleccionarUA.split(" -- ");
             selectedUnidadaprendizaje = getUnidadaprendizaje(Integer.parseInt(valores[0]));
@@ -527,7 +558,7 @@ public class CatalogoCTBeanUI implements Serializable {
     }
 
     public List<Planestudio> obtenerPlanesEstudio(){
-    if (filtroPE) {
+    if (isAdmin) {
             if (!seleccionarUA.equals("0")&&!seleccionarUA.equals("algo")) {
                 planesestudio = catalogoCTBeanHelper.getPlanesestudioByUnidadAprendizaje(clave);
                 if (planesestudio != null && planesestudio.size() >= 1) {
@@ -540,7 +571,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 
                 return catalogoCTBeanHelper.getPlanesestudio(Integer.parseInt(programaESeleccionado));
             }
-            Unidadacademica aux = filtrosHelper.getConsultaDelegate().findUnidadAcademica(loginBean.getUsuario().getUsuid()).get(0);
+            Unidadacademica aux = ctDelegate.findUnidadAcademica(loginBean.getLogueado().getUsuid()).get(0);
             return catalogoCTBeanHelper.getPlanesestudioByUnidadAcademica(aux.getUacid());
         }
         //ANTES
@@ -570,26 +601,29 @@ public class CatalogoCTBeanUI implements Serializable {
 
     //Ahora tambien tomara en cuenta para la consulta el Programa Educativo seleccionado
     public List<Areaconocimiento> getAreasByPlan() {
-        if (filtroPE) {
+        if (isAdmin) {
             if (selectedPlanestudio.getPesid() != 0) {
                 selectedAreaconocimiento.setAcoid(0);
                 selectedEtapa = 0;
 //            selectedEtapa = 0; Causo problemas con el metodo deshabilitarComponentes()
                 setSeleccionarUA("0");
                 selectedUnidadaprendizaje.setUapid(0);
-                return filtrosHelper.getConsultaDelegate().getAreasByPlanYProgramaeducativo(selectedPlanestudio.getPesid(), programaESeleccionado);
+                return ctDelegate.getAreasByPlanYProgramaeducativoAdmin(selectedPlanestudio.getPesid(), programaESeleccionado);
             } else {
+                if(isCoordinadorAreaAdmin){
+                    return ctDelegate.getAreasByCoordinadorAreaAdmin(programaESeleccionado,usuId);
+                }else{
                 if (!programaESeleccionado.equals("0")) {
-                    System.out.println("SE BUSCAN LAS AREAS PARA PLAN " + selectedPlanestudio.getPesid() + " DE " + planesestudio.size());
-                    return filtrosHelper.getConsultaDelegate().getAreasByProgramaeducativo(programaESeleccionado);
+                    return ctDelegate.getAreasByProgramaeducativoAdmin(programaESeleccionado);
+                }
                 }
 //            selectedAreaconocimiento.setAcoid(0);
 //            selectedEtapa = 0;
 //            return new ArrayList<Areaconocimiento>();
             }
 
-            Unidadacademica uaAux = filtrosHelper.getConsultaDelegate().findUnidadAcademica(loginBean.getUsuario().getUsuid()).get(0);
-            return filtrosHelper.getConsultaDelegate().getAreasByUnidadAcademica(uaAux.getUacid());
+            Unidadacademica uaAux = ctDelegate.findUnidadAcademica(loginBean.getLogueado().getUsuid()).get(0);
+            return ctDelegate.getAreasByUnidadAcademica(uaAux.getUacid());
         }
         if (selectedPlanestudio.getPesid() != 0) {
             selectedAreaconocimiento.setAcoid(0);
@@ -597,14 +631,22 @@ public class CatalogoCTBeanUI implements Serializable {
 //            selectedEtapa = 0; Causo problemas con el metodo deshabilitarComponentes()
             setSeleccionarUA("0");
             selectedUnidadaprendizaje.setUapid(0);
-            return filtrosHelper.getConsultaDelegate().getAreasByPlanYProgramaeducativo(selectedPlanestudio.getPesid(), programaESeleccionado);
+            if(isCoordinadorAreaAdmin){
+            return ctDelegate.getAreasByPlanYProgramaeducativoCAA(selectedPlanestudio.getPesid(), programaESeleccionado,usuId);
+            }
+            return ctDelegate.getAreasByPlanYProgramaeducativoRPE(selectedPlanestudio.getPesid(), programaESeleccionado,usuId);
         } else {
             if (!programaESeleccionado.equals("0")) {
-                return filtrosHelper.getConsultaDelegate().getAreasByProgramaeducativo(programaESeleccionado);
+                if(isCoordinadorAreaAdmin){
+                return ctDelegate.getAreasByProgramaeducativoCAA(programaESeleccionado,usuId);
+                }
+                return ctDelegate.getAreasByProgramaeducativoRPE(programaESeleccionado,usuId);
+            }else{
+                if(isCoordinadorAreaAdmin){
+                return ctDelegate.getAreasByCAA(usuId);
+                }
+                return ctDelegate.getAreasByRPE(usuId);
             }
-            selectedAreaconocimiento.setAcoid(0);
-            selectedEtapa = 0;
-            return new ArrayList<Areaconocimiento>();
         }
     }
 
@@ -618,13 +660,22 @@ public class CatalogoCTBeanUI implements Serializable {
 
     
     public List<Unidadaprendizaje> getUnidadByArea() {
-        System.out.println("////////UNIDADES DE APRENDIZAJE PARA " + selectedEtapa + " " + selectedAreaconocimiento.getAcoid());
-        if (filtroPE && selectedEtapa == 0 && selectedAreaconocimiento.getAcoid() == 0 && programaESeleccionado.equals("0") && selectedPlanestudio.getPesid()==0) {
-            Unidadacademica aux = filtrosHelper.getConsultaDelegate().findUnidadAcademica(loginBean.getUsuario().getUsuid()).get(0);
-            unidadesAprendizaje = filtrosHelper.getConsultaDelegate().getUnidadByUnidadAcademica(aux.getUacid());
+        if (isAdmin && selectedEtapa == 0 && selectedAreaconocimiento.getAcoid() == 0 && programaESeleccionado.equals("0") && selectedPlanestudio.getPesid()==0) {
+            Unidadacademica aux = ctDelegate.findUnidadAcademica(loginBean.getLogueado().getUsuid()).get(0);
+            unidadesAprendizaje = ctDelegate.getUnidadByUnidadAcademica(aux.getUacid());
             return unidadesAprendizaje;
         } else {
-            if (selectedAreaconocimiento.getAcoid() != 0 && selectedEtapa != 0) {
+            if (selectedEtapa == 0 && selectedAreaconocimiento.getAcoid() == 0 && programaESeleccionado.equals("0") && selectedPlanestudio.getPesid()==0) {
+                if(isCoordinadorAreaAdmin){
+                    System.out.println("ENTRANDO COMO COORDINADOR AA**************");
+            unidadesAprendizaje = ctDelegate.getUnidadByCAA(usuId);
+                }else{
+            unidadesAprendizaje = ctDelegate.getUnidadByRPE(usuId);
+                }
+            return unidadesAprendizaje;
+             }
+            
+            if (selectedAreaconocimiento.getAcoid() != 0 && selectedEtapa != 0 ) {
                 setSeleccionarUA("0");
                 selectedUnidadaprendizaje.setUapid(0);
                 /*Este if es para introducir la etapa, se cambio a entero para poder utilizar la propiedad "Disabled"
@@ -640,9 +691,17 @@ public class CatalogoCTBeanUI implements Serializable {
                     etapa = "Terminal";
                 }
                 if (programaESeleccionado.equals("0")) {
-                    unidadesAprendizaje = filtrosHelper.getConsultaDelegate().getUnidadByAreaAndEtapa(selectedAreaconocimiento.getAcoid(), etapa);
+                    if(isCoordinadorAreaAdmin){
+                    unidadesAprendizaje = ctDelegate.getUnidadByAreaAndEtapaCAA(selectedAreaconocimiento.getAcoid(), etapa,usuId);
+                    }else{
+                    unidadesAprendizaje = ctDelegate.getUnidadByAreaAndEtapa(selectedAreaconocimiento.getAcoid(), etapa);
+                    }
                 } else {
-                    unidadesAprendizaje = filtrosHelper.getConsultaDelegate().getUnidadByAreaAndEtapaAndPE(selectedAreaconocimiento.getAcoid(), etapa, programaESeleccionado);
+                    if(isCoordinadorAreaAdmin){
+                    unidadesAprendizaje = ctDelegate.getUnidadByAreaAndEtapaAndPECAA(selectedAreaconocimiento.getAcoid(), etapa, programaESeleccionado,usuId);
+                    }else{
+                    unidadesAprendizaje = ctDelegate.getUnidadByAreaAndEtapaAndPE(selectedAreaconocimiento.getAcoid(), etapa, programaESeleccionado);
+                    }
                 }
                 return unidadesAprendizaje;
             } else {
@@ -651,11 +710,19 @@ public class CatalogoCTBeanUI implements Serializable {
 
                 //condicion para validar si hay un programa educativo seleccionado 
                 if (programaESeleccionado.equals("0")) {
-                    unidadesAprendizaje = filtrosHelper.getConsultaDelegate().getUnidadByResponsable(loginBean.getUsuario().getUsuid());
-                } else {
-                    //Condixcion para saber si fue seleccionado un programa educativo
+                    if(isCoordinadorAreaAdmin){
+                    unidadesAprendizaje = ctDelegate.getUnidadByCAA(usuId);
+                    }else{
+                    unidadesAprendizaje = ctDelegate.getUnidadByResponsable(loginBean.getLogueado().getUsuid());
+                    }
+               } else {
+                    //Condicion para saber si fue seleccionado un programa educativo
                     if (!programaESeleccionado.equals("0")) {
-                        unidadesAprendizaje = filtrosHelper.getConsultaDelegate().getUnidadByPE(programaESeleccionado);
+                        if(isCoordinadorAreaAdmin){
+                         unidadesAprendizaje = ctDelegate.getUnidadByPECAA(programaESeleccionado,usuId);
+                        }else{
+                          unidadesAprendizaje = ctDelegate.getUnidadByPE(programaESeleccionado);
+                        }
                     } else {
 
                     }
@@ -664,7 +731,11 @@ public class CatalogoCTBeanUI implements Serializable {
 
                 //Validacion para caso de elegir Programa educativo y area de conocimiento
                 if (selectedAreaconocimiento.getAcoid() != 0 && !programaESeleccionado.equals("0")) {
-                    unidadesAprendizaje = filtrosHelper.getConsultaDelegate().getUnidadByAreaConocimientoAndPE(selectedAreaconocimiento.getAcoid(), programaESeleccionado);
+                    if(isCoordinadorAreaAdmin){
+                    unidadesAprendizaje = ctDelegate.getUnidadByAreaConocimientoAndCAA(selectedAreaconocimiento.getAcoid(), programaESeleccionado,usuId);
+                    }else{
+                    unidadesAprendizaje = ctDelegate.getUnidadByAreaConocimientoAndPE(selectedAreaconocimiento.getAcoid(), programaESeleccionado);
+                    }
                 }
                 //Seleccion de programa educativo y etapa
                 if (selectedEtapa != 0 && !programaESeleccionado.equals("0")) {
@@ -678,12 +749,25 @@ public class CatalogoCTBeanUI implements Serializable {
                     if (selectedEtapa == 3) {
                         etapa = "Terminal";
                     }
-                    unidadesAprendizaje = filtrosHelper.getConsultaDelegate().getUnidadByEtapaAndPE(etapa, programaESeleccionado);
-                }
+                    if(isCoordinadorAreaAdmin){
+                        System.out.println("PROGRAMA Y ETAPA DE CAA!!!!!!!!!!!!!!!!!!!!!");
+                    unidadesAprendizaje = ctDelegate.getUnidadByEtapaAndPECAA(etapa, programaESeleccionado,usuId);
+                    }else{
+                    unidadesAprendizaje = ctDelegate.getUnidadByEtapaAndPEAdmin(etapa, programaESeleccionado);
+                    }
+                    }
 
                 //Validacion para caso de seleccionar solo area de conocimiento
                 if (selectedAreaconocimiento.getAcoid() != 0 && programaESeleccionado.equals("0")) {
-                    unidadesAprendizaje = filtrosHelper.getConsultaDelegate().getUnidadByAreaConocimiento(selectedAreaconocimiento.getAcoid());
+                    if(isAdmin){
+                    unidadesAprendizaje = ctDelegate.getUnidadByAreaConocimientoAdmin(selectedAreaconocimiento.getAcoid());
+                    }else{
+                        if(isCoordinadorAreaAdmin){
+                        unidadesAprendizaje = ctDelegate.getUnidadByAreaConocimientoCAA(selectedAreaconocimiento.getAcoid(),usuId);
+                        }else{
+                        unidadesAprendizaje = ctDelegate.getUnidadByAreaConocimientoRPE(selectedAreaconocimiento.getAcoid(),usuId);
+                        }
+                    }
                 }
                 //
 
@@ -699,19 +783,31 @@ public class CatalogoCTBeanUI implements Serializable {
                     if (selectedEtapa == 3) {
                         etapa = "Terminal";
                     }
-                    unidadesAprendizaje = filtrosHelper.getConsultaDelegate().getUnidadByEtapa(etapa);
+                    
+                    if(isAdmin){
+                      unidadesAprendizaje = ctDelegate.getUnidadByEtapaAdmin(etapa);
+                    }else{
+                        if(isCoordinadorAreaAdmin){
+                          unidadesAprendizaje = ctDelegate.getUnidadByEtapaCAA(etapa,String.valueOf(usuId)); 
+                        }else{
+                      unidadesAprendizaje = ctDelegate.getUnidadByEtapa(etapa,String.valueOf(usuId)); 
+                        }
+                        
+                    }
                 }
                 //
                 
                 //Caso de seleccionar solo plan de estudio
                 if (selectedPlanestudio!=null&&selectedPlanestudio.getPesid()!=0&& selectedAreaconocimiento.getAcoid() == 0&&selectedEtapa==0) {
-                    System.out.println("/////SE SELECCIONO PLAN DE ESTUDIO");
-                    unidadesAprendizaje = filtrosHelper.getConsultaDelegate().getUnidadByPlanEstudio(selectedPlanestudio.getPesid());
+                    if(isCoordinadorAreaAdmin){
+                    unidadesAprendizaje = ctDelegate.getUnidadByPlanEstudioCAA(selectedPlanestudio.getPesid(),usuId);
+                    }else{
+                    unidadesAprendizaje = ctDelegate.getUnidadByPlanEstudio(selectedPlanestudio.getPesid());
+                    }
                 }
                 
                 //Caso de seleccionar solo plan de estudio y etapa
                 if (selectedPlanestudio!=null&&selectedPlanestudio.getPesid()!=0&& selectedAreaconocimiento.getAcoid() == 0&&selectedEtapa!=0) {
-                    System.out.println("/////SE SELECCIONO PLAN DE ESTUDIO Y ETAPA");
                     String etapa = "";
                     if (selectedEtapa == 1) {
                         etapa = "Básica";
@@ -722,7 +818,7 @@ public class CatalogoCTBeanUI implements Serializable {
                     if (selectedEtapa == 3) {
                         etapa = "Terminal";
                     }
-                    unidadesAprendizaje = filtrosHelper.getConsultaDelegate().getUnidadByPlanEstudioAndEtapa(selectedPlanestudio.getPesid(),etapa);
+                    unidadesAprendizaje = ctDelegate.getUnidadByPlanEstudioAndEtapa(selectedPlanestudio.getPesid(),etapa);
                 }
 
                 return unidadesAprendizaje;
@@ -734,7 +830,7 @@ public class CatalogoCTBeanUI implements Serializable {
         if (selectedUnidad2.getUniid() != 0) {
             //setSeleccionarTemaunidad("0");
             //selectedTemaunidad.setTunid(0);
-            return filtrosHelper.getConsultaDelegate().getTemaunidadByUnidad(selectedUnidad2.getUniid());
+            return ctDelegate.getTemaunidadByUnidad(selectedUnidad2.getUniid());
         } else {
             setSeleccionarTemaunidad("0");
             selectedTemaunidad.setTunid(0);
@@ -826,7 +922,7 @@ public class CatalogoCTBeanUI implements Serializable {
         deshabilitarComponentes();
         selectedPlanestudio.setPesid(0);
         selectedEtapa=0;
-        planesestudio = filtrosHelper.getConsultaDelegate().getPlanesByPrograma(Integer.parseInt(programaESeleccionado));
+        planesestudio = ctDelegate.getPlanesByPrograma(Integer.parseInt(programaESeleccionado));
         areasConocimiento = getAreasByPlan();
         unidadesAprendizaje=getUnidadByArea();
         selectedPlanestudio.setPesid(0);
@@ -839,10 +935,9 @@ public class CatalogoCTBeanUI implements Serializable {
 //        selectedPlanestudio.setPesid(0);
 //        
         //Arreglar toda la ruta para esta consilta
-        System.out.println("____________CONSULTANDO PARA AREA DE CONOCIMIENTO " + selectedAreaconocimiento.getAcoid());
-        this.programasEducativos = catalogoCTBeanHelper.programasEducativosDeUsuario(loginBean.getUsuario().getUsuid());
+        //this.programasEducativos = catalogoCTBeanHelper.programasEducativosDeUsuario(loginBean.getUsuario().getUsuid());
 
-        Unidadacademica aux = filtrosHelper.getConsultaDelegate().findUnidadAcademica(loginBean.getUsuario().getUsuid()).get(0);
+        Unidadacademica aux = ctDelegate.findUnidadAcademica(loginBean.getLogueado().getUsuid()).get(0);
 
         List<Programaeducativo> programasEducativos = catalogoCTBeanHelper.programasEducativosDeAreaConocimiento(String.valueOf(selectedAreaconocimiento.getAcoid()));
         if (programasEducativos != null && programasEducativos.size() >= 1) {
@@ -912,10 +1007,10 @@ public class CatalogoCTBeanUI implements Serializable {
             hRest = hc;
             for (TreeNode nodo : root.getChildren()) {
 
-                hRest = hRest - Float.parseFloat(((NodoMultiClass) nodo.getData()).getHoras());
+                hRest = hRest - formatoAHoras(horasAFormato(((NodoMultiClass) nodo.getData()).getHoras()));
             }
             // validacion para calcular el porcentaje de subtema
-            if (hRest < 0 || hRest >= hSol) {
+            if (hRest < 0 || formatoAHoras(horasAFormato((float)hRest)) >= formatoAHoras(horasAFormato((float)hSol))) {
                 // calcular porcentaje horas unidad
                 porcentUni = hSol * 100 / hc;
                 setPorcentUni(porcentUni);
@@ -924,7 +1019,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 RequestContext.getCurrentInstance().update("formDlg:tabView1:paU");
 
             } else {
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + hRest + "</center>");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + hRest + "</center>");
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
 
                 grabaUni = false;
@@ -934,7 +1029,7 @@ public class CatalogoCTBeanUI implements Serializable {
             }
 
         } else {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Debes elegir una unidad de aprendizaje primero.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Debes elegir una unidad de aprendizaje primero.");
             RequestContext.getCurrentInstance().showMessageInDialog(message);
             grabaUni = false;
         }
@@ -979,9 +1074,9 @@ public class CatalogoCTBeanUI implements Serializable {
 
                 for (TreeNode nodoUnidades : root.getChildren()) {
                     if (((NodoMultiClass) nodoUnidades.getData()).getId().equals(seleccionarUnidad)) {
-                        hDisp = Double.parseDouble(((NodoMultiClass) nodoUnidades.getData()).getHoras());
+                        hDisp = formatoAHoras(horasAFormato(((NodoMultiClass) nodoUnidades.getData()).getHoras()));
                         for (TreeNode nodoTemas : nodoUnidades.getChildren()) {
-                            hDisp = hDisp - Double.parseDouble(((NodoMultiClass) nodoTemas.getData()).getHoras());
+                            hDisp = hDisp - formatoAHoras(horasAFormato(((NodoMultiClass) nodoTemas.getData()).getHoras()));
                         }
                     }
                 }
@@ -989,7 +1084,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 sethDispT(hDisp);
                 if (hDisp >= 0 && (formatoAHoras(horasAFormato((float) hDisp)) < (formatoAHoras(horasAFormato((float) hSolT))))) {
 
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + horasAFormato((float) hDisp) + "</center>");
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + horasAFormato((float) hDisp) + "</center>");
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                     buscar = "00:00";
                     RequestContext.getCurrentInstance().update("formDlg:tabView1:horasT");
@@ -998,7 +1093,7 @@ public class CatalogoCTBeanUI implements Serializable {
                     grabaTema = false;
                 } else {
                     if (catalogoCTBeanHelper.minMayor(buscar) == true) {
-                        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Formato de minutos incorrecto");
+                        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Formato de minutos incorrecto");
                         RequestContext.getCurrentInstance().showMessageInDialog(message);
                         setPorcentTem(0);
                         buscar = "00:00";
@@ -1017,7 +1112,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 }
 
             } else {
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "selecciona Unidad");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "selecciona Unidad");
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
                 buscar = "00:00";
                 RequestContext.getCurrentInstance().update("formDlg:tabView1:horasT");
@@ -1025,7 +1120,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 grabaTema = false;
             }
         } else {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "seleccionar Unidad Aprendisaje = " + hDisp);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "seleccionar Unidad Aprendisaje = " + hDisp);
             RequestContext.getCurrentInstance().showMessageInDialog(message);
             System.out.print("seleccionar unidad");
             grabaTema = false;
@@ -1084,7 +1179,7 @@ public class CatalogoCTBeanUI implements Serializable {
 //                        grabaTema = true;
 //                        setPorcentSubTem(porcentSub);
 //                        //return  graba;
-                        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + horasAFormato((float) operacion) + "</center>");
+                        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + horasAFormato((float) operacion) + "</center>");
                         RequestContext.getCurrentInstance().showMessageInDialog(message);
                         buscar = "00:00";
                         RequestContext.getCurrentInstance().update("formDlg:tabView1:horasS");
@@ -1093,7 +1188,7 @@ public class CatalogoCTBeanUI implements Serializable {
                         grabaTema = false;
                     } else {
                         if (catalogoCTBeanHelper.minMayor(buscar) == true) {
-                            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Formato de minutos incorrecto");
+                            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Formato de minutos incorrecto");
                             RequestContext.getCurrentInstance().showMessageInDialog(message);
                             setPorcentSubTem(0);
                             buscar = "00:00";
@@ -1110,7 +1205,7 @@ public class CatalogoCTBeanUI implements Serializable {
 
                     }
                 } else {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "selecciona tema");
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "selecciona tema");
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                     //Limpiar campos de numero y nombre
                     nuevoSubtemaunidad.setSutnumero("");
@@ -1123,7 +1218,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 }
 
             } else {
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "selecciona Unidad");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "selecciona Unidad");
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
                 //Limpiar campos de numero y nombre
                 nuevoSubtemaunidad.setSutnumero("");
@@ -1135,7 +1230,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 grabaTema = false;
             }
         } else {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "seleccionar Unidad Aprendisaje = " + hDisp);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "seleccionar Unidad Aprendisaje = " + hDisp);
             RequestContext.getCurrentInstance().showMessageInDialog(message);
             System.out.print("seleccionar unidad");
             grabaTema = false;
@@ -1185,7 +1280,7 @@ public class CatalogoCTBeanUI implements Serializable {
 //                grabaTema = true;
 //                setPorcentPracL(porcentPractL);
 //                //return  graba;
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + horasAFormato((float) operacion) + "</center>");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + horasAFormato((float) operacion) + "</center>");
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
                 buscar = "00:00";
                 RequestContext.getCurrentInstance().update("formDlg:horasPL");
@@ -1193,7 +1288,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 grabaTema = false;
             } else {
                 if (catalogoCTBeanHelper.minMayor(buscar) == true) {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Formato de minutos incorrecto");
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Formato de minutos incorrecto");
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                     setPorcentPracT(0);
                     buscar = "00:00";
@@ -1211,7 +1306,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 }
             }
         } else {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "selecciona UA");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "selecciona UA");
             RequestContext.getCurrentInstance().showMessageInDialog(message);
             System.out.print("seleccionar tema");
             grabaTema = false;
@@ -1228,8 +1323,9 @@ public class CatalogoCTBeanUI implements Serializable {
         double hTUni = catalogoCTBeanHelper.gethTotUni();
 
         hDisp = hc;
+        
         for (TreeNode nodo : root.getChildren()) {
-            hDisp -= Float.parseFloat(((NodoMultiClass) nodo.getData()).getHoras());
+            hDisp -= formatoAHoras(horasAFormato(((NodoMultiClass) nodo.getData()).getHoras()));
         }
 
         if (hDisp > 0) {
@@ -1273,9 +1369,11 @@ public class CatalogoCTBeanUI implements Serializable {
             if (((NodoMultiClass) nodoUnidades.getData()).getId().equals(seleccionarUnidad)) {
                 numeroTema = ((NodoMultiClass) nodoUnidades.getData()).getNumero() + ".";
                 hDisp = Double.parseDouble(((NodoMultiClass) nodoUnidades.getData()).getHoras());
+                hDisp=formatoAHoras(horasAFormato(String.valueOf(hDisp)));
+                 
                 for (TreeNode nodoTemas : nodoUnidades.getChildren()) {
-                    System.out.println("[][][][][][][]HORAS DISPONIBLES EN LA UINDAD " + hDisp);
-                    hDisp = hDisp - Double.parseDouble(((NodoMultiClass) nodoTemas.getData()).getHoras());
+                    hDisp = hDisp - 
+                            formatoAHoras(horasAFormato(((NodoMultiClass) nodoTemas.getData()).getHoras()));
                 }
             }
         }
@@ -1299,13 +1397,12 @@ public class CatalogoCTBeanUI implements Serializable {
 
             //Asignar prenumero del subtema:
             numeroSubtema = selectedTemaunidad.getTunnumero() + ".";
-            hDispST = htemSel - hSumaHorasSubTUni;
+            hDispST = formatoAHoras(horasAFormato((float)htemSel)) - hSumaHorasSubTUni;
 
             if (hDispST > 0) {
                 sethDispST(hDispST);
             } else {
                 sethDispST(0);
-                System.out.print("suma mal de tema hecha lineas 802");
             }
             return hDispST;
         }
@@ -1411,23 +1508,23 @@ public class CatalogoCTBeanUI implements Serializable {
                         RequestContext.getCurrentInstance().update("formDlg:tabView1:horasUni");
                         RequestContext.getCurrentInstance().update("formDlg:tabView1:paUnid");
                         FacesContext context = FacesContext.getCurrentInstance();
-                        context.addMessage(null, new FacesMessage("Alta", "Se guardo correctamente"));
+                        context.addMessage(null, new FacesMessage("", "Se guardó correctamente"));
                         validarHoras();
                     } else {
-                        limpiarCampos();
-                        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Valor de nombre o numero repetido");
+//                        limpiarCampos();
+                        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Valor de nombre o número repetido");
                         RequestContext.getCurrentInstance().showMessageInDialog(message);
                     }
                     return "";
                 } else //else de validacion de campos
                 {
                     limpiarCampos();
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Campo oligatorio:<br>" + mensajeUni);
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Campo oligatorio:<br>" + mensajeUni);
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                 }
             } else //else de validacion Unidad de Aprendisaje
             {
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Debes elegir una unidad de aprendizaje primero.");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Debes elegir una unidad de aprendizaje primero.");
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
                 return "";
             }
@@ -1484,9 +1581,9 @@ public class CatalogoCTBeanUI implements Serializable {
                 for (TreeNode nodo : root.getChildren()) {
 
                     if (((NodoMultiClass) nodo.getData()).getId().equals(seleccionarUnidad)) {
-                        horasDisponibles = Double.parseDouble(((NodoMultiClass) nodo.getData()).getHoras());
+                        horasDisponibles = formatoAHoras(horasAFormato((((NodoMultiClass) nodo.getData()).getHoras())));
                         for (TreeNode nodo2 : nodo.getChildren()) {
-                            horasDisponibles -= Double.parseDouble(((NodoMultiClass) nodo2.getData()).getHoras());
+                            horasDisponibles -= formatoAHoras(horasAFormato((((NodoMultiClass) nodo2.getData()).getHoras())));
                             if (((NodoMultiClass) nodo2.getData()).getNombre().equalsIgnoreCase(nuevoTemaunidad.getTunnombre())
                                     || ((NodoMultiClass) nodo2.getData()).getNumero().equalsIgnoreCase(numeroTema + nuevoTemaunidad.getTunnumero())) {
                                 banderaAgregar = false;
@@ -1515,32 +1612,32 @@ public class CatalogoCTBeanUI implements Serializable {
 
                         porcentTem = 0;
                         FacesContext context = FacesContext.getCurrentInstance();
-                        context.addMessage(null, new FacesMessage("Alta", "Se guardó correctamente"));
-                        limpiarCampos();
+                        context.addMessage(null, new FacesMessage("", "Se guardó correctamente"));
+                        limpiarAlAgregar();
 
                         validarHoras();
                         RequestContext.getCurrentInstance().update("formDlg:tabView1:hdisT");
 
                     } else {
-                        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Valor de nombre o numero repetido");
+                        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Valor de nombre o número repetido");
                         RequestContext.getCurrentInstance().showMessageInDialog(message);
                     }
                     return "";
                 } else //else de validacion Horas Disponibles
                 {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Horas Disponibles Excedidas");
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Horas Disponibles Excedidas");
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                 }
             } else //else de validacion Campos vacios
             {
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Campo boligatorio:" + mensajeT);
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Campo boligatorio:" + mensajeT);
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
 
                 return "";
             }
         } else //else de validacion Unidadd de Aprendisaje
         {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Debes elegir una unidad de aprendizaje primero.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Debes elegir una unidad de aprendizaje primero.");
             RequestContext.getCurrentInstance().showMessageInDialog(message);
             return "";
         }
@@ -1616,7 +1713,6 @@ public class CatalogoCTBeanUI implements Serializable {
                 }
                 //Validacion de campos repetidos
                 if (banderaAgregar) {
-                    System.out.println("Agregando subtemas! n=" + nuevoSubtemaunidad.getSutnombre() + " & uniid=" + selectedTemaunidad.getTunid());
 
                     nuevoSubtemaunidad.setSutid(0);
                     nuevoSubtemaunidad.setSuthoras((float) datoConvertido);
@@ -1629,25 +1725,24 @@ public class CatalogoCTBeanUI implements Serializable {
                     hDispST -= nuevoSubtemaunidad.getSuthoras();
                     nuevoSubtemaunidad = new Subtemaunidad();
                     System.out.println("");
-                    limpiarCampos();
-
+                    limpiarAlAgregar();
                     FacesContext context = FacesContext.getCurrentInstance();
                     context.addMessage(null, new FacesMessage("Alta", "Se guardó correctamente"));
                     validarHoras();
                 } else {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Valor de nombre o numero repetido");
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Valor de nombre o número repetido");
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                 }
                 return "";
             } else //else de validacion de campos
             {
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Campo Obligatorio: " + mensajeSubT);
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Campo Obligatorio: " + mensajeSubT);
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
             }
 
         } else // else validacion de Unidad de Aprendisaje
         {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Debes elegir una unidad de aprendizaje primero.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Debes elegir una unidad de aprendizaje primero.");
             RequestContext.getCurrentInstance().showMessageInDialog(message);
             return "";
         }
@@ -1692,7 +1787,6 @@ public class CatalogoCTBeanUI implements Serializable {
 
                 //////////////
                 if (banderaAgregar) {
-                    System.out.println("Agregando practicasLab! n=" + nuevaPracticaL.getPrlnombre() + " & uapid=" + selectedUnidadaprendizaje.getUapid());
                     nuevaPracticaL.setUnidadaprendizaje(selectedUnidadaprendizaje);
                     nuevaPracticaL.setPrlvalorPorcentaje((float) porcentPracL);
                     catalogoCTBeanHelper.agregarPracticaLaboratorioCatalogo(nuevaPracticaL);
@@ -1705,19 +1799,19 @@ public class CatalogoCTBeanUI implements Serializable {
                     validarHoras();
 
                 } else {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Valor de nombre o numero repetido");
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Valor de nombre o número repetido");
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
 
                 }
                 return "";
             } else //else de validacion de campos
             {
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "!Campo Obligatorio", "Campo obligatorio: " + mensaje);
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Campo Obligatorio", "Campo obligatorio: " + mensaje);
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
             }
         } else //else de validacion de unidad de aprendizaje
         {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Debes elegir una unidad de aprendizaje primero.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Debes elegir una unidad de aprendizaje primero.");
             RequestContext.getCurrentInstance().showMessageInDialog(message);
             return "";
         }
@@ -1781,28 +1875,28 @@ public class CatalogoCTBeanUI implements Serializable {
                     context.addMessage(null, new FacesMessage("Alta", "Se guardó correctamente"));
                     validarHoras();
                 } else {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Valor de nombre o numero repetido");
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Valor de nombre o numero repetido");
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                 }
                 return "";
             } else //else de validacion de campos
             {
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Campo obligatorio " + mensaje);
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Campo obligatorio " + mensaje);
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
             }
 
         } else // else de validacion de Unidad de Aprendizaje
         {
             if (selectedUnidadaprendizaje.getUapid() == 0) {
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Debes elegir una unidad de aprendizaje primero.");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Debes elegir una unidad de aprendizaje primero.");
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
             }
             if (nuevaPracticaT.getPrthoras() > hDispPT && hDispPT >= 0) {
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Las horas solicitadas exceden las horas disponibles");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Las horas solicitadas exceden las horas disponibles");
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
             }
             if (nuevaPracticaT.getPrthoras() == 0) {
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Las horas deben ser mayores que 0");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Las horas deben ser mayores que 0");
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
             }
 
@@ -1827,14 +1921,13 @@ public class CatalogoCTBeanUI implements Serializable {
 
     public String agregarPracticascampo() {
         if (selectedUnidadaprendizaje.getUapid() != 0) {
-            System.out.println("Agregando practicasTaller! n=" + nuevaPracticaC.getPrcnombre() + " & uapid=" + selectedUnidadaprendizaje.getUapid());
             nuevaPracticaC.setUnidadaprendizaje(selectedUnidadaprendizaje);
             catalogoCTBeanHelper.agregarPracticaCampoCatalogo(nuevaPracticaC);
             nuevaPracticaC = new Practicascampo();
             catalogoCTBeanHelper.setPracticasCampo(new LinkedList<Practicascampo>());
             return "";
         } else {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Debes elegir una unidad de aprendizaje primero.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Debes elegir una unidad de aprendizaje primero.");
             RequestContext.getCurrentInstance().showMessageInDialog(message);
             return "";
         }
@@ -1866,7 +1959,7 @@ public class CatalogoCTBeanUI implements Serializable {
                     if (tipoG.trim().equalsIgnoreCase("PC")) {
                         RequestContext.getCurrentInstance().execute("dlgPracticascampo.show()");
                     } else {
-                        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Debes elegir una unidad de aprendizaje primero.");
+                        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Debes elegir una unidad de aprendizaje primero.");
                         RequestContext.getCurrentInstance().showMessageInDialog(message);
                     }
                 }
@@ -1890,7 +1983,7 @@ public class CatalogoCTBeanUI implements Serializable {
             System.out.println("TipoNodo: " + nmc.getTipo());
 
             if (nmc.getTipo().equalsIgnoreCase("unidad")) {
-                tipo = "Unidad";
+                tipo = "esta Unidad";
                 Unidad u = nmc.getUnidad();
                 System.out.println("id:" + u.getUniid() + " Nombre:" + u.getUninombre());
 
@@ -1913,11 +2006,10 @@ public class CatalogoCTBeanUI implements Serializable {
                  * subtema y replicar una operacion parecida para el
                  * selectOneMenu de tema en la pestaña de Subtema
                  */
-                System.out.println("!!!!!!!!!@@@SE SELECCIONO EL NODO: " + ((NodoMultiClass) selectedNode.getData()).getId());
             }
             if (nmc.getTipo().equalsIgnoreCase("temaunidad")) {
                 bloquearTema = true;
-                tipo = "Tema de Unidad";
+                tipo = "este Tema de unidad";
                 Temaunidad tu = nmc.getTemaUnidad();
 
                 objUnidadSeleccionada = ((NodoMultiClass) selectedNode.getParent().getData()).getId();
@@ -1942,7 +2034,7 @@ public class CatalogoCTBeanUI implements Serializable {
 
             }
             if (nmc.getTipo().equalsIgnoreCase("subtemaunidad")) {
-                tipo = "Subtema de Unidad";
+                tipo = "este Subtema de unidad";
                 Subtemaunidad su = nmc.getSubTema();
 
                 ///
@@ -1973,22 +2065,21 @@ public class CatalogoCTBeanUI implements Serializable {
                 numeroSubtema = ((NodoMultiClass) selectedNode.getParent().getData()).getNumero() + ".";
             }
             if (nmc.getTipo().equalsIgnoreCase("practicalaboratorio")) {
-                tipo = "Práctica de Laboratorio";
+                tipo = "esta Práctica de laboratorio";
                 Practicalaboratorio pl = nmc.getPracticaL();
                 System.out.println("id:" + pl.getPrlid() + " Nombre:" + pl.getPrlnombre());
             }
             if (nmc.getTipo().equalsIgnoreCase("practicataller")) {
-                tipo = "Práctica de Taller";
+                tipo = "esta Práctica de taller";
                 Practicataller pt = nmc.getPracticaT();
                 System.out.println("id:" + pt.getPrtid() + " Nombre:" + pt.getPrtnombre());
             }
             if (nmc.getTipo().equalsIgnoreCase("practicacampo")) {
-                tipo = "Práctica de Campo";
+                tipo = "esta Práctica de campo";
                 Practicascampo pc = nmc.getPracticaC();
                 System.out.println("id:" + pc.getPrcid() + " Nombre:" + pc.getPrcnombre());
             }
         } else {
-            System.out.println("ES NULOOOOO!! AAAARRGHHHH!");
         }
     }
 
@@ -2040,7 +2131,7 @@ public class CatalogoCTBeanUI implements Serializable {
             }
             RequestContext.getCurrentInstance().execute("dlgEliminar.show()");
         } else {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Debes elegir una unidad primero.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Debes elegir una unidad primero.");
             RequestContext.getCurrentInstance().showMessageInDialog(message);
         }
     }
@@ -2061,7 +2152,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 horas = (float) 0.0;
                 PA = (float) 0.0;
                 FacesContext context = FacesContext.getCurrentInstance();
-                context.addMessage(null, new FacesMessage("Eliminado", "Se elimino correctamente"));
+                context.addMessage(null, new FacesMessage("", "Se eliminó correctamente"));
             }
             if (nmc.getTipo().equalsIgnoreCase("temaunidad")) {
                 Temaunidad tu = nmc.getTemaUnidad();
@@ -2072,7 +2163,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 horas = (float) 0.0;
                 PA = (float) 0.0;
                 FacesContext context = FacesContext.getCurrentInstance();
-                context.addMessage(null, new FacesMessage("Eliminado", "Se elimino correctamente"));
+                context.addMessage(null, new FacesMessage("", "Se eliminó correctamente"));
             }
             if (nmc.getTipo().equalsIgnoreCase("subtemaunidad")) {
                 Subtemaunidad su = nmc.getSubTema();
@@ -2083,7 +2174,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 horas = (float) 0.0;
                 PA = (float) 0.0;
                 FacesContext context = FacesContext.getCurrentInstance();
-                context.addMessage(null, new FacesMessage("Eliminado", "Se elimino correctamente"));
+                context.addMessage(null, new FacesMessage("", "Se eliminó correctamente"));
             }
             if (nmc.getTipo().equalsIgnoreCase("practicalaboratorio")) {
                 Practicalaboratorio pl = nmc.getPracticaL();
@@ -2094,7 +2185,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 horas = (float) 0.0;
                 PA = (float) 0.0;
                 FacesContext context = FacesContext.getCurrentInstance();
-                context.addMessage(null, new FacesMessage("Eliminado", "Se elimino correctamente"));
+                context.addMessage(null, new FacesMessage("", "Se eliminó correctamente"));
             }
             if (nmc.getTipo().equalsIgnoreCase("practicataller")) {
                 Practicataller pt = nmc.getPracticaT();
@@ -2105,7 +2196,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 horas = (float) 0.0;
                 PA = (float) 0.0;
                 FacesContext context = FacesContext.getCurrentInstance();
-                context.addMessage(null, new FacesMessage("Eliminado", "Se elimino correctamente"));
+                context.addMessage(null, new FacesMessage("", "Se eliminó correctamente"));
             }
             if (nmc.getTipo().equalsIgnoreCase("practicacampo")) {
                 Practicascampo pc = nmc.getPracticaC();
@@ -2116,13 +2207,13 @@ public class CatalogoCTBeanUI implements Serializable {
                 horas = (float) 0.0;
                 PA = (float) 0.0;
                 FacesContext context = FacesContext.getCurrentInstance();
-                context.addMessage(null, new FacesMessage("Eliminado", "Se elimino correctamente"));
+                context.addMessage(null, new FacesMessage("", "Se eliminó correctamente"));
             }
             getUnidades();
             validarHoras();
             limpiarSeleccion();
         } else {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Debes elegir una unidad primero.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Debes elegir una unidad primero.");
             RequestContext.getCurrentInstance().showMessageInDialog(message);
         }
         //return "";
@@ -2223,17 +2314,18 @@ public class CatalogoCTBeanUI implements Serializable {
                 horas = pc.getPrchoras();
                 PA = pc.getPrcvalorPorcentaje();
             }
+            hDispA=(formatoAHoras(horasAFormato((float)hDispA)));
             for (TreeNode nodo : selectedNode.getParent().getChildren()) {
-                hDispA -= Double.parseDouble(((NodoMultiClass) nodo.getData()).getHoras());
+                hDispA -=(formatoAHoras(horasAFormato((((NodoMultiClass) nodo.getData()).getHoras()))));
             }
-            hDispA += Double.parseDouble(((NodoMultiClass) selectedNode.getData()).getHoras());
+            hDispA += (formatoAHoras(horasAFormato(((NodoMultiClass) selectedNode.getData()).getHoras())));
             if (hDispA < 0) {
                 hDispA = 0;
             }
             RequestContext.getCurrentInstance().execute("dlgActualizacion.show()");
             //calculoHorasRestantes();
         } else {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Debes elegir una unidad primero.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Debes elegir una unidad primero.");
             RequestContext.getCurrentInstance().showMessageInDialog(message);
         }
     }
@@ -2292,7 +2384,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 tipoHijo = "sub-temas";
             }
 
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Las horas resultantes no deben ser menores a <br>las horas colocadas en " + tipoHijo);
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Las horas resultantes no deben ser menores a <br>las horas colocadas en " + tipoHijo);
             RequestContext.getCurrentInstance().showMessageInDialog(message);
         } else {
             if (banderaActualizar) {
@@ -2302,7 +2394,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 }
                 for (String temporal : (numero + ".").split("\\.")) {
                     if (Double.parseDouble(temporal) == 0) {
-                        mensaje += "<br>Numero no puede ser 0";
+                        mensaje += "<br>Número no puede ser 0";
                     }
                 }
                 if (nombre.trim().equals("")) {
@@ -2340,12 +2432,19 @@ public class CatalogoCTBeanUI implements Serializable {
                                 nombre = "";
                                 horas = (float) 0.0;
                                 PA = (float) 0.0;
-                                FacesContext context = FacesContext.getCurrentInstance();
-                                context.addMessage(null, new FacesMessage("Modificación", "Se modifico correctamente"));
+                                
 
+                                
+                                
+                                FacesContext context = FacesContext.getCurrentInstance();
+                                context.addMessage(null, new FacesMessage("", "Se modificó correctamente"));
+
+                                
+                                
+                                
                             } else {
 
-                                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Valor de nombre o numero repetido");
+                                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Valor de nombre o número repetido");
                                 RequestContext.getCurrentInstance().showMessageInDialog(message);
                             }
                         }
@@ -2377,10 +2476,10 @@ public class CatalogoCTBeanUI implements Serializable {
                                 horas = (float) 0.0;
                                 PA = (float) 0.0;
                                 FacesContext context = FacesContext.getCurrentInstance();
-                                context.addMessage(null, new FacesMessage("Modificación", "Se modifico correctamente"));
+                                context.addMessage(null, new FacesMessage("", "Se modificó correctamente"));
                             } else {
 
-                                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Valor de nombre o numero repetido");
+                                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Valor de nombre o número repetido");
                                 RequestContext.getCurrentInstance().showMessageInDialog(message);
                             }
                         }
@@ -2413,10 +2512,10 @@ public class CatalogoCTBeanUI implements Serializable {
                                 horas = (float) 0.0;
                                 PA = (float) 0.0;
                                 FacesContext context = FacesContext.getCurrentInstance();
-                                context.addMessage(null, new FacesMessage("Modificacion", "Se modifico correctamente"));
+                                context.addMessage(null, new FacesMessage("", "Se modificó correctamente"));
                             } else {
 
-                                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Valor de nombre o numero repetido");
+                                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Valor de nombre o número repetido");
                                 RequestContext.getCurrentInstance().showMessageInDialog(message);
                             }
                         }
@@ -2446,10 +2545,10 @@ public class CatalogoCTBeanUI implements Serializable {
                                 horas = (float) 0.0;
                                 PA = (float) 0.0;
                                 FacesContext context = FacesContext.getCurrentInstance();
-                                context.addMessage(null, new FacesMessage("Modificación", "Se modifico correctamente"));
+                                context.addMessage(null, new FacesMessage("", "Se modificó correctamente"));
                             } else {
 
-                                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Valor de nombre o numero repetido");
+                                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Valor de nombre o número repetido");
                                 RequestContext.getCurrentInstance().showMessageInDialog(message);
                             }
                         }
@@ -2481,10 +2580,10 @@ public class CatalogoCTBeanUI implements Serializable {
                                 PA = (float) 0.0;
                                 buscar = "";
                                 FacesContext context = FacesContext.getCurrentInstance();
-                                context.addMessage(null, new FacesMessage("Modificación", "Se modifico correctamente"));
+                                context.addMessage(null, new FacesMessage("", "Se modificó correctamente"));
                             } else {
 
-                                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Valor de nombre o numero repetido");
+                                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Valor de nombre o número repetido");
                                 RequestContext.getCurrentInstance().showMessageInDialog(message);
                             }
                         }
@@ -2513,10 +2612,10 @@ public class CatalogoCTBeanUI implements Serializable {
                                 horas = (float) 0.0;
                                 PA = (float) 0.0;
                                 FacesContext context = FacesContext.getCurrentInstance();
-                                context.addMessage(null, new FacesMessage("Modificación", "Se modifico correctamente"));
+                                context.addMessage(null, new FacesMessage("", "Se modificó correctamente"));
                             } else {
 
-                                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Valor de nombre o numero repetido");
+                                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Valor de nombre o número repetido");
                                 RequestContext.getCurrentInstance().showMessageInDialog(message);
                             }
                         }
@@ -2524,11 +2623,11 @@ public class CatalogoCTBeanUI implements Serializable {
 
                     validarHoras();
                 } else {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Campo Obligatorio: " + mensaje);
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Campo Obligatorio: " + mensaje);
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                 }
             } else {
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Horas solicitadas exceden horas disponibles");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Horas solicitadas exceden horas disponibles");
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
             }
 
@@ -2660,30 +2759,30 @@ public class CatalogoCTBeanUI implements Serializable {
     public double horasDisT() {
 
         if (selectedUnidadaprendizaje != null && selectedUnidadaprendizaje.getUapid() != 0) {
-//            sethDispPT(0.0);
-//            double operacion;
-//            double hTTPUni = selectedUnidadaprendizaje.getUaphorasTaller() * 16;
-//            System.out.println("odio esto" + hTTPUni);
-//            double hTPrac = catalogoCTBeanHelper.gethTotPracT();
-//            BigDecimal bighTPrac = new BigDecimal(hTPrac);
-//            BigDecimal bighTTPUni = new BigDecimal(hTTPUni);
-//
-//            bighTPrac = bighTPrac.setScale(2, RoundingMode.HALF_UP);
-//            System.out.println("odio esto2" + hTPrac + "ahora con big" + bighTPrac);
-//            hTPrac = bighTPrac.doubleValue();
-//
-//            bighTTPUni = bighTTPUni.setScale(2, RoundingMode.HALF_UP);
-//            System.out.println("odio esto2" + hTPrac + "ahora con big" + bighTTPUni);
-//            hTTPUni = bighTTPUni.doubleValue();
-//            operacion = hTTPUni - hTPrac;
-////            sethDispPT(hTTPUni - hTPrac);
-//            BigDecimal bigoperacion = new BigDecimal(operacion);
-//
-//            bigoperacion = bigoperacion.setScale(2, RoundingMode.HALF_UP);
-//            System.out.println("odio esto2" + hTPrac + "ahora con big" + bigoperacion);
-//            operacion = bigoperacion.doubleValue();
-//            sethDispPT(operacion);
-//            System.out.println("de nuevo aqui ya me enfade" + hDispPT);
+            sethDispPT(0.0);
+            double operacion;
+            double hTTPUni = selectedUnidadaprendizaje.getUaphorasTaller() * 16;
+            System.out.println("odio esto" + hTTPUni);
+            double hTPrac = catalogoCTBeanHelper.gethTotPracT();
+            BigDecimal bighTPrac = new BigDecimal(hTPrac);
+            BigDecimal bighTTPUni = new BigDecimal(hTTPUni);
+
+            bighTPrac = bighTPrac.setScale(2, RoundingMode.HALF_UP);
+            System.out.println("odio esto2" + hTPrac + "ahora con big" + bighTPrac);
+            hTPrac = bighTPrac.doubleValue();
+
+            bighTTPUni = bighTTPUni.setScale(2, RoundingMode.HALF_UP);
+            System.out.println("odio esto2" + hTPrac + "ahora con big" + bighTTPUni);
+            hTTPUni = bighTTPUni.doubleValue();
+            operacion = hTTPUni - hTPrac;
+//            sethDispPT(hTTPUni - hTPrac);
+            BigDecimal bigoperacion = new BigDecimal(operacion);
+
+            bigoperacion = bigoperacion.setScale(2, RoundingMode.HALF_UP);
+            System.out.println("odio esto2" + hTPrac + "ahora con big" + bigoperacion);
+            operacion = bigoperacion.doubleValue();
+            sethDispPT(operacion);
+            System.out.println("de nuevo aqui ya me enfade" + hDispPT);
             return gethDispPT();
         } else {
             return 0.0;
@@ -2754,7 +2853,7 @@ public class CatalogoCTBeanUI implements Serializable {
 
             if (operacion < hSolPracT && operacion >= 0) {
 
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + horasAFormato((float) operacion) + "</center>");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + horasAFormato((float) operacion) + "</center>");
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
                 setPorcentPracT(0);
                 buscar = "00:00";
@@ -2763,7 +2862,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 grabaTema = false;
             } else {
                 if (catalogoCTBeanHelper.minMayor(buscar) == true) {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Formato de minutos incorrecto");
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Formato de minutos incorrecto");
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                     setPorcentPracT(0);
                     buscar = "00:00";
@@ -2780,7 +2879,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 }
             }
         } else {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "selecciona unidad de aprendizaje");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "selecciona unidad de aprendizaje");
             RequestContext.getCurrentInstance().showMessageInDialog(message);
             setPorcentPracT(0);
             System.out.print("seleccionar tema");
@@ -2796,6 +2895,54 @@ public class CatalogoCTBeanUI implements Serializable {
         limpiarCampos();
     }
 
+    
+    public void limpiarAlAgregar() {
+        nuevaUnidad = new Unidad();
+        nuevaUnidad.setUniid(0);
+        buscar = "00:00";
+        hDispUni = hc;
+        numeroPractica = "";
+        for (TreeNode nodo : root.getChildren()) {
+            hDispUni -= Double.parseDouble(((NodoMultiClass) nodo.getData()).getHoras());
+        }
+        if (hDispUni < 0) {
+            hDispUni = 0;
+        }
+        //Limpiar campo de porcentaje en unidad
+        porcentUni = 0;
+
+        //limpiar tema
+        if (selectedNode == null && seleccionarUnidad != "0") {
+            porcentTem = 0;
+            nuevoTemaunidad = new Temaunidad();
+            nuevoTemaunidad.setTunid(0);
+        }
+        //*
+        //limpiar subtema
+        buscar = "00:00";
+        if (selectedNode == null) {
+            
+            nuevoSubtemaunidad = new Subtemaunidad();
+            porcentSubTem = 0;
+            //Las horas no se pierden al tener algo seleccionado
+            porcentSubTem = 0;
+
+        }
+        nuevoSubtemaunidad.setSutnombre("");
+        nuevoSubtemaunidad.setSutnumero("");
+        //*
+        nuevaPracticaC = new Practicascampo();
+        nuevaPracticaL = new Practicalaboratorio();
+        porcentPracL = 0;
+        nuevaPracticaT = new Practicataller();
+        porcentPracT = 0;
+
+        RequestContext.getCurrentInstance().update("formDlg:tabView1:paU");
+        RequestContext.getCurrentInstance().update("formDlg:tabView1:paUnid");
+    }
+    
+    
+    
     public void limpiarCampos() {
         nuevaUnidad = new Unidad();
         nuevaUnidad.setUniid(0);
@@ -3089,7 +3236,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 setPorcentUni(porcentUni);
                 grabaUni = true;
             } else {
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + horasAFormato((float) hRest + margen) + "</center>");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + horasAFormato((float) hRest + margen) + "</center>");
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
                 setFormatoDeHora("00:00");
                 RequestContext.getCurrentInstance().update("formDlg:horasA");
@@ -3099,7 +3246,7 @@ public class CatalogoCTBeanUI implements Serializable {
 
             }
 //            } else {
-//                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "horas clase exede rango");
+//                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "horas clase exede rango");
 //                RequestContext.getCurrentInstance().showMessageInDialog(message);
 //                System.out.print("las horas totales por unidad sobrepasan las horas totales de la c");
 //                setFormatoDeHora("00:00");
@@ -3108,7 +3255,7 @@ public class CatalogoCTBeanUI implements Serializable {
 //
 //            }
         } else {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Debes elegir una unidad de aprendizaje primero.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Debes elegir una unidad de aprendizaje primero.");
             RequestContext.getCurrentInstance().showMessageInDialog(message);
             grabaUni = false;
         }
@@ -3135,8 +3282,7 @@ public class CatalogoCTBeanUI implements Serializable {
             PA = (float) horas * 100 / hc;
             for (TreeNode nodo : selectedNode.getParent().getChildren()) {
                 if (!((NodoMultiClass) nodo.getData()).getId().equals(((NodoMultiClass) selectedNode.getData()).getId())) {
-                    hDisp -= Float.parseFloat(((NodoMultiClass) nodo.getData()).getHoras());
-                    System.out.println(hDisp + " - " + Float.parseFloat(((NodoMultiClass) nodo.getData()).getHoras()));
+                    hDisp -= formatoAHoras(horasAFormato(((NodoMultiClass) nodo.getData()).getHoras()));
                 }
             }
 
@@ -3146,7 +3292,7 @@ public class CatalogoCTBeanUI implements Serializable {
             if (hDisp >= horas && hDisp >= 0) {
                 //promedia el porcent   aje de horas tema 
                 if (catalogoCTBeanHelper.minMayor(horasAFormato(horas)) == true) {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Formato de minutos incorrecto");
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Formato de minutos incorrecto");
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                     setPorcentSubTem(0);
                     formatoDeHora = "00:00";
@@ -3159,7 +3305,7 @@ public class CatalogoCTBeanUI implements Serializable {
                     setPorcentTem(porcentTem);
                 }
             } else {
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + horasAFormato(hDisp) + "</center>");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + horasAFormato(hDisp) + "</center>");
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
                 setFormatoDeHora("00:00");
                 RequestContext.getCurrentInstance().update("formDlg:horasA");
@@ -3201,7 +3347,7 @@ public class CatalogoCTBeanUI implements Serializable {
             System.out.println("///////////////////HORAS DISP" + hDisp + " HORAS AGREGAR " + horas);
             if (hDisp < horas && hDisp >= 0) {
 
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + horasAFormato(hDisp) + "</center>");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + horasAFormato(hDisp) + "</center>");
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
                 setFormatoDeHora("00:00");
                 RequestContext.getCurrentInstance().update("formDlg:horasA");
@@ -3210,7 +3356,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 grabaTema = false;
             } else {
                 if (catalogoCTBeanHelper.minMayor(horasAFormato(horas)) == true) {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Formato de minutos incorrecto");
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Formato de minutos incorrecto");
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                     setPorcentSubTem(0);
                     formatoDeHora = "00:00";
@@ -3226,7 +3372,7 @@ public class CatalogoCTBeanUI implements Serializable {
             }
 
         } else {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "seleccionar Unidad Aprendisaje ");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "seleccionar Unidad Aprendisaje ");
             RequestContext.getCurrentInstance().showMessageInDialog(message);
             System.out.print("seleccionar unidad");
             grabaTema = false;
@@ -3271,7 +3417,7 @@ public class CatalogoCTBeanUI implements Serializable {
 //                grabaTema = true;
 //                setPorcentPracL(porcentPractL);
 //                //return  graba;
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + horasAFormato((float) hDisp) + "</center>");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + horasAFormato((float) hDisp) + "</center>");
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
                 setFormatoDeHora("00:00");
                 RequestContext.getCurrentInstance().update("formDlg:horasA");
@@ -3280,7 +3426,7 @@ public class CatalogoCTBeanUI implements Serializable {
             } else {
                 if (catalogoCTBeanHelper.minMayor(horasAFormato(horas)) == true) {
 
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Formato de minutos incorrecto");
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Formato de minutos incorrecto");
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                     setPorcentPracT(0);
                     setFormatoDeHora("00:00");
@@ -3298,7 +3444,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 }
             }
         } else {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "selecciona tema");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "selecciona tema");
             RequestContext.getCurrentInstance().showMessageInDialog(message);
             System.out.print("seleccionar tema");
             grabaTema = false;
@@ -3339,7 +3485,7 @@ public class CatalogoCTBeanUI implements Serializable {
 
             if (hDisp < horas && hDisp >= 0) {
 
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + horasAFormato(hDisp) + "</center>");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Horas solicitadas exceden horas disponibles. <br/><center>Horas disponibles = " + horasAFormato(hDisp) + "</center>");
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
                 setPorcentPracT(0);
                 setFormatoDeHora("00:00");
@@ -3347,7 +3493,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 grabaTema = false;
             } else {
                 if (catalogoCTBeanHelper.minMayor(horasAFormato(horas)) == true) {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "Formato de minutos incorrecto");
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Formato de minutos incorrecto");
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                     setPorcentPracT(0);
                     setFormatoDeHora("00:00");
@@ -3365,7 +3511,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 }
             }
         } else {
-            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Información", "selecciona tema");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "selecciona tema");
             RequestContext.getCurrentInstance().showMessageInDialog(message);
             setPorcentPracT(0);
             System.out.print("seleccionar tema");
@@ -3477,7 +3623,7 @@ public class CatalogoCTBeanUI implements Serializable {
                     //unidadaprendizaje2.setUaphorasClaseCompletas(true);
                     for (TreeNode nodo : catalogoCTBeanHelper.getNodos(clave, "C").getChildren()) {
 
-                        sumaHoras += Float.parseFloat(((NodoMultiClass) nodo.getData()).getHoras());
+                        sumaHoras += (formatoAHoras(horasAFormato((((NodoMultiClass) nodo.getData()).getHoras()))));
                         boolean horasCompletasUnidad = true;
 
                         if (nodo.getChildCount() > 0) {
@@ -3485,13 +3631,13 @@ public class CatalogoCTBeanUI implements Serializable {
                             for (TreeNode nodoTemas : nodo.getChildren()) {
 
                                 boolean horasCompletasTema = true;
-                                sumaTemas += Float.parseFloat(((NodoMultiClass) nodoTemas.getData()).getHoras());
+                                sumaTemas += (formatoAHoras(horasAFormato(Float.parseFloat(((NodoMultiClass) nodoTemas.getData()).getHoras()))));
 
                                 if (nodoTemas.getChildCount() > 0) {
                                     float sumaSubtemas = 0;
                                     for (TreeNode nodoSubtemas : nodoTemas.getChildren()) {
                                         if (((NodoMultiClass) nodoSubtemas.getData()).getHoras() != null) {
-                                            sumaSubtemas += Float.parseFloat(((NodoMultiClass) nodoSubtemas.getData()).getHoras());
+                                            sumaSubtemas += (formatoAHoras(horasAFormato(((NodoMultiClass) nodoSubtemas.getData()).getHoras())));
                                         }
                                     }
                                     if (formatoAHoras(horasAFormato(sumaSubtemas)) < formatoAHoras(horasAFormato(Float.parseFloat(((NodoMultiClass) nodoTemas.getData()).getHoras())))) {
@@ -3592,11 +3738,11 @@ public class CatalogoCTBeanUI implements Serializable {
 
         if (horasCompletas) {
 
-            FacesContext.getCurrentInstance().addMessage("horas", new FacesMessage(FacesMessage.SEVERITY_INFO, "Información", "Las horas disponibles ya han sido completamente asignadas"));
+            FacesContext.getCurrentInstance().addMessage("horas", new FacesMessage(FacesMessage.SEVERITY_INFO, "", "Las horas disponibles ya han sido completamente asignadas"));
             RequestContext.getCurrentInstance().update("form:messages");
 
         } else {
-            FacesContext.getCurrentInstance().addMessage("horas", new FacesMessage(FacesMessage.SEVERITY_WARN, "Información!", "Las horas disponibles no han sido completamente asignadas"));
+            FacesContext.getCurrentInstance().addMessage("horas", new FacesMessage(FacesMessage.SEVERITY_WARN, "", "Las horas disponibles no han sido completamente asignadas"));
             RequestContext.getCurrentInstance().update("form:messages");
         }
 
@@ -3657,7 +3803,7 @@ public class CatalogoCTBeanUI implements Serializable {
 //        selectedPlanestudio.setPesid(1);
 //        selectedAreaconocimiento.setAcoid(1);
 
-        if (filtroPE) {
+        if (isAdmin) {
             String idUa = seleccionarUA.split(" -- ")[0];
             String etapaUa = seleccionarUA.split(" -- ")[3];
             System.out.println("etapaUA++++++++++++++++++: " + etapaUa);
@@ -3674,7 +3820,7 @@ public class CatalogoCTBeanUI implements Serializable {
                 default:
                     break;
             }
-            Unidadacademica uaAux = filtrosHelper.getConsultaDelegate().findUnidadAcademica(loginBean.getUsuario().getUsuid()).get(0);
+            Unidadacademica uaAux = ctDelegate.findUnidadAcademica(loginBean.getLogueado().getUsuid()).get(0);
             programaESeleccionado = catalogoCTBeanHelper.programadeUnidadAprandizaje(Integer.parseInt(idUa)).getPedid().toString();
 
             selectedAreaconocimiento = catalogoCTBeanHelper.areaConocimientodeUnidadAprandizaje(idUa);
@@ -3766,6 +3912,8 @@ public class CatalogoCTBeanUI implements Serializable {
         }
     }
 
+    
+    
     public void seleccionarFiltro() {
         int filtros = 0;
         catalogoCTBeanHelper.agregarPracticaCampoCatalogo(nuevaPracticaC);

@@ -16,6 +16,7 @@ import mx.avanti.siract.application.helper.ProgramaEducativoBeanHelper;
 import mx.avanti.siract.application.helper.UnidadAcademicaBeanHelper;
 import mx.avanti.siract.business.entity.Planestudio;
 import mx.avanti.siract.business.entity.Programaeducativo;
+import mx.avanti.siract.business.entity.Rol;
 import mx.avanti.siract.business.entity.Unidadacademica;
 import mx.avanti.siract.common.integration.ServiceLocator;
 import org.primefaces.context.RequestContext;
@@ -89,9 +90,9 @@ public class ProgramaEducativoBeanUI implements Serializable {
     @PostConstruct
     public void postConstructor() {
         programaEducativoBeanHelper.setRolSeleccionado(loginBean.getSeleccionado());
-        programaEducativoBeanHelper.setUsuario(loginBean.getUsuario());
+        programaEducativoBeanHelper.setUsuario(loginBean.getLogueado());
         System.out.println("rol desde el BeanUI: " + loginBean.getSeleccionado());
-        System.out.println("id del usuario desde login " + loginBean.getUsuario().getUsuid());
+        System.out.println("id del usuario desde login " + loginBean.getLogueado().getUsuid());
         
         if(programaEducativoBeanHelper.getRolSeleccionado().equalsIgnoreCase("Administrador")){
             renderUA="true";
@@ -194,22 +195,34 @@ public class ProgramaEducativoBeanUI implements Serializable {
     }
 
     //ya
-    public boolean validacion() {
-        if (programaEducativoBeanHelper.getProgramaEducativo().getPedclave() == 0
-                || programaEducativoBeanHelper.getProgramaEducativo().getPednombre().isEmpty()
-                //||String.valueOf(programaEducativoBeanHelper.getProgramaEducativo().getPedclave()).isEmpty()
-                || programaEducativoBeanHelper.getUnidadacademica().getUacid() == 0) {
-            return true;
-        } else {
-            return false;
+    public String validacion() {
+        String vacio = "";
+        if(programaEducativoBeanHelper.getProgramaEducativo().getPedclave() == 0){
+            vacio += " Clave de programa educativo";
         }
+        if(programaEducativoBeanHelper.getProgramaEducativo().getPednombre().isEmpty()){            
+            vacio += " Nombre de programa educativo";
+        }
+        if(programaEducativoBeanHelper.getUnidadacademica().getUacid() == 0){
+            vacio += " Unidad academica";
+        }
+        
+        return vacio;
+//        if (programaEducativoBeanHelper.getProgramaEducativo().getPedclave() == 0
+//                || programaEducativoBeanHelper.getProgramaEducativo().getPednombre().isEmpty()
+//                //||String.valueOf(programaEducativoBeanHelper.getProgramaEducativo().getPedclave()).isEmpty()
+//                || programaEducativoBeanHelper.getUnidadacademica().getUacid() == 0) {
+//            //return true;
+//        } else {
+//            //return false;
+//        }
 
     }
 
     //ya
     public void eliminacionConfirmada() {
         FacesContext context = FacesContext.getCurrentInstance();
-        context.addMessage(null, new FacesMessage("Eliminando", "Se eliminó correctamente"));
+        context.addMessage(null, new FacesMessage("", "Se eliminó correctamente"));
 
         programaEducativoBeanHelper.getProgramaEducativoDelegate().eliminarProgramaEducativo(programaEducativoBeanHelper.getSelecProgramaEducativo());
         programaEducativoBeanHelper.setProgramaEducativo(new Programaeducativo());
@@ -225,7 +238,7 @@ public class ProgramaEducativoBeanUI implements Serializable {
 
     public void modificacionConfirmada() {
         FacesContext context = FacesContext.getCurrentInstance();
-        context.addMessage(null, new FacesMessage("Guardando", "Se guardó correctamente"));
+        context.addMessage(null, new FacesMessage("", "Se guardó correctamente"));
 
         programaEducativoBeanHelper.getProgramaEducativoDelegate().agregarProgramaEducativo(programaEducativoBeanHelper.getProgramaEducativo());
         programaEducativoBeanHelper.setProgramaEducativo(new Programaeducativo());
@@ -239,8 +252,6 @@ public class ProgramaEducativoBeanUI implements Serializable {
     public void confirmacionAceptada() {
         if (deshabilitar.equals("true")) {
             if(renderCancelar.equals("true")){
-            FacesContext context = FacesContext.getCurrentInstance();
-            context.addMessage(null, new FacesMessage("Eliminando", "Se eliminó correctamente"));
 
             programaEducativoBeanHelper.eliminarDeLista(programaEducativoBeanHelper.getProgramaEducativo().getPedid());
             programaEducativoBeanHelper.getProgramaEducativoDelegate().eliminarProgramaEducativo(programaEducativoBeanHelper.getProgramaEducativo());
@@ -258,6 +269,10 @@ public class ProgramaEducativoBeanUI implements Serializable {
 
                 RequestContext.getCurrentInstance().execute("dlg.show();");
             }
+            
+            FacesContext context = FacesContext.getCurrentInstance();
+            context.addMessage(null, new FacesMessage("", "Se eliminó correctamente"));
+            mostrarSeleccionPe();
 //        } else {
 //            programaEducativoBeanHelper.getProgramaEducativoDelegate().agregarProgramaEducativo(programaEducativoBeanHelper.getProgramaEducativo());
 //            FacesContext context = FacesContext.getCurrentInstance();
@@ -266,10 +281,11 @@ public class ProgramaEducativoBeanUI implements Serializable {
             }else{                
                 RequestContext.getCurrentInstance().execute("confirmdlg.hide();");
                 limpiarSeleccion();
+                botonesModElim();
             }
         }else{            
             FacesContext context = FacesContext.getCurrentInstance();
-            context.addMessage(null, new FacesMessage("Modificando", "Se guardó correctamente"));
+            context.addMessage(null, new FacesMessage("", "Se guardó correctamente"));
             programaEducativoBeanHelper.getProgramaEducativoDelegate().agregarProgramaEducativo(programaEducativoBeanHelper.getProgramaEducativo());
             programaEducativoBeanHelper.seleccionarRegistro();
             programaEducativoBeanHelper.setListaSeleccionPe(programaEducativoBeanHelper.getListaSeleccionPe());
@@ -303,10 +319,10 @@ public class ProgramaEducativoBeanUI implements Serializable {
             }
             
             System.out.println("\n\n\n"+programaEducativoBeanHelper.getUnidadacademica().getUacnombre()+"\n\n\n\n");
-            
-            if (validacion() == true) {
+            String vacio = validacion();
+            if (!vacio.trim().isEmpty()) {
                 System.out.println("entre aqui 1");
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Favor de llenar todos los campos vacios");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de Validacion", "Capturar campo(s) vacio(s) " + vacio);
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
             } else {
                 mensajeRep = programaEducativoBeanHelper.validarRepetidos();
@@ -320,7 +336,7 @@ public class ProgramaEducativoBeanUI implements Serializable {
                         programaEducativoBeanHelper.getProgramaEducativo().setUnidadacademica(programaEducativoBeanHelper.getUnidadacademica());
 
                         FacesContext context = FacesContext.getCurrentInstance();
-                        context.addMessage(null, new FacesMessage("Guardado", "Se guardó correctamente"));
+                        context.addMessage(null, new FacesMessage("", "Se guardó correctamente"));
 
                         programaEducativoBeanHelper.getProgramaEducativoDelegate().agregarProgramaEducativo(programaEducativoBeanHelper.getProgramaEducativo());
                         programaEducativoBeanHelper.setProgramaEducativo(new Programaeducativo());
@@ -336,7 +352,7 @@ public class ProgramaEducativoBeanUI implements Serializable {
                                 RequestContext.getCurrentInstance().execute("confirmdlg.show()");
                             }else{
                             FacesContext context = FacesContext.getCurrentInstance();
-                            context.addMessage(null, new FacesMessage("Modificando", "Se guardó correctamente"));
+                            context.addMessage(null, new FacesMessage("", "Se guardó correctamente"));
 
                             programaEducativoBeanHelper.getProgramaEducativoDelegate().agregarProgramaEducativo(programaEducativoBeanHelper.getProgramaEducativo());
                             programaEducativoBeanHelper.seleccionarRegistro();
@@ -347,7 +363,7 @@ public class ProgramaEducativoBeanUI implements Serializable {
                     }
 
                 } else {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "Campos repetidos en:" + mensajeRep);
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error de Validacion", "Los campos" + mensajeRep + " ya exixte");
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                 }
 
@@ -360,6 +376,12 @@ public class ProgramaEducativoBeanUI implements Serializable {
 
     //ya
     public void filtrado() {
+        List<Rol> list = null;
+        list = loginBean.Obtenerrol(loginBean.getLogueado().getUsuid());
+        String seleccionado=loginBean.getSeleccionado();
+        System.out.println(seleccionado+"ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ");
+        String catalogo="Administración de programa educativo";
+        loginBean.TienePermiso(list, seleccionado, catalogo);
         listaFiltrada = programaEducativoBeanHelper.filtrado(busqueda);
     }
 

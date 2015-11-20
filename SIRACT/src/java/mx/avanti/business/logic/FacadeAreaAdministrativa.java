@@ -20,6 +20,7 @@ public class FacadeAreaAdministrativa {
             ServiceLocator.getInstanceBaseDAO().saveOrUpdate(areaad);
         }
     }
+
     
    public List<Areaadministrativa> consultarAreaAdministrativa(){
        List<Areaadministrativa> resultado = null;
@@ -50,4 +51,10 @@ public class FacadeAreaAdministrativa {
         listaGpo = ServiceLocator.getInstanceBaseDAO().findFromWhereB("areaadministrativa", "aadid", String.valueOf(idArea),"areaadministrativa.aadid");
         return listaGpo;
     }  
+
+       public List<Areaadministrativa> findByProgramaEducativoClave(int pedclave){
+        List<Areaadministrativa> result = null;
+        result = ServiceLocator.getInstanceAreaadministrativa().findByCriteriaClave(pedclave);
+        return result;
+    }
 }

@@ -113,7 +113,7 @@ public class BaseDAO<T>  {
         return obj;
     }
 
-         public Usuario Login(String usuusuario, String usucontrasenia) {
+        public Usuario Login(String usuusuario, String usucontrasenia) {
 
         Session session = HibernateUtil.getSessionFactory().openSession();
         Criteria criteria = session.createCriteria(Usuario.class);
@@ -614,16 +614,14 @@ public class BaseDAO<T>  {
         }
         return user;
     }
-    public Usuario login(Usuario usuario) {
+   public Usuario login(Usuario usuario) {
         Usuario user = this.findByUsuario(usuario);
-        String contraEncrypt, contra;
-        contra = usuario.getUsucontrasenia();
-        contraEncrypt=DigestUtils.md5Hex(contra);
-        usuario.setUsucontrasenia(contraEncrypt);
+        ///String contraEncrypt, contra;
+        ////contra = usuario.getUsucontrasenia();
+        ////contraEncrypt = DigestUtils.md5Hex(contra);
+        ////usuario.setUsucontrasenia(contraEncrypt);
         if (user != null) {
-            if (!usuario.getUsucontrasenia().equals(user.getUsucontrasenia())) {
-                user = null;
-            }
+            System.out.println("no estoy vacio c:");
         }
         return user;
     }
@@ -997,4 +995,25 @@ public class BaseDAO<T>  {
         }
         return result;
     }
+      
+      ///////////////ACTUALIZACION SAML
+
+   public void update(int id, String rol, int valor){
+         HibernateUtil.getSession();
+        HibernateUtil.beingTransaccion();
+        System.out.println("Modifincando rol>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+rol);
+        try {
+            System.out.println("update Rol set ROLtipo='"+rol+"', ROLprioridad="+valor+" where ROLid="+id);
+            HibernateUtil.getSession().createQuery("update Rol set roltipo='"+rol+"', rolprioridad="+valor+" where rolid="+id).executeUpdate();
+            
+            
+        } catch (Exception x) {
+            x.printStackTrace();
+            HibernateUtil.rollbackTransaction();
+        } finally {
+            HibernateUtil.closeSession();
+        }
+    }
+
+      
 }

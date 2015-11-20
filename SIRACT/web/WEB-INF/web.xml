@@ -19,11 +19,11 @@
 
     <session-config>
         <session-timeout>
-            30
+            216000
         </session-timeout>
     </session-config>
     <welcome-file-list>
-        <welcome-file>login.xhtml</welcome-file>
+        <welcome-file>index.xhtml</welcome-file>
     </welcome-file-list>
     
             <context-param>
@@ -34,7 +34,68 @@
         <param-name>javax.faces.FACELETS_BUFFER_SIZE</param-name>
         <param-value>155350</param-value>
     </context-param>
+     <context-param>
+        <param-name>javax.faces.STATE_SAVING_METHOD</param-name>
+        <param-value>client</param-value>
+    </context-param>
+    <servlet>
+    <servlet-name>SAML2ConsumerServlet</servlet-name>
+    <servlet-class>com.certuit.common.security.sso.servlet.SAML2ConsumerServlet</servlet-class>
     
+    <init-param>
+      <param-name>ConsumerUrl</param-name>
+      <param-value>consumer</param-value>
+    </init-param>
+     <init-param>
+      <param-name>HomeUrl</param-name>
+      <param-value>dispatcher</param-value>
+    </init-param>
+    <init-param>
+      <param-name>DeniedUrl</param-name>
+      <param-value>AccesoDenegado.xhtml</param-value>
+    </init-param>
+    <init-param>
+      <param-name>IdpAuthUrl</param-name>
+      <param-value>https://llave.uabc.edu.mx/auth/login</param-value> 
+      
+    </init-param> 
+    <init-param>
+      <param-name>IdpPublicKey</param-name>
+      <param-value>-----BEGIN CERTIFICATE-----
+MIICfTCCAeYCCQCY1w+7oiJa6DANBgkqhkiG9w0BAQUFADCBgjELMAkGA1UEBhMC
+TVgxCzAJBgNVBAgTAkJDMREwDwYDVQQHEwhNZXhpY2FsaTEwMC4GA1UEChMnVW5p
+dmVyc2lkYWQgQXV0b25vbWEgZGUgQmFqYSBDYWxpZm9ybmlhMSEwHwYJKoZIhvcN
+AQkBFhJtbG9wZXpAdWFiYy5lZHUubXgwHhcNMTEwOTE2MDY0NTA2WhcNMzkwMTMx
+MDY0NTA2WjCBgjELMAkGA1UEBhMCTVgxCzAJBgNVBAgTAkJDMREwDwYDVQQHEwhN
+ZXhpY2FsaTEwMC4GA1UEChMnVW5pdmVyc2lkYWQgQXV0b25vbWEgZGUgQmFqYSBD
+YWxpZm9ybmlhMSEwHwYJKoZIhvcNAQkBFhJtbG9wZXpAdWFiYy5lZHUubXgwgZ8w
+DQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBANAo4DUlCDYiDmfxKBWLp6rWC/cI43sL
+OafzzvVsRmPBBexzQBl2MK7UHCBxxYEJyhXfv9hxYkfIrX7pzKTxPfdpuowKkupM
+8Md0MRPoJlw0BPUop1srG/+Y1Bm4F/JE3J1GIQaiUFKEYVoP9zhYRYG8+XaN6Uqc
+qowuM0Y1SjKJAgMBAAEwDQYJKoZIhvcNAQEFBQADgYEAEMljbFKzCTvlramcnQ8C
+Phlu22IhFGl7VLlUg1oGNpyYi92vLsRc4vvGBDiGpXdTDrKlal/KLECRNUXwT9fL
+NS1PR0VhK37pNkCiBwi7bev/0h8CNySDyfJG/swLX65WEqeTMu3XZtBkwrPgfySs
+0Y4zbyI9zw5cOOkAuGxVWk0=
+-----END CERTIFICATE-----
+</param-value>
+    </init-param>    
+  </servlet>
+  <servlet>
+    <servlet-name>Dispatcher</servlet-name>
+    <servlet-class>com.certuit.saml2.servlet.Dispatcher</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>SAML2ConsumerServlet</servlet-name>
+    <url-pattern>/consumer</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>Dispatcher</servlet-name>
+    <url-pattern>/dispatcher</url-pattern>
+  </servlet-mapping>
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+    <welcome-file>default.jsp</welcome-file>
+  </welcome-file-list>
  
 
     

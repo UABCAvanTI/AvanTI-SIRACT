@@ -9,10 +9,12 @@ import java.util.Collections;
 import java.util.List;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import mx.avanti.siract.application.helper.CapturaCicloEscolarBeanHelper;
 import mx.avanti.siract.business.entity.Cicloescolar;
+import mx.avanti.siract.business.entity.Rol;
 import org.primefaces.context.RequestContext;
 import org.primefaces.event.UnselectEvent;
 
@@ -24,6 +26,9 @@ import org.primefaces.event.UnselectEvent;
 @ManagedBean
 @ViewScoped
 public class CapturaCicloEscolarBeanUI implements Serializable {
+    
+    @ManagedProperty(value = "#{loginBean}")
+    private LoginBean loginBean;
 
 //    private CapturaCicloEscolarBeanHelper escolarBeanHelper = null;
 //    private List<Cicloescolar> ListaFiltrada;
@@ -364,6 +369,15 @@ public class CapturaCicloEscolarBeanUI implements Serializable {
     private String deshabilitar;
     private String deshabilitarAceptar;
 
+    public LoginBean getLoginBean() {
+        return loginBean;
+    }
+
+    public void setLoginBean(LoginBean loginBean) {
+        this.loginBean = loginBean;
+    }
+
+    
     public boolean isValciclo() {
         return valciclo;
     }
@@ -602,6 +616,12 @@ public class CapturaCicloEscolarBeanUI implements Serializable {
         filtrado();                       
     }
     public void filtrado(){
+        List<Rol> list = null;
+        list = loginBean.Obtenerrol(loginBean.getLogueado().getUsuid());
+        String seleccionado=loginBean.getSeleccionado();
+        System.out.println(seleccionado+"ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ");
+        String catalogo="Administración de ciclo escolar";
+        loginBean.TienePermiso(list, seleccionado, catalogo);
         listaFiltrada = CicloEscolarBeanHelper.filtrado("Nombre", busqueda);
     }
     public boolean validacionCiclo(){
@@ -610,7 +630,7 @@ public class CapturaCicloEscolarBeanUI implements Serializable {
     }
     public void modificacionConfirmada(){
         FacesContext context = FacesContext.getCurrentInstance();
-        context.addMessage(null, new FacesMessage("Guardando", "Se guardó correctamente"));
+        context.addMessage(null, new FacesMessage("", "Se guardó correctamente"));
         
         CicloEscolarBeanHelper.getCicloescolarDelegate().agregarCicloEscolar(CicloEscolarBeanHelper.getCicloescolar());
         CicloEscolarBeanHelper.setCicloescolar(new Cicloescolar());
@@ -624,7 +644,7 @@ public class CapturaCicloEscolarBeanUI implements Serializable {
         if(deshabilitar.equals("true")){
           
             FacesContext context = FacesContext.getCurrentInstance();
-            context.addMessage(null, new FacesMessage("Eliminando", "Se eliminó correctamente"));            
+            context.addMessage(null, new FacesMessage("", "Se eliminó correctamente"));            
             
             CicloEscolarBeanHelper.eliminarDeLista(CicloEscolarBeanHelper.getCicloescolar().getCesid());
             CicloEscolarBeanHelper.getCicloescolarDelegate().eliminarCicloEscolar(CicloEscolarBeanHelper.getCicloescolar());
@@ -652,7 +672,7 @@ public class CapturaCicloEscolarBeanUI implements Serializable {
         } else {
             if (validacion()) {
                 //System.out.println("point here 2");
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Favor de llenar todos los campos vacios");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validacion", "Capturar campo vacío ciclo escolar");
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
             } else {
 
@@ -668,14 +688,14 @@ public class CapturaCicloEscolarBeanUI implements Serializable {
                         if (header.equals("Agregar Ciclo escolar")) {
 
                             FacesContext context = FacesContext.getCurrentInstance();
-                            context.addMessage(null, new FacesMessage("Guardado", "Se guardó correctamente"));
+                            context.addMessage(null, new FacesMessage("", "Se guardó correctamente"));
 
                             CicloEscolarBeanHelper.getCicloescolarDelegate().agregarCicloEscolar(CicloEscolarBeanHelper.getCicloescolar());
                             CicloEscolarBeanHelper.setCicloescolar(new Cicloescolar());
                             CicloEscolarBeanHelper.setSelecCiclo(new Cicloescolar());
                         } else if (header.equals("Modificar Ciclo escolar")) {
                             FacesContext context = FacesContext.getCurrentInstance();
-                            context.addMessage(null, new FacesMessage("Modificando", "Se guardó correctamente"));
+                            context.addMessage(null, new FacesMessage("", "Se guardó correctamente"));
 
                             CicloEscolarBeanHelper.getCicloescolarDelegate().agregarCicloEscolar(CicloEscolarBeanHelper.getCicloescolar());
                             CicloEscolarBeanHelper.setSelecCiclo(new Cicloescolar());

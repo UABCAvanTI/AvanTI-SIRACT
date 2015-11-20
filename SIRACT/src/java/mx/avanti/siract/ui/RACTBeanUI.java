@@ -406,6 +406,27 @@ public class RACTBeanUI implements Serializable {
         return disable2;
     }
 
+    //Seccion encargada renderizar o no boton enviar
+    public boolean renderBtnEnviar=true;
+
+    public boolean isRenderBtnEnviar() {
+        return renderBtnEnviar;
+    }
+
+    public void setRenderBtnEnviar(boolean renderBtnEnviar) {
+        this.renderBtnEnviar = renderBtnEnviar;
+    }
+    
+    public void btnEnviarRender(){
+        if(selectedNodes!=null&&selectedNodes.length>0&&!enviado){
+            renderBtnEnviar=false;
+        }else{
+            renderBtnEnviar=true;
+        }
+    }
+    //
+    
+    
     public void setDisable2(boolean disable2) {
         this.disable2 = disable2;
     }
@@ -466,10 +487,10 @@ public class RACTBeanUI implements Serializable {
         if (numeroReporte.equals("0")) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "No hay fechas de envio", "Ya no hay fechas futuras de envio"));
         } else {
-            if (loginBean == null && loginBean.getUsuario() != null) {
+            if (loginBean == null && loginBean.getLogueado()!= null) {
                 System.out.println("No hay loginbean");
             } else {
-                profesor = ractBeanHelper.getProfesorFromUsuario(loginBean.getUsuario());
+                profesor = ractBeanHelper.getProfesorFromUsuario(loginBean.getLogueado());
                 if (profesor == null) {
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Usuario sin profesor", "Este usuario no tiene ligado ningun profesor"));
 
@@ -662,6 +683,7 @@ public class RACTBeanUI implements Serializable {
         if (event != null && event.getTreeNode() != null) {
             event.getTreeNode().setSelected(true);
         }
+        btnEnviarRender();
     }
 
     public void onNodeUnselect(NodeUnselectEvent event) {
@@ -678,7 +700,7 @@ public class RACTBeanUI implements Serializable {
 
            }
         calculo();
-
+        btnEnviarRender();
     }
     
     private boolean unselectNode(TreeNode child){
@@ -1463,6 +1485,8 @@ public class RACTBeanUI implements Serializable {
                 }
             }
         }
+        
+        btnEnviarRender();
     }
 
     public String unselectOnEnviado() {

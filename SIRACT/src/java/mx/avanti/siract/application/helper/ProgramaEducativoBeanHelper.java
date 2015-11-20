@@ -363,8 +363,8 @@ public class ProgramaEducativoBeanHelper implements Serializable {
 
         }
         if (rolSeleccionado.equalsIgnoreCase("Director") || rolSeleccionado.equalsIgnoreCase("Subdirector")
-                || rolSeleccionado.equalsIgnoreCase("RESPONSABLE DE PROGRAMA EDUCATIVO")|| rolSeleccionado.equalsIgnoreCase("COORDINADOR DE AREA DE CONOCIMIENTO")
-                || rolSeleccionado.equalsIgnoreCase("COORDINADOR DE FORMACION BASICA")) {
+                || rolSeleccionado.equalsIgnoreCase("RESPONSABLE DE PROGRAMA EDUCATIVO")|| rolSeleccionado.equalsIgnoreCase("Coordinador de Área de Conocimiento")
+                || rolSeleccionado.equalsIgnoreCase("Coordinador de Formación Básica")) {
             ocultarLista = "true";
             profesor = profesorDeleagate.findProfesorFromUser(usuario.getUsuid());
             //a partir de aqui aparece NullPointer
@@ -389,6 +389,7 @@ public class ProgramaEducativoBeanHelper implements Serializable {
                 }
             } else {
                 ocultarLista = "false";
+                listaFiltrada = programaEducativoDelegate.getListaProgramaEducativo();
             }
         }
     }

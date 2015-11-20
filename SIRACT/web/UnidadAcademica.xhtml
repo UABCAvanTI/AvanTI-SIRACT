@@ -17,15 +17,21 @@
                 <title>Unidad academica</title> 
             </f:facet>
         </h:head>
-            <h:body onload="#{unidadAcademicaBeanUI.filtrado()}">
+            <h:body onload="#{unidadAcademicaBeanUI.filtrado()}"
+                    onkeydown="if (event.keyCode == 13) {
+                                event.preventDefault();
+                                return false;}">
             <h:form id="formUni" rendered="#{loginBean.tienePermiso}">
                 <p:fieldset legend="Administración Unidad Académica"> 
 
                     <p:commandButton id="showAltaButton"  image="btnAU"  oncomplete="dlg.show();" iconPos="center" 
+                                     rendered="#{loginBean.permisoAlta}"
                                      actionListener="#{unidadAcademicaBeanUI.nuevo}" update="uacap" title="Agregar"/>
                     <p:commandButton id="showEliminarButton"  image="btnEU"  oncomplete="dlg.show();" iconPos="center" 
+                                     rendered="#{loginBean.permisoBaja}"
                                      actionListener="#{unidadAcademicaBeanUI.eliminar}" update="uacap" disabled="#{unidadAcademicaBeanUI.botones()}" title="Eliminar"/>
                     <p:commandButton id="showModificarButton"  image="btnMU"  oncomplete="dlg.show();" iconPos="center" 
+                                     rendered="#{loginBean.permisoModificar}"
                                      actionListener="#{unidadAcademicaBeanUI.modificar}" update="uacap" disabled="#{unidadAcademicaBeanUI.botones()}" title="Modificar"/>
 
                     <br/><br/>
@@ -45,7 +51,7 @@
                     </div>
                     
                     <!--<div style="text-align: right">-->
-                    <div style="display: inline-block; margin-left: 70px;">
+                    <div style="text-align: right">
                             <p:outputLabel style="font-size: 19px" value="Búsqueda específica de Unidad Académica: "/>
                             <p:inputText id="filtro"    
                                          value="#{unidadAcademicaBeanUI.busqueda}" 
@@ -144,10 +150,10 @@
                             </p:panelGrid>
                         <br/>
                         <center>
-                            <p:commandButton value="Aceptar" image="btnGuardar" oncomplete="" action="#{unidadAcademicaBeanUI.onClickSubmit()}" update=":formUni:idgrowl,cap,:formUni:uniacademica,:formUni:seleccionados">
+                            <p:commandButton value="Aceptar" image="btnGuardar" action="#{unidadAcademicaBeanUI.onClickSubmit()}" update=":formUni:idgrowl,cap,:formUni:uniacademica,:formUni:seleccionados">
                                 <p:ajax event="click" update=":formUni:showEliminarButton,:formUni:showModificarButton,:formUni:seleccionados"/>
                                 </p:commandButton>
-                            <p:commandButton value="Cancelar" image="btnCancelar" oncomplete="dlg.hide()">
+                            <p:commandButton value="Cancelar" image="btnCancelar" oncomplete="dlg.hide()" disabled="">
                                 <p:ajax event="click" listener="#{unidadAcademicaBeanUI.limpiar()}" update=":formUni:showEliminarButton,:formUni:showModificarButton,:formUni:uniacademica,:formUni:uacap,:formUni:seleccionados"/>  
                                 </p:commandButton>
                             </center>
@@ -162,9 +168,9 @@
                         <center>
                         <p:commandButton value="Aceptar" action="#{unidadAcademicaBeanUI.eliminConfir()}"
                                          icon="ui-icon-check"
-                                         update=":formUni:idgrowl,:formUni:uniacademica,:formUni:cap,:formUni:seleccionados,:formUni:uacap">
+                                         update=":formUni:idgrowl,:formUni:uniacademica,:formUni:cap,:formUni:seleccionados,:formUni:cap,:formUni:uacap">
                            </p:commandButton>
-                        <p:commandButton value="Cancelar" oncomplete="conDlgElim.hide()" icon="ui-icon-close"/>
+                        <p:commandButton value="Cancelar" rendered="#{unidadAcademicaBeanUI.renderCancelar}" oncomplete="conDlgElim.hide()" icon="ui-icon-close"/>
                         </center>
                     </h:form>
                 </p:confirmDialog>

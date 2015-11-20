@@ -159,9 +159,24 @@ public class ProgramaEducativoDelegate {
 
     
     //Responsable de PE
-    public Programaeducativo getResponsablePE(int proid){
-        Programaeducativo pe = ServiceFacadeLocator.getInstanceFacadeProgramaEducativo().getResponsablePE(proid);
+//    public Programaeducativo getResponsablePE(int proid){
+//        Programaeducativo pe = ServiceFacadeLocator.getInstanceFacadeProgramaEducativo().getResponsablePE(proid);
+//        return pe;
+//    }
+        public List<Programaeducativo> getResponsablePE(int proid){
+        List<Programaeducativo> pe = ServiceFacadeLocator.getInstanceFacadeProgramaEducativo().getResponsablePE(proid);
         return pe;
+    }
+
+    public List<Programaeducativo> getPEperteneceProf(int proid){
+        List<Programaeducativo> pe = ServiceFacadeLocator.getInstanceFacadeProgramaEducativo().getPEperteneceProf(proid);
+        return pe;
+    }
+    
+     //metodos Nuevos
+    public List<Programaeducativo> getPEdeCoordinadorAreaAdmin(int profResponsableId){
+        List<Programaeducativo> programaeducativo = ServiceFacadeLocator.getInstanceFacadeProgramaEducativo().getPEdeCoordinadorAreaAdmin(profResponsableId);
+        return programaeducativo;
     }
 
 

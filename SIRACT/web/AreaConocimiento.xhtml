@@ -21,42 +21,51 @@ and open the template in the editor.
                     <title>Área de conocimiento</title> 
                 </f:facet>
             </h:head>
-            <h:body onload="#{areaConocimientoBeanUI.filtrado()}">
+            <h:body onload="#{areaConocimientoBeanUI.filtrado()}" onkeydown="if (event.keyCode == 13) {
+                                event.preventDefault();
+                                return false;
+                            }">
                 <h:form id="formAreaCono" rendered="#{loginBean.tienePermiso}">
-                    <p:fieldset legend="Área de conocimiento"> 
+                    <p:fieldset legend="Administración de Área de conocimiento"> 
                      <p:growl id="growl" showDetail="true" life="10000"/>                          
                         
                         <p:commandButton id="showAltaButton" image="btnAU" oncomplete="dlg.show()" title="Agregar" 
-                                         iconPos="center" actionListener="#{areaConocimientoBeanUI.nuevo}" update="capdlg"/>                        
+                                         iconPos="center" actionListener="#{areaConocimientoBeanUI.nuevo}" update="capdlg" rendered="#{loginBean.permisoAlta}"/>                        
                         <p:commandButton id="showEliminarButton" image="btnEU" oncomplete="dlg.show()" 
                                          title="#{areaConocimientoBeanUI.tooltip(2)}" disabled="#{areaConocimientoBeanUI.deshabilitarMenu()}" 
-                                         iconPos="center" actionListener="#{areaConocimientoBeanUI.eliminar()}" update="capdlg"/>                        
+                                         iconPos="center" actionListener="#{areaConocimientoBeanUI.eliminar()}" update="capdlg" rendered="#{loginBean.permisoBaja}"/>                        
                         <p:commandButton id="showModificarButton" image="btnMU"  oncomplete="dlg.show()" title="#{areaConocimientoBeanUI.tooltip(3)}"                                         
                                          disabled="#{areaConocimientoBeanUI.deshabilitarMenu()}" iconPos="center" 
-                                         actionListener="#{areaConocimientoBeanUI.modificar}" update="capdlg"/>                                              
+                                         actionListener="#{areaConocimientoBeanUI.modificar}" update="capdlg" rendered="#{loginBean.permisoModificar}"/>                                              
                         
                     <br/><br/>
-                    <div id="divFiltro1" style="display: inline-block">       
+                    <div id="divFiltro1" style="display: inline-block">      
+                        <p:outputLabel value="Seleccione un programa educativo" 
+                                           style="margin-top: 40%;"/><br/>                                                       
                         <p:selectOneMenu id="programaeducativo1"
                                                      filter="true"
                                                      filterFunction="startsWith"
                                                      value="#{areaConocimientoBeanUI.areaBeanHelper.programaeducativo.pedid}"
-                                                     disabled="#{areaConocimientoBeanUI.deshabilitar}">  
-                                        <p:ajax event="valueChange" listener="#{areaConocimientoBeanUI.filtrado2()}" update="edu"></p:ajax>
-                                        <f:selectItem itemLabel="Seleccione el Programa Educativo" itemValue="#{0}" />  
-                                        <f:selectItems value="#{programaEducativoBeanUI.programaEducativoBeanHelper.programaEducativoDelegate.listaProgramaEducativo}" 
+                                                     disabled="#{areaConocimientoBeanUI.deshabilitar}">                                          
+                                        <p:ajax event="valueChange" update="planEstudio1" listener="#{areaConocimientoBeanUI.areaBeanHelper.filtrarPlanPorPE()}"></p:ajax>
+                                        <p:ajax event="valueChange" listener="#{areaConocimientoBeanUI.filtrado()}" update="edu"></p:ajax>            
+                                        <f:selectItem itemLabel="--Seleccionar todos--" itemValue="#{0}" />  
+                                        <f:selectItems value="#{areaConocimientoBeanUI.areaBeanHelper.listaProgramaEducativo}" 
                                                        var="progE"
                                                        itemLabel="#{progE.pednombre}"
                                                        itemValue="#{progE.pedid}"/>
                         </p:selectOneMenu>
                     </div>
                     <div id="divFiltro2" style="display: inline-block; margin-left: 100px;">       
+                        <p:outputLabel value="Seleccione un plan de estudios " 
+                                           style="margin-top: 40%;"/><br/>                                                       
                         <p:selectOneMenu id="planEstudio1"
                                                      filter="true"
                                                      filterFunction="startsWith"
                                                      value="#{areaConocimientoBeanUI.areaBeanHelper.planestudio.pesid}"
                                                      disabled="#{areaConocimientoBeanUI.deshabilitar}">                                          
-                                        <f:selectItem itemLabel="Seleccione el Plan de Estudios" itemValue="#{0}" />  
+                            <p:ajax event="valueChange" listener="#{areaConocimientoBeanUI.filtrado()}" update="edu"></p:ajax>
+                                        <f:selectItem itemLabel="--Seleccionar todos--" itemValue="#{0}" />  
                                         <f:selectItems value="#{areaConocimientoBeanUI.areaBeanHelper.listaPlanEstudio}" 
                                                        var="planE"
                                                        itemLabel="#{planE.pesvigenciaPlan}"
@@ -114,15 +123,19 @@ and open the template in the editor.
                             </p:column>
                         </p:dataTable> 
 
-                    <p:dialog id="capdlg" header="#{areaConocimientoBeanUI.cabecera}" widgetVar="dlg" resizable="false" showEffect="fade" 
-                              hideEffect="explode" modal="true">  
-                        <p:ajax event="close" update=":formAreaCono:edu, :formAreaCono:showEliminarButton, :formAreaCono:showModificarButton, :formAreaCono:cap" listener="#{areaConocimientoBeanUI.limpiarSeleccion()}"/>
+                    <p:dialog id="capdlg" 
+                              header="#{areaConocimientoBeanUI.cabecera}" 
+                              widgetVar="dlg" resizable="false" 
+                              showEffect="fade" hideEffect="explode" modal="true">  
+                        <p:ajax event="close" update=":formAreaCono:edu, :formAreaCono:showEliminarButton, :formAreaCono:showModificarButton, :formAreaCono:cap" 
+                                listener="#{areaConocimientoBeanUI.limpiarSeleccion()}"/>
                                                 
                             <p:outputLabel rendered="#{areaConocimientoBeanUI.mostrarSeleccionArea()}" value="Seleccione el registro a visualizar"/>
                                 <p:selectOneMenu id="seleccionados" 
                                         value="#{areaConocimientoBeanUI.areaBeanHelper.selecAreaconocimiento.acoid}"                                                    
                                         rendered="#{areaConocimientoBeanUI.mostrarSeleccionArea()}"> 
-                                <p:ajax event="valueChange" update="cap" listener="#{areaConocimientoBeanUI.areaBeanHelper.seleccionarRegistro()}"></p:ajax>
+                                    
+                                    <p:ajax event="valueChange" update="cap" listener="#{areaConocimientoBeanUI.areaBeanHelper.seleccionarRegistro()}"></p:ajax>
 
                                 <f:selectItems value="#{areaConocimientoBeanUI.areaBeanHelper.listaSeleccionAcon}"                                             
                                        var="area" 
@@ -131,14 +144,9 @@ and open the template in the editor.
                                 </p:selectOneMenu>    
                         
                             <p:panelGrid id="cap" style="margin-top: 20px; position: relative"> 
-                                <p:row>  
-                                    <p:column colspan="6" styleClass="ui-widget-header">
-                                        Datos de Área de Conocimiento 
-                                    </p:column>  
-                                </p:row>                                
-                                                                
+                                                                                                
                                 <p:row>
-                                    <p:column><p:outputLabel value="Programa Educativo"/></p:column>
+                                    <p:column><p:outputLabel value="Programa educativo"/></p:column>
                                     <p:column>
                                     <p:selectOneMenu id="programaeducativo"
                                                      filter="true"
@@ -146,21 +154,21 @@ and open the template in the editor.
                                                      value="#{areaConocimientoBeanUI.areaBeanHelper.programaeducativo.pedid}"
                                                      disabled="#{areaConocimientoBeanUI.deshabilitar}">  
                                         <p:ajax event="valueChange" update="cap" listener="#{areaConocimientoBeanUI.areaBeanHelper.filtrarPlanPorPE()}"></p:ajax>
-                                        <f:selectItem itemLabel="Seleccione el Programa Educativo" itemValue="#{0}" />  
-                                        <f:selectItems value="#{programaEducativoBeanUI.programaEducativoBeanHelper.programaEducativoDelegate.listaProgramaEducativo}" 
+                                        <f:selectItem itemLabel="Seleccione el programa educativo" itemValue="#{0}" />  
+                                        <f:selectItems value="#{areaConocimientoBeanUI.areaBeanHelper.listaProgramaEducativo}" 
                                                        var="progE"
                                                        itemLabel="#{progE.pednombre}"
                                                        itemValue="#{progE.pedid}"/>
                                     </p:selectOneMenu>
                                     </p:column>
-                                    <p:column><p:outputLabel value="Plan de Estudios"/></p:column>
+                                    <p:column><p:outputLabel value="Plan de estudios"/></p:column>
                                     <p:column>
                                     <p:selectOneMenu id="planEstudio"
                                                      filter="true"
                                                      filterFunction="startsWith"
                                                      value="#{areaConocimientoBeanUI.areaBeanHelper.planestudio.pesid}"
                                                      disabled="#{areaConocimientoBeanUI.deshabilitar}">  
-                                        <f:selectItem itemLabel="Seleccione el Plan de Estudios" itemValue="#{0}" />  
+                                        <f:selectItem itemLabel="Seleccione el plan de estudios" itemValue="#{0}" />  
                                         <f:selectItems value="#{areaConocimientoBeanUI.areaBeanHelper.listaPlanEstudio}" 
                                                        var="planE"
                                                        itemLabel="#{planE.pesvigenciaPlan}"
@@ -171,18 +179,22 @@ and open the template in the editor.
                                 
                                 <p:row>                                                                        
                                     
-                                    <p:column><p:outputLabel value="Área de conocimiento"/></p:column>
+                                    <p:column><p:outputLabel value="Nombre del área de conocimiento"/></p:column>
                                     <p:column><p:inputText id="txtnom" value="#{areaConocimientoBeanUI.areaBeanHelper.areaConocimiento.aconombre}"
-                                                           disabled="#{areaConocimientoBeanUI.deshabilitar}"/>
-                                    </p:column>
-                                    <pe:keyFilter for="txtnom" mask="alpha">
+                                                           disabled="#{areaConocimientoBeanUI.deshabilitar}"
+                                                           onkeyup="value = value.toUpperCase()">
+                                        <pe:keyFilter for="txtnom" regEx="/[ A-Za-z ]/" />                                        
+                                        </p:inputText>
                                         
-                                    </pe:keyFilter>
+                                        <pe:keyFilter for="txtnom" regEx="/[ A-Za-z ]/" />                                    
+                                    </p:column>
+                                    
                                 </p:row> 
                             </p:panelGrid>                             
                             
                             <div style="padding-left: 35%">                            
-                                <p:commandButton value="Aceptar" image="btnGuardar" action="#{areaConocimientoBeanUI.onClickSubmit()}" update=":formAreaCono:growl,cap,:formAreaCono:edu, :formAreaCono:seleccionados" >
+                                <p:commandButton value="Aceptar" image="btnGuardar" action="#{areaConocimientoBeanUI.onClickSubmit()}" 
+                                                 update=":formAreaCono:growl,cap,:formAreaCono:edu, :formAreaCono:seleccionados" >
                                 </p:commandButton>
 
                                 <p:commandButton value="Cancelar" image="btnCancelar" oncomplete="dlg.hide()" update=":formAreaCono:edu, :formAreaCono:seleccionados, :formAreaCono:capdlg">
@@ -198,16 +210,18 @@ and open the template in the editor.
                                 message="¿Está seguro de eliminar el registro?"
                                 severity="alert" appendTo="@(body)">
                    <h:form>
+                       <div align="center">
                        <p:commandButton value="Aceptar" action="#{areaConocimientoBeanUI.eliminacionConfirmada()}"                                             
                                             icon="ui-icon-check"                                            
-                                            update=":formAreaCono:growl,:formAreaCono:edu, :formAreaCono:seleccionados"                                            
+                                            update=":formAreaCono:growl,:formAreaCono:edu, :formAreaCono:seleccionados"                                             
                                             >
                             <p:ajax event="click" 
-                                    update=":formAreaCono:showEliminarButton, :formAreaCono:showModificarButton, :formAreaCono:seleccionados, :formAreaCono:edu" listener="#{grupoBeanUI.esconderBotones()}"/>
+                                    update=":formAreaCono:showEliminarButton, :formAreaCono:capdlg,:formAreaCono:showModificarButton, :formAreaCono:seleccionados, :formAreaCono:edu" listener="#{grupoBeanUI.esconderBotones()}"/>
                             
                         </p:commandButton>
                         <p:commandButton value="Cancelar" oncomplete="confdlgElim.hide()"
                                          icon="ui-icon-close"/>
+                        </div>
                    </h:form>  
                 </p:confirmDialog>  
 

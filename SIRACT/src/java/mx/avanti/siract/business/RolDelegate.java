@@ -18,7 +18,6 @@ public class RolDelegate implements Serializable{
      private List<Rol> rol;
     private List<Rol> listarol;
 
-    
      
      public RolDelegate() {
         rol = new ArrayList<Rol>();
@@ -40,6 +39,9 @@ public class RolDelegate implements Serializable{
     public void saveRol(Rol rol) {
         ServiceFacadeLocator.getFacadeRol().AgregarRol(rol);
     }
+    public void updateRol(Rol rol) {
+        ServiceFacadeLocator.getFacadeRol().modificarRol(rol);
+    }
     
     public void eliminarRol(Rol rol){ 
         ServiceFacadeLocator.getFacadeRol().eliminarRol(rol);
@@ -52,9 +54,6 @@ public class RolDelegate implements Serializable{
     public Rol getRolUnico(int rolid) {
         return ServiceFacadeLocator.getInstanceFacadeRol().getRolUnico(rolid);
     }
-    
-    
-    
     
     
 //    public List<Rol> getListaRolfindFromWhere(String de, String usuid, String usuario){

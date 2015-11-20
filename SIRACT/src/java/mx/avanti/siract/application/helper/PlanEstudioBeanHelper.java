@@ -423,10 +423,17 @@ public class PlanEstudioBeanHelper implements Serializable {
 
         } else if (rolSeleccionado.equalsIgnoreCase("Responsable de Programa Educativo")) {
             profesor2 = profesorDeleagate.findProfesorFromUser(usuario.getUsuid());
+            listaProgramaEducativo.add(programaEducativoDelegate.findProgramaEducativoById(programaEducativoDelegate.getResponsablePE(profesor2.getProid()).get(0).getPedid()));
+
 //            if(profesor2.getProid() == responsableProgramaEducativo.getProfesor().getProid()){
 //                listaProgramaEducativo.add(programaEducativoDelegate.findProgramaEducativoById(responsableProgramaEducativo.getProgramaeducativo().getPedid()));
 //            }
         } else {
+            if(rolSeleccionado.equalsIgnoreCase("Coordinador de Área de Conocimiento")){
+                    profesor2 = profesorDeleagate.findProfesorFromUser(usuario.getUsuid());
+                    listaProgramaEducativo = programaEducativoDelegate.getPEdeCoordinadorAreaAdmin(profesor2.getProid());
+                    
+                }
             //ocultarLista = "false";
         }
 

@@ -31,4 +31,13 @@ public class AreaAdministrativaDelegate implements Serializable{
      public List<Areaadministrativa> getAreaAsignada(int idArea){
          return ServiceFacadeLocator.getInstanceFacadeAreaAdministrativa().getAreaAsignada(idArea);
      }
+     
+    public void asignarAreaAdministrativa(Areaadministrativa c){
+        ServiceFacadeLocator.getInstanceFacadeAreaAdministrativa().agregarAreaAdministrativa(c);
+    }
+    
+    public void eliminarAsignacion(Areaadministrativa c){
+        ServiceFacadeLocator.getInstanceFacadeAreaAdministrativa().eliminarAreaAdministrativa(c);
+    }
+
 }

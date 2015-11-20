@@ -14,6 +14,7 @@ import mx.avanti.siract.business.entity.Areaconocimiento;
 import mx.avanti.siract.business.entity.Calendarioreporte;
 import mx.avanti.siract.business.entity.CalendarioreporteTieneAlerta;
 import mx.avanti.siract.business.entity.Configuracion;
+import mx.avanti.siract.business.entity.Coordinadorareaadministrativa;
 import mx.avanti.siract.business.entity.Reporteavancecontenidotematico;
 import mx.avanti.siract.business.entity.UnidadaprendizajeImparteProfesor;
 import mx.avanti.siract.business.services.ServiceFacadeLocator;
@@ -22,9 +23,10 @@ import mx.avanti.siract.business.services.ServiceFacadeLocator;
  *
  * @author Y
  */
-public class ReporteavancecontenidotematicoDelegate implements Serializable {
+public class ReporteavancecontenidotematicoDelegate implements Serializable {   
 
     private List<Reporteavancecontenidotematico> listaReporteavancecontenidotematico;
+        private List<Coordinadorareaadministrativa> listCordAreaAdmin;
 
     public ReporteavancecontenidotematicoDelegate() {
         listaReporteavancecontenidotematico = new ArrayList<Reporteavancecontenidotematico>();
@@ -111,5 +113,18 @@ public class ReporteavancecontenidotematicoDelegate implements Serializable {
     public List<UnidadaprendizajeImparteProfesor> getUnidadaprendizajeImparteProfesor(ReporteAux reporte) {
         listUnidadaprendizajeImparteProfesor = ServiceFacadeLocator.getFacadeReporteavancecontenidotematico().consultaUnidadaprendizajeImparteProfesor(reporte);
         return listUnidadaprendizajeImparteProfesor;
+    }
+    
+    
+
+    
+    public List<Coordinadorareaadministrativa> getCoordAreaAdminProfUAprend(int uapclave) {
+        listCordAreaAdmin = ServiceFacadeLocator.getFacadeReporteavancecontenidotematico().consultaCoordAreaAdminProfUAprend(uapclave);
+        return listCordAreaAdmin;
+    }
+
+    public List<Coordinadorareaadministrativa> getCoordAreaAdminProfUAprend(int uapclave,int pedclave,int aadid) {
+        listCordAreaAdmin = ServiceFacadeLocator.getFacadeReporteavancecontenidotematico().consultaCoordAreaAdminProfUAprend(uapclave,pedclave,aadid);
+        return listCordAreaAdmin;
     }
 }

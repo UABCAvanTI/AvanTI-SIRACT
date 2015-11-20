@@ -6,21 +6,24 @@ package mx.avanti.siract.ui;
 
 import java.io.Serializable;
 import java.util.List;
+import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
+import mx.avanti.siract.application.helper.AsignarGrupoUnidadAprendizajeProfesorBeanHelper;
 import mx.avanti.siract.application.helper.PlanEstudioBeanHelper;
 import mx.avanti.siract.application.helper.ProgramaEducativoBeanHelper;
-import mx.avanti.siract.application.helper.AsignarGrupoUnidadAprendizajeProfesorBeanHelper;
-import javax.faces.context.FacesContext;
-import org.primefaces.context.RequestContext;
-import mx.avanti.siract.business.entity.Grupo;
-import mx.avanti.siract.business.entity.Profesor;
-import mx.avanti.siract.business.entity.Planestudio;
 import mx.avanti.siract.business.entity.Areaconocimiento;
+import mx.avanti.siract.business.entity.Grupo;
+import mx.avanti.siract.business.entity.Planestudio;
+import mx.avanti.siract.business.entity.Profesor;
 import mx.avanti.siract.business.entity.Programaeducativo;
+import mx.avanti.siract.business.entity.Rol;
 import mx.avanti.siract.business.entity.Unidadaprendizaje;
 import mx.avanti.siract.business.entity.UnidadaprendizajeImparteProfesor;
+import org.primefaces.context.RequestContext;
 
 /**
  *
@@ -29,6 +32,9 @@ import mx.avanti.siract.business.entity.UnidadaprendizajeImparteProfesor;
 @ManagedBean
 @ViewScoped
 public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable {
+
+    @ManagedProperty(value = "#{loginBean}")
+    private LoginBean loginBean;
 
     private AsignarGrupoUnidadAprendizajeProfesorBeanHelper asignarGrupoUnidadAprendizajeProfesorBeanHelper;
     private AsignarGrupoUnidadAprendizajeProfesorBeanHelper AGUAPHelper;
@@ -50,6 +56,10 @@ public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable
     private String deshabilitarBoton;
     private String deshabilitarSubgrupo;
     private String mensajeVal;
+    private String mensajeVacio;
+    private String renderCancelar;
+    
+    int numero = 0;
 
     public AsignarGrupoUnidadAprendizajeProfesorBeanUI() {
         init();
@@ -134,7 +144,13 @@ public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable
 
     public void setMensajeConfirm() {
         if (deshabilitar.equals("true") && deshabilitarSubgrupo.equals("true")) {
-            mensajeConfirm = "¿Está seguro de eliminar el registro?";
+            if (AGUAPHelper.getAGUAPDelegate().getReporteUAIP(AGUAPHelper.getAGUAP().getUipid()).size() > 0) {
+                mensajeConfirm = "La asignación de grupo ya tiene un RACT.";
+                renderCancelar = "false";
+            } else {
+                mensajeConfirm = "¿Está seguro de eliminar el registro?";
+                renderCancelar = "true";
+            }
         } else {
             mensajeConfirm = "¿Está seguro de guardar los cambios?";
         }
@@ -163,6 +179,30 @@ public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable
 
     public void setMensajeVal(String mensajeVal) {
         this.mensajeVal = mensajeVal;
+    }
+
+    public String getMensajeVacio() {
+        return mensajeVacio;
+    }
+
+    public String getRenderCancelar() {
+        return renderCancelar;
+    }
+
+    public void setRenderCancelar(String renderCancelar) {
+        this.renderCancelar = renderCancelar;
+    }
+
+    public void setMensajeVacio(String mensajeVacio) {
+        this.mensajeVacio = mensajeVacio;
+    }
+
+    public LoginBean getLoginBean() {
+        return loginBean;
+    }
+
+    public void setLoginBean(LoginBean loginBean) {
+        this.loginBean = loginBean;
     }
 
     public List<Unidadaprendizaje> getListaUA() {
@@ -213,6 +253,15 @@ public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable
         this.listaPlan = listaPlan;
     }
 
+    @PostConstruct
+    public void postConstructor() {
+//        profesorBeanHelper.setListaRol(loginBean.Obtenerrol(loginBean.getUsuario().getUsuid()));
+        AGUAPHelper.setRolSeleccionado(loginBean.getSeleccionado());
+        AGUAPHelper.setUsuario(loginBean.getLogueado());
+        System.out.println("rol desde el BeanUI: " + loginBean.getSeleccionado());
+        System.out.println("id del usuario desde login " + loginBean.getLogueado().getUsuid());
+    }
+
 
     /* metodos */
     public void nuevo() {
@@ -227,25 +276,27 @@ public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable
         AGUAPHelper.setGrupo(new Grupo());
 //        AGUAPHelper.setSelecAGUAP(new UnidadaprendizajeImparteProfesor());
 //        asignarGrupoUnidadAprendizajeProfesorBeanHelper.setImparteProfesor(new UnidadaprendizajeImparteProfesor());
-        cargarPE();
-        cargarPlan();
-        cargarAC();
-        cargarUA();
-        cargarGrupo();
-        cargarProfesor();
+        cargaDeListas();
+//        cargarPE();
+//        cargarPlan();
+//        cargarAC();
+//        cargarUA();
+//        cargarGrupo();
+//        cargarProfesor();
     }
 
     public void modificar() {
         dlgCabecera(3);
-        cargarUA();
-        cargarGrupo();
-        cargarProfesor();
-        cargarPlan();
-        cargarPE();
-        cargarAC();
+        cargaDeListas();
+//        cargarUA();
+//        cargarGrupo();
+//        cargarProfesor();
+//        cargarPlan();
+//        cargarPE();
+//        cargarAC();
         try {
             if (AGUAPHelper.getListaAGUAPSeleccionada().size() == 1) {
-                System.out.println("grupo en lista corto: " + AGUAPHelper.getListaAGUAPSeleccionada().get(0).getGrupo().getGponumero());
+//                System.out.println("grupo en lista corto: " + AGUAPHelper.getListaAGUAPSeleccionada().get(0).getGrupo().getGponumero());
 //                System.out.println("grupo en lista largo: " + asignarGrupoUnidadAprendizajeProfesorBeanHelper.getListaAGUAPSeleccionada().get(0).getGrupo().getGponumero());
 
                 AGUAPHelper.setAGUAP(AGUAPHelper.getListaAGUAPSeleccionada().get(0));
@@ -257,7 +308,8 @@ public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable
 //            System.out.println(AGUAPHelper.getGrupo().getPlanestudio().getPesid());                
                 AGUAPHelper.setPlanEstudio(planEstudioBeanHelper.getPlanEstudioDelegate().findByPlanEstudioId(AGUAPHelper.getGrupo().getPlanestudio().getPesid()));
                 AGUAPHelper.setProgramaEducativo(programaEducativoBeanHelper.getProgramaEducativoDelegate().findProgramaEducativoById(AGUAPHelper.getPlanEstudio().getProgramaeducativo().getPedid()));
-                AGUAPHelper.setAreaConocimiento(AGUAPHelper.getAreaConocimientoDelegate().getAreaMismoPlan(AGUAPHelper.getPlanEstudio().getPesid()).get(0));
+                AGUAPHelper.setAreaConocimiento(AGUAPHelper.getAreaConocimientoDelegate().getAreaPorUA(AGUAPHelper.getUnidadApren().getUapid()).get(0));
+//                AGUAPHelper.setAreaConocimiento(AGUAPHelper.getAreaConocimientoDelegate().getAreaMismoPlan(AGUAPHelper.getPlanEstudio().getPesid()).get(0));
                 filtrarListas();
 //                filtrarPlanYProfPorPE();
 //                filtrarAreaYGpoPorPlan();
@@ -275,7 +327,8 @@ public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable
 
                     AGUAPHelper.setPlanEstudio(planEstudioBeanHelper.getPlanEstudioDelegate().findByPlanEstudioId(AGUAPHelper.getGrupo().getPlanestudio().getPesid()));
                     AGUAPHelper.setProgramaEducativo(programaEducativoBeanHelper.getProgramaEducativoDelegate().findProgramaEducativoById(AGUAPHelper.getPlanEstudio().getProgramaeducativo().getPedid()));
-                    AGUAPHelper.setAreaConocimiento(AGUAPHelper.getAreaConocimientoDelegate().getAreaMismoPlan(AGUAPHelper.getPlanEstudio().getPesid()).get(0));
+                    AGUAPHelper.setAreaConocimiento(AGUAPHelper.getAreaConocimientoDelegate().getAreaPorUA(AGUAPHelper.getUnidadApren().getUapid()).get(0));
+//                    AGUAPHelper.setAreaConocimiento(AGUAPHelper.getAreaConocimientoDelegate().getAreaMismoPlan(AGUAPHelper.getPlanEstudio().getPesid()).get(0));
                     filtrarListas();
 //                    filtrarPlanYProfPorPE();
 //                    filtrarAreaYGpoPorPlan();
@@ -288,18 +341,22 @@ public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable
             AGUAPHelper.setUnidadApren(new Unidadaprendizaje());
             AGUAPHelper.setProfesor(new Profesor());
             AGUAPHelper.setGrupo(new Grupo());
+            AGUAPHelper.setProgramaEducativo(new Programaeducativo());
+            AGUAPHelper.setPlanEstudio(new Planestudio());
+            AGUAPHelper.setAreaConocimiento(new Areaconocimiento());
         }
 //        asignarGrupoUnidadAprendizajeProfesorBeanHelper.setImparteProfesor(asignarGrupoUnidadAprendizajeProfesorBeanHelper.getSelImparteProfesor());
     }
 
     public void eliminar() {
         dlgCabecera(2);
-        cargarUA();
-        cargarGrupo();
-        cargarProfesor();
-        cargarPlan();
-        cargarPE();
-        cargarAC();
+        cargaDeListas();
+//        cargarUA();
+//        cargarGrupo();
+//        cargarProfesor();
+//        cargarPlan();
+//        cargarPE();
+//        cargarAC();
         try {
             if (AGUAPHelper.getListaAGUAPSeleccionada().size() == 1) {
                 AGUAPHelper.setAGUAP(AGUAPHelper.getListaAGUAPSeleccionada().get(0));
@@ -309,11 +366,12 @@ public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable
 
                 AGUAPHelper.setPlanEstudio(planEstudioBeanHelper.getPlanEstudioDelegate().findByPlanEstudioId(AGUAPHelper.getGrupo().getPlanestudio().getPesid()));
                 AGUAPHelper.setProgramaEducativo(programaEducativoBeanHelper.getProgramaEducativoDelegate().findProgramaEducativoById(AGUAPHelper.getPlanEstudio().getProgramaeducativo().getPedid()));
-                AGUAPHelper.setAreaConocimiento(AGUAPHelper.getAreaConocimientoDelegate().getAreaMismoPlan(AGUAPHelper.getPlanEstudio().getPesid()).get(0));
+                AGUAPHelper.setAreaConocimiento(AGUAPHelper.getAreaConocimientoDelegate().getAreaPorUA(AGUAPHelper.getUnidadApren().getUapid()).get(0));
 
-                filtrarPlanYProfPorPE();
-                filtrarAreaYGpoPorPlan();
-                filtrarUAPorArea();
+                filtrarListas();
+//                filtrarPlanYProfPorPE();
+//                filtrarAreaYGpoPorPlan();
+//                filtrarUAPorArea();
             } else {
                 if (AGUAPHelper.getListaAGUAPSeleccionada().size() < 1) {
                     FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "No se selecciono ningun registro");
@@ -327,11 +385,12 @@ public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable
 
                     AGUAPHelper.setPlanEstudio(planEstudioBeanHelper.getPlanEstudioDelegate().findByPlanEstudioId(AGUAPHelper.getGrupo().getPlanestudio().getPesid()));
                     AGUAPHelper.setProgramaEducativo(programaEducativoBeanHelper.getProgramaEducativoDelegate().findProgramaEducativoById(AGUAPHelper.getPlanEstudio().getProgramaeducativo().getPedid()));
-                    AGUAPHelper.setAreaConocimiento(AGUAPHelper.getAreaConocimientoDelegate().getAreaMismoPlan(AGUAPHelper.getPlanEstudio().getPesid()).get(0));
+                    AGUAPHelper.setAreaConocimiento(AGUAPHelper.getAreaConocimientoDelegate().getAreaPorUA(AGUAPHelper.getUnidadApren().getUapid()).get(0));
 
-                    filtrarPlanYProfPorPE();
-                    filtrarAreaYGpoPorPlan();
-                    filtrarUAPorArea();
+                    filtrarListas();
+//                    filtrarPlanYProfPorPE();
+//                    filtrarAreaYGpoPorPlan();
+//                    filtrarUAPorArea();
                 }
             }
         } catch (NullPointerException e) {
@@ -339,6 +398,9 @@ public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable
             AGUAPHelper.setUnidadApren(new Unidadaprendizaje());
             AGUAPHelper.setProfesor(new Profesor());
             AGUAPHelper.setGrupo(new Grupo());
+            AGUAPHelper.setProgramaEducativo(new Programaeducativo());
+            AGUAPHelper.setPlanEstudio(new Planestudio());
+            AGUAPHelper.setAreaConocimiento(new Areaconocimiento());
         }
 //        asignarGrupoUnidadAprendizajeProfesorBeanHelper.getAsignarGrupoUnidadAprendizajeProfesorDelegate().eliminarUniAprenImparteProfe(asignarGrupoUnidadAprendizajeProfesorBeanHelper.getSelImparteProfesor());
 //        filtro();
@@ -358,9 +420,9 @@ public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable
         if (deshabilitar.equals("true") && deshabilitarSubgrupo.equals("true")) {
             RequestContext.getCurrentInstance().execute("confirmdlg.show()");
         } else {
-            if (validarCamposVacios()) {
+            if (validarCamposVacios().length() > 0) {
 //                System.out.println("validar subgrupo" + AGUAPHelper.getAGUAP().getUipsubgrupo());
-                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Favor de llenar todos los campos vacios");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Favor de llenar: " + mensajeVacio);
                 RequestContext.getCurrentInstance().showMessageInDialog(message);
             } else {
 
@@ -381,7 +443,7 @@ public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable
                         } else {
 
                             FacesContext context = FacesContext.getCurrentInstance();
-                            context.addMessage(null, new FacesMessage("Agregando", "Se guardó correctamente"));
+                            context.addMessage(null, new FacesMessage("", "Se guardó correctamente"));
 
                             System.out.println("ID de UA " + AGUAPHelper.getUnidadApren().getUapid());
                             System.out.println("ID de Profesor " + AGUAPHelper.getProfesor().getProid());
@@ -396,22 +458,29 @@ public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable
                             AGUAPHelper.setProfesor(new Profesor());
                             AGUAPHelper.setUnidadApren(new Unidadaprendizaje());
                             AGUAPHelper.setProgramaEducativo(new Programaeducativo());
+                            AGUAPHelper.getProgramaEducativo().setPedid(0);
                             AGUAPHelper.setPlanEstudio((new Planestudio()));
                             AGUAPHelper.setAreaConocimiento(new Areaconocimiento());
                         }
 
                     } else if (header.equals("Modificar Grupo, Unidad Aprendizaje y Profesor")) {
-                        FacesContext context = FacesContext.getCurrentInstance();
-                        context.addMessage(null, new FacesMessage("Modificando", "Se guardó correctamente"));
+                        if (!AGUAPHelper.getAGUAP().getUipsubgrupo().equals("0") && AGUAPHelper.getAGUAP().getUiptipoSubgrupo().equals("C")) {
+                            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "", "Este subgrupo no coincide con su tipo");
+                            RequestContext.getCurrentInstance().showMessageInDialog(message);
 
-                        AGUAPHelper.getAGUAPDelegate().agregarUniAprenImparteProfe(AGUAPHelper.getAGUAP());
-                        AGUAPHelper.seleccionarRegistro();
-                        AGUAPHelper.setListaAGUAPSeleccionada(AGUAPHelper.getListaAGUAPSeleccionada());
+                        } else {
+                            FacesContext context = FacesContext.getCurrentInstance();
+                            context.addMessage(null, new FacesMessage("", "Se guardó correctamente"));
 
-                        RequestContext.getCurrentInstance().execute("dlg.show()");
+                            AGUAPHelper.getAGUAPDelegate().agregarUniAprenImparteProfe(AGUAPHelper.getAGUAP());
+                            AGUAPHelper.seleccionarRegistro();
+                            AGUAPHelper.setListaAGUAPSeleccionada(AGUAPHelper.getListaAGUAPSeleccionada());
+
+                            RequestContext.getCurrentInstance().execute("dlg.show()");
+                        }
                     }
                 } else {
-                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "", "Este profesor ya esta asignado al mismo grupo");
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "", "Este profesor ya está asignado al mismo grupo");
                     RequestContext.getCurrentInstance().showMessageInDialog(message);
                 }
             }
@@ -424,29 +493,48 @@ public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable
     //aun falta por terminar
     public void confirmacionAceptada() {
         if (deshabilitar.equals("true")) {
-            FacesContext context = FacesContext.getCurrentInstance();
-            context.addMessage(null, new FacesMessage("Eliminando", "se eliminó correctamente"));
+            if (renderCancelar.equals("true")) {
 
-            AGUAPHelper.eliminarDeLista(AGUAPHelper.getAGUAP().getUipid());
-            AGUAPHelper.getAGUAPDelegate().eliminarUniAprenImparteProfe(AGUAPHelper.getAGUAP());
-            AGUAPHelper.setSelecAGUAP(new UnidadaprendizajeImparteProfesor());
-            AGUAPHelper.setAGUAP(new UnidadaprendizajeImparteProfesor());
-            //AGUAPHelper.setSelecAGUAP(new UnidadaprendizajeImparteProfesor());
-            RequestContext.getCurrentInstance().execute("confirmdlg.hide()");
+                FacesContext context = FacesContext.getCurrentInstance();
+                context.addMessage(null, new FacesMessage("", "se eliminó correctamente"));
 
-            if (AGUAPHelper.getListaAGUAPSeleccionada().size() >= 1) {
-                AGUAPHelper.setAGUAP(AGUAPHelper.getListaAGUAPSeleccionada().get(0));
-                AGUAPHelper.setGrupo(AGUAPHelper.getListaAGUAPSeleccionada().get(0).getGrupo());
-                AGUAPHelper.setProfesor(AGUAPHelper.getListaAGUAPSeleccionada().get(0).getProfesor());
-                AGUAPHelper.setUnidadApren(AGUAPHelper.getListaAGUAPSeleccionada().get(0).getUnidadaprendizaje());
-                RequestContext.getCurrentInstance().execute("dlg.show();");
+                AGUAPHelper.eliminarDeLista(AGUAPHelper.getAGUAP().getUipid());
+                AGUAPHelper.getAGUAPDelegate().eliminarUniAprenImparteProfe(AGUAPHelper.getAGUAP());
+                AGUAPHelper.setSelecAGUAP(new UnidadaprendizajeImparteProfesor());
+                AGUAPHelper.setAGUAP(new UnidadaprendizajeImparteProfesor());
+                //AGUAPHelper.setSelecAGUAP(new UnidadaprendizajeImparteProfesor());
+                RequestContext.getCurrentInstance().execute("confirmdlg.hide()");
 
+                if (AGUAPHelper.getListaAGUAPSeleccionada().size() >= 1) {
+                    AGUAPHelper.setAGUAP(AGUAPHelper.getListaAGUAPSeleccionada().get(0));
+                    AGUAPHelper.setGrupo(AGUAPHelper.getListaAGUAPSeleccionada().get(0).getGrupo());
+                    AGUAPHelper.setProfesor(AGUAPHelper.getListaAGUAPSeleccionada().get(0).getProfesor());
+                    AGUAPHelper.setUnidadApren(AGUAPHelper.getListaAGUAPSeleccionada().get(0).getUnidadaprendizaje());
+                    RequestContext.getCurrentInstance().execute("dlg.show();");
+
+                }
+            } else {
+                RequestContext.getCurrentInstance().execute("confirmdlg.hide();");
+                limpiarSeleccion();
             }
             filtro();
         }
     }
 
+//    public void dormirDespertarFiltro(int i){
+//        numero = numero + i;
+//        if(numero == 0){
+//            filtro();
+//        }
+//    }
+    
     public void filtro() {
+        List<Rol> list = null;
+        list = loginBean.Obtenerrol(loginBean.getLogueado().getUsuid());
+        String seleccionado = loginBean.getSeleccionado();
+        System.out.println(seleccionado + "ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ");
+        String catalogo = "Asignar grupo";
+        loginBean.TienePermiso(list, seleccionado, catalogo);
         listaFiltrada = AGUAPHelper.filtrado("Nombre", busqueda);
     }
 
@@ -544,6 +632,7 @@ public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable
         cargarAC();
         cargarUA();
         cargarProfesor();
+        cargarGrupo();
     }
 
     public void filtrarListas() {
@@ -558,6 +647,9 @@ public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable
         AGUAPHelper.setUnidadApren(new Unidadaprendizaje());
         AGUAPHelper.setProfesor(new Profesor());
         AGUAPHelper.setGrupo(new Grupo());
+        AGUAPHelper.setProgramaEducativo(new Programaeducativo());
+        AGUAPHelper.setPlanEstudio(new Planestudio());
+        AGUAPHelper.setAreaConocimiento(new Areaconocimiento());
         mostrarSeleccionAGUAP();
         botonesModElim();
     }
@@ -578,15 +670,41 @@ public class AsignarGrupoUnidadAprendizajeProfesorBeanUI implements Serializable
         }
     }
 
-    public boolean validarCamposVacios() {
-        if (AGUAPHelper.getUnidadApren().getUapid() == 0
-                || AGUAPHelper.getProfesor().getProid() == 0
-                || AGUAPHelper.getGrupo().getGpoid() == 0
-                || AGUAPHelper.getAGUAP().getUipsubgrupo().isEmpty()
-                || AGUAPHelper.getAGUAP().getUiptipoSubgrupo().isEmpty()) {
-            return true;
-        } else {
-            return false;
+    public String validarCamposVacios() {
+        mensajeVacio = "";
+
+        if (AGUAPHelper.getProgramaEducativo().getPedid() == 0) {
+            mensajeVacio = mensajeVacio + "Programa educativo, ";
         }
+
+        if (AGUAPHelper.getPlanEstudio().getPesid() == 0) {
+            mensajeVacio = mensajeVacio + "Plan de estudio, ";
+        }
+
+        if (AGUAPHelper.getAreaConocimiento().getAcoid() == 0) {
+            mensajeVacio = mensajeVacio + "Área de conocimiento, ";
+        }
+
+        if (AGUAPHelper.getUnidadApren().getUapid() == 0) {
+            mensajeVacio = mensajeVacio + "Unidad aprendizaje, ";
+        }
+
+        if (AGUAPHelper.getProfesor().getProid() == 0) {
+            mensajeVacio = mensajeVacio + "Profesor, ";
+        }
+
+        if (AGUAPHelper.getGrupo().getGpoid() == 0) {
+            mensajeVacio = mensajeVacio + "Grupo, ";
+        }
+
+        if (AGUAPHelper.getAGUAP().getUipsubgrupo().isEmpty()) {
+            mensajeVacio = mensajeVacio + "Subgrupo, ";
+        }
+
+        if (AGUAPHelper.getAGUAP().getUiptipoSubgrupo().equals("0")) {
+            mensajeVacio = mensajeVacio + "Tipo";
+        }
+
+        return mensajeVacio;
     }
 }

@@ -8,6 +8,7 @@ package mx.avanti.business.logic;
 import java.util.List;
 import mx.avanti.siract.business.entity.Profesor;
 import mx.avanti.siract.business.entity.Unidad;
+import mx.avanti.siract.business.entity.UnidadaprendizajeImparteProfesor;
 import mx.avanti.siract.common.integration.ServiceLocator;
 
 /**
@@ -269,13 +270,18 @@ public class FacadeProfesor {
 //        listaPE = ServiceLocator.getInstanceBaseDAO().findFromWhere("programaeducativos", "pedid", String.valueOf(peid));
 //        return listaPE;
 //    }    
-        
-        public List<Profesor> getProfAsignado(int idProfesor) {
+               public List<Profesor> getProfAsignado(int idProfesor) {
         List<Profesor> listaGpo = null;
-        ServiceLocator.getInstanceBaseDAO().setTipo(Profesor.class);
+        ServiceLocator.getInstanceBaseDAO().setTipo(UnidadaprendizajeImparteProfesor.class);
         listaGpo = ServiceLocator.getInstanceBaseDAO().findFromWhereB("profesor", "proid", String.valueOf(idProfesor),"uipid");
         return listaGpo;
-    }  
+    } 
+//        public List<Profesor> getProfAsignado(int idProfesor) {
+//        List<Profesor> listaGpo = null;
+//        ServiceLocator.getInstanceBaseDAO().setTipo(Profesor.class);
+//        listaGpo = ServiceLocator.getInstanceBaseDAO().findFromWhereB("profesor", "proid", String.valueOf(idProfesor),"uipid");
+//        return listaGpo;
+//    }  
         
         
         
@@ -286,4 +292,17 @@ public class FacadeProfesor {
         result = ServiceLocator.getInstanceProfesor().findByUnidadAprendisajeClave(uapclave);
         return result; 
     }
+    
+    
+    /////////////
+        
+    public  List<Profesor> getProfbyUsuario(int usuid){
+        List<Profesor> listaPE = null;
+        ServiceLocator.getInstanceBaseDAO().setTipo(Profesor.class);
+        listaPE = ServiceLocator.getInstanceBaseDAO().findFromWhere("usuario", "usuid", String.valueOf(usuid));
+        return listaPE;
+    }
+
+        
+  
 }

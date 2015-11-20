@@ -35,6 +35,7 @@ and open the template in the editor.
                                          title="Agregar"
                                          iconPos="center" 
                                          actionListener="#{profesorBeanUI.nuevo}"
+                                         rendered="#{loginBean.permisoAlta}"
                                          update="capdlg"/>
                         <p:commandButton id="showEliminarButton"  image="btnEU"                                         
                                          title="#{profesorBeanUI.tooltip(2)}"                                         
@@ -42,6 +43,7 @@ and open the template in the editor.
                                          iconPos="center" 
                                          disabled="#{profesorBeanUI.deshabilitarMenu()}"
                                          actionListener="#{profesorBeanUI.eliminar}"
+                                         rendered="#{loginBean.permisoBaja}"
                                          update="capdlg"/>
                         <p:commandButton id="showModificarButton"  image="btnMU"                                                                           
                                          title="#{profesorBeanUI.tooltip(3)}"
@@ -49,6 +51,7 @@ and open the template in the editor.
                                          iconPos="center" 
                                          disabled="#{profesorBeanUI.deshabilitarMenu()}"
                                          actionListener="#{profesorBeanUI.modificar}"
+                                         rendered="#{loginBean.permisoModificar}"
                                          update="capdlg"/> 
                         <br/><br/>
                         <div id="selecPE" style="display: inline-block">
@@ -70,7 +73,7 @@ and open the template in the editor.
                           
                         
                         <div id="divFiltro" style="text-align: right;">       
-                            <p:outputLabel style="font-size: 19px" value="B&#250;squeda especifica de profesor: "/>
+                            <p:outputLabel style="font-size: 19px" value="B&#250;squeda específica de profesor: "/>
 
                             <p:inputText id="filtro" 
                                          value="#{profesorBeanUI.busqueda}" 
@@ -264,6 +267,7 @@ and open the template in the editor.
 
                     </p:fieldset>
                 </h:form>
+                
                 <!--<h:form id="frmConfirmacion">-->
                 <p:confirmDialog id="confirmacionId" showEffect="fade" hideEffect="explode" 
                                  widgetVar="confirmacion" header="Confirmaci&#243;n"
@@ -272,14 +276,14 @@ and open the template in the editor.
                     <h:form>
                         <div align="center">
                         <p:commandButton value="Aceptar" action="#{profesorBeanUI.Confirmacion()}"                                             
-                                         icon="ui-icon-check"
-                                         oncomplete="dlg.show()"
+                                         icon="ui-icon-check"                                         
                                          update=":frmProfesor:growl,:frmProfesor:prof,:frmProfesor:capdlg,:frmProfesor:cap, :frmProfesor:showEliminarButton,:frmProfesor:showModificarButton">
                             <p:ajax event="click" update=":frmProfesor:lblSeleccionados"/>
 
                         </p:commandButton>
                         <p:commandButton value="Cancelar" oncomplete="confirmacion.hide()"
-                                         icon="ui-icon-close" update=":frmProfesor:prof"/>
+                                         icon="ui-icon-close" update=":frmProfesor:prof"
+                                         rendered="#{profesorBeanUI.renderCancelar}"/>
                         </div>
                     </h:form>  
                 </p:confirmDialog>  

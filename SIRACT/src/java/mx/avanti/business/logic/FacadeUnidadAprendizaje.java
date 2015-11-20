@@ -221,5 +221,101 @@ public class FacadeUnidadAprendizaje {
         result = ServiceLocator.getInstanceUnidadaprendizaje().findByCriteriaClave(acoclave);
         return result;
     }
-                  
+           
+            public List<Unidadaprendizaje> findByRPE(String proId){
+        List<Unidadaprendizaje> result = null;
+        ServiceLocator.getInstanceBaseDAO().setTipo(Unidadaprendizaje.class);
+        result =ServiceLocator.getInstanceBaseDAO().findFromWhere("areaconocimientos c join c.planestudio.programaeducativo.profesors_1","proid",String.valueOf(proId));
+        return result;
+    }
+            public List<Unidadaprendizaje> findByAreaConocimientoRPE(String idArea, String proId){
+        List<Unidadaprendizaje> result = null;
+        ServiceLocator.getInstanceBaseDAO().setTipo(Unidadaprendizaje.class);
+        result =ServiceLocator.getInstanceBaseDAO().findWhere("Unidadaprendizaje b join b.areaconocimientos a join a.planestudio.programaeducativo.profesors_1 c","acoid",idArea+"' and c.proid='"+proId,"uapnombre");
+        return result;
+    }
+
+            public List<Unidadaprendizaje> findByEtapaRPE(String etapa, String proId){
+        List<Unidadaprendizaje> result = null;
+       ServiceLocator.getInstanceBaseDAO().setTipo(Unidadaprendizaje.class);
+       result = ServiceLocator.getInstanceBaseDAO().findWhere("Unidadaprendizaje a join a.areaconocimientos b join b.planestudio.programaeducativo.profesors_1 c","uapetapaFormacion",etapa+"' and c.proid='"+proId,"uapnombre");
+//        result = ServiceLocator.getInstanceUnidadaprendizaje().findByCriteria2(idArea, etapa);
+        return result;
+}
+             //Metodos Nuevos
+            public List<Unidadaprendizaje> findByEtapaCAA(String etapa, String proId){
+        List<Unidadaprendizaje> result = null;
+       ServiceLocator.getInstanceBaseDAO().setTipo(Unidadaprendizaje.class);
+       result = ServiceLocator.getInstanceBaseDAO().findWhere("Unidadaprendizaje a join a.coordinadorareaadministrativas c","uapetapaFormacion",etapa+"' and c.profesor.proid='"+proId,"uapnombre");
+//        result = ServiceLocator.getInstanceUnidadaprendizaje().findByCriteria2(idArea, etapa);
+        return result;
+    }
+            
+             public List<Unidadaprendizaje> findByAreaConocimientoCAA(String idArea, String proId){
+        List<Unidadaprendizaje> result = null;
+        ServiceLocator.getInstanceBaseDAO().setTipo(Unidadaprendizaje.class);
+        result =ServiceLocator.getInstanceBaseDAO().findWhere("Unidadaprendizaje b join b.areaconocimientos a join b.coordinadorareaadministrativas c","acoid",idArea+"' and c.profesor.proid='"+proId,"uapnombre");
+        return result;
+    }
+             
+        public List<Unidadaprendizaje> findByEtapaAndPECAA(String etapa,String idPE,String proId){
+        List<Unidadaprendizaje> result = null;
+        ServiceLocator.getInstanceBaseDAO().setTipo(Unidadaprendizaje.class);
+        result =ServiceLocator.getInstanceBaseDAO().findFromWhere("coordinadorareaadministrativas c join a.areaconocimientos","planestudio.programaeducativo.pedid","'"+String.valueOf(idPE)
+                +"' AND "
+                +"a.uapetapaFormacion='"+etapa+"' AND "
+                +"c.profesor.proid='"+proId+"'");
+        return result;
+    }
+          public List<Unidadaprendizaje> findByAreaConocimientoAndCAA(String idArea,String idPE,String proId){
+        List<Unidadaprendizaje> result = null;
+        ServiceLocator.getInstanceBaseDAO().setTipo(Unidadaprendizaje.class);
+        result =ServiceLocator.getInstanceBaseDAO().findFromWhere("coordinadorareaadministrativas c join a.areaconocimientos","acoid",String.valueOf(idArea)+" AND "
+                +"b.planestudio.programaeducativo.pedid='"+idPE+"' AND "
+                +"c.profesor.proid='"+proId+"'");
+        return result;
+    }        
+      public List<Unidadaprendizaje> findByCAA(String proId){
+        List<Unidadaprendizaje> result = null;
+        ServiceLocator.getInstanceBaseDAO().setTipo(Unidadaprendizaje.class);
+        result =ServiceLocator.getInstanceBaseDAO().findFromWhere("coordinadorareaadministrativas","profesor.proid",proId);
+        return result;
+    }
+      
+      public List<Unidadaprendizaje> findByAreaconocimientoCAA(int idArea,String etapa,String proId){
+        List<Unidadaprendizaje> result = null;
+       ServiceLocator.getInstanceBaseDAO().setTipo(Unidadaprendizaje.class);
+       result = ServiceLocator.getInstanceBaseDAO().findFromWhere("Unidadaprendizaje","coordinadorareaadministrativas c join a.areaconocimientos","acoid",String.valueOf(idArea)+
+               " AND a.uapetapaFormacion='"+etapa+"' AND "
+              +"c.profesor.proid='"+proId+"'");
+//        result = ServiceLocator.getInstanceUnidadaprendizaje().findByCriteria2(idArea, etapa);
+        return result;
+    }
+      
+      public List<Unidadaprendizaje> findByAreaconocimientoAndEtapaAndPECAA(int idArea,String etapa,String idPE,String proId){
+        List<Unidadaprendizaje> result = null;
+       ServiceLocator.getInstanceBaseDAO().setTipo(Unidadaprendizaje.class);
+       result = ServiceLocator.getInstanceBaseDAO().findFromWhere("Unidadaprendizaje","coordinadorareaadministrativas c join a.areaconocimientos","acoid",String.valueOf(idArea)+
+               " AND a.uapetapaFormacion='"+etapa+
+               "' AND b.planestudio.programaeducativo.pedid='"+idPE+"' AND "+
+               "c.profesor.proid='"+proId+"'");
+//        result = ServiceLocator.getInstanceUnidadaprendizaje().findByCriteria2(idArea, etapa);
+        return result;
+    }
+      
+      public List<Unidadaprendizaje> findByPlanEstudioCAA(String idPlan,String proId){
+        List<Unidadaprendizaje> result = null;
+        ServiceLocator.getInstanceBaseDAO().setTipo(Unidadaprendizaje.class);
+        result =ServiceLocator.getInstanceBaseDAO().findFromWhere("coordinadorareaadministrativas c join a.areaconocimientos","planestudio.pesid='"+idPlan+"'"+
+                 " AND c.profesor.proid",
+                proId);
+        return result;
+    }
+      
+      public List<Unidadaprendizaje> findByPECAA(String idPE,String proId){
+        List<Unidadaprendizaje> result = null;
+        ServiceLocator.getInstanceBaseDAO().setTipo(Unidadaprendizaje.class);
+        result =ServiceLocator.getInstanceBaseDAO().findFromWhere("coordinadorareaadministrativas c join a.areaconocimientos","planestudio.programaeducativo.pedid",String.valueOf(idPE)+" AND c.profesor.proid='"+proId+"'" );
+        return result;
+    }
 }

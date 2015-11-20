@@ -29,6 +29,7 @@ public class ReporteAux {
     public int uapclave;
     public int uacclave;
     public int creid;
+    public int aadid;
     //public int calnumeroReporte;
 
     public ReporteAux() {
@@ -48,9 +49,10 @@ public class ReporteAux {
         this.uapclave = 0;
         this.uacclave = 0;
         this.creid = 0;
+        this.aadid = 0;
     }
     
-    public ReporteAux(String op, String tipo, int calnumeroReporte, int numRact, String cescicloEscolar, int acoclave, int clavepe, String pesvigencia, int numProfUIPid, Date fecha1, int pronumeroEmpleado, int gponumero, int clave, int uapclave, int uacclave, int creid) {
+    public ReporteAux(String op, String tipo, int calnumeroReporte, int numRact, String cescicloEscolar, int acoclave, int clavepe, String pesvigencia, int numProfUIPid, Date fecha1, int pronumeroEmpleado, int gponumero, int clave, int uapclave, int uacclave, int creid, int aadid) {
         this.op = op;
         this.tipo = tipo;
         this.calnumeroReporte = calnumeroReporte;
@@ -67,6 +69,15 @@ public class ReporteAux {
         this.uapclave = uapclave;
         this.uacclave = uacclave;
         this.creid = creid;
+        this.aadid = aadid;
+    }
+
+    public int getAadid() {
+        return aadid;
+    }
+
+    public void setAadid(int aadid) {
+        this.aadid = aadid;
     }
 
     public int getCreid() {

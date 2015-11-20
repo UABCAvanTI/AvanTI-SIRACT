@@ -21,7 +21,11 @@ and open the template in the editor.
                     <title>Asignar Grupos, Unidad de Aprendizaje y Profesor</title> 
                 </f:facet>
             </h:head>
-            <h:body onload="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.filtro()}"> 
+            <h:body onload="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.filtro()}"
+                    onkeydown="if (event.keyCode == 13) {
+                                event.preventDefault();
+                                return false;
+                            }"> 
                 <h:form id="frmAGUAP" rendered="#{loginBean.tienePermiso}">
 
                     <p:fieldset legend="Asignación de Grupos, Unidad de Aprendizaje y Profesores">
@@ -29,32 +33,68 @@ and open the template in the editor.
                         <p:commandButton id="showAltaButton" title="Agregar" 
                                          image="btnAU"  oncomplete="dlg.show();" 
                                          iconPos="center" update="capdlg"
-                                         actionListener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.nuevo}"/>
+                                         actionListener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.nuevo}"
+                                         rendered="#{loginBean.permisoAlta}"/>
                         <p:commandButton id="showEliminarButton" 
                                          title="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.toolTip(1)}" 
                                          disabled="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.botonesModElim()}"
                                          image="btnEU"  oncomplete="dlg.show();" 
                                          iconPos="center" update="capdlg"
-                                         actionListener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.eliminar()}"/>
+                                         actionListener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.eliminar()}"
+                                         rendered="#{loginBean.permisoBaja}"/>
                         <p:commandButton id="showModificarButton" 
                                          title="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.toolTip(2)}" 
                                          disabled="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.botonesModElim()}"
                                          image="btnMU"  oncomplete="dlg.show();" 
                                          iconPos="center" update="capdlg"
-                                         actionListener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.modificar()}"/>
+                                         actionListener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.modificar()}"
+                                         rendered="#{loginBean.permisoModificar}"/>
                         
-                        <br/><br/>
+                        <br/><br/>                       
+                        
 
+                        <div id="selectPE" style="display: inline-block">
+                        <p:outputLabel value="Seleccione un Programa Educativo " 
+                                       style="margin-top: 40%;"/><br/>                              
+                            <p:selectOneMenu id="ped"
+                                             value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.programaEducativo.pedid}"
+                                             disabled="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.deshabilitar}"
+                                             style="width: 100%">
+                                <p:ajax event="valueChange" update="pes,asignar" listener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.filtro()}"></p:ajax>
+                            <f:selectItem itemLabel="--Seleccionar todos--" itemValue="#{0}"/>
+                            <f:selectItems value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.listaProgramaEducativo}"
+                                           var="pe"
+                                           itemLabel="#{pe.pedclave} - #{pe.pednombre}" 
+                                           itemValue="#{pe.pedid}"/>                            
+                            </p:selectOneMenu>   
 
+                        </div>
+
+                        <div id="selectPlan" style="display: inline-block">
+                        <p:outputLabel value="Seleccione un Plan de estudio " 
+                                       style="margin-top: 40%;"/><br/>                              
+                            <p:selectOneMenu id="pes"
+                                             value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.planEstudio.pesid}"
+                                             disabled="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.deshabilitar}"
+                                             style="width: 100%">
+                                <p:ajax event="valueChange" update="asignar" listener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.filtro()}"></p:ajax>
+                            <f:selectItem itemLabel="--Seleccionar todos--" itemValue="#{0}"/>
+                            <f:selectItems value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.listaPlanEstudio}"
+                                           var="pes"
+                                           itemLabel="#{pes.pesvigenciaPlan}" 
+                                           itemValue="#{pes.pesid}"/>                            
+                            </p:selectOneMenu>   
+
+                        </div>
                         <div id="divFiltro" style="text-align: right;">
-                            <p:outputLabel style="font-size: 19px" value="Busqueda especifica de AGUAP"/>
+                            <p:outputLabel style="font-size: 19px" value="Búsqueda específica de profesor, tipo y subgrupo"/>
                             
                             <p:inputText id="filtro"
                                          value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.busqueda}"
                                          autocomplete="off"
                                          label="filtrado">
                                 <p:ajax event="keyup" listener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.filtro()}"
-                                        update="asignar"/>
+                                        update="asignar"/>z
                             </p:inputText>
                             <pe:keyFilter for="filtro" mask="alphanumeric"/>                                           
                         </div>          
@@ -153,7 +193,7 @@ and open the template in the editor.
                                                          filterMatchMode="contains"
                                                          disabled="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.deshabilitar}">
                                         <f:selectItem itemLabel="--Seleccione un Programa Educativo--" itemValue="#{0}"/>
-                                        <f:selectItems value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.listaPE}"
+                                        <f:selectItems value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.listaProgramaEducativo}"
                                                        var="pe"
                                                        itemLabel="#{pe.pedclave} - #{pe.pednombre}" 
                                                        itemValue="#{pe.pedid}"/>
@@ -181,17 +221,17 @@ and open the template in the editor.
                                 </p:row>                                  
                                 
                                 <p:row>
-                                    <p:column><p:outputLabel value="Area de Conocimiento"/></p:column>
+                                    <p:column><p:outputLabel value="Área de Conocimiento"/></p:column>
                                     <p:column>
                                         <p:selectOneMenu id="Area"
                                                          value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.areaConocimiento.acoid}"
                                                          filter="true"
                                                          filterMatchMode="contains"
                                                          disabled="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.deshabilitar}">
-                                            <f:selectItem itemLabel="--Seleccione un Area de Conocimiento--" itemValue="#{0}"/>
+                                            <f:selectItem itemLabel="--Seleccione un Área de Conocimiento--" itemValue="#{0}"/>
                                             <f:selectItems value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.listaAC}"
                                                            var="ac"
-                                                           itemLabel="#{ac.acoclave} - #{ac.aconombre}"
+                                                           itemLabel="#{ac.aconombre}"
                                                            itemValue="#{ac.acoid}" />
                                             <p:ajax event="valueChange" update="cap" listener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.filtrarUAPorArea()}" />
                                         </p:selectOneMenu>
@@ -237,6 +277,8 @@ and open the template in the editor.
                                     <p:column><p:outputLabel value="Grupo"/></p:column>
                                     <p:column>
                                         <p:selectOneMenu id="gruposList" 
+                                                         filter="true"
+                                                         filterMatchMode="contains"                                                         
                                                          value="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.AGUAPHelper.grupo.gpoid}"
                                                          disabled="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.deshabilitar}">
                                             <f:selectItem itemLabel="--Seleccione un Grupo--" itemValue="#{0}" />
@@ -281,20 +323,21 @@ and open the template in the editor.
                                     </p:column>
                                 </p:row>
                             </p:panelGrid>
-                            
-                            <p:commandButton value="Aceptar" image="btnGuardar" 
-                                              
-                                             actionListener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.onClickSubmit()}" 
-                                             update=":frmAGUAP:growl, cap, :frmAGUAP:asignar, :frmAGUAP:seleccionados">
-                            </p:commandButton>     
-                                    
-                            <p:commandButton value="Cancelar" image="btnCancelar" 
-                                             oncomplete="dlg.hide()" 
-                                             update=":frmAGUAP:asignar, :frmAGUAP:seleccionados, :frmAGUAP:capdlg">
-                                <p:ajax event="click" 
-                                        update=":frmAGUAP:asignar, :frmAGUAP:showEliminarButton, :frmAGUAP:showModificarButton, :frmAGUAP:cap, :frmAGUAP:seleccionados" 
-                                        listener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.limpiarSeleccion()}" />
-                            </p:commandButton>
+                            <div align="center">
+                                <p:commandButton value="Aceptar" image="btnGuardar" 
+
+                                                 actionListener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.onClickSubmit()}" 
+                                                 update=":frmAGUAP:growl, cap, :frmAGUAP:asignar, :frmAGUAP:seleccionados">
+                                </p:commandButton>     
+
+                                <p:commandButton value="Cancelar" image="btnCancelar" 
+                                                 oncomplete="dlg.hide()" 
+                                                 update=":frmAGUAP:asignar, :frmAGUAP:seleccionados, :frmAGUAP:capdlg">
+                                    <p:ajax event="click" 
+                                            update=":frmAGUAP:asignar, :frmAGUAP:showEliminarButton, :frmAGUAP:showModificarButton, :frmAGUAP:cap, :frmAGUAP:seleccionados" 
+                                            listener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.limpiarSeleccion()}" />
+                                </p:commandButton>
+                            </div>
                         </p:dialog>                                                                                             
                     </p:fieldset>
 
@@ -307,12 +350,13 @@ and open the template in the editor.
                    <h:form>
                        <p:commandButton value="Aceptar" action="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.confirmacionAceptada()}"                          
                                             icon="ui-icon-check"
-                                            update=":frmAGUAP:growl,:frmAGUAP:asignar, :frmAGUAP:cap, :frmAGUAP:seleccionados, :frmAGUAP:capdlg">
+                                            update=":frmAGUAP:growl,:frmAGUAP:asignar, :frmAGUAP:cap, :frmAGUAP:seleccionados, :frmAGUAP:capdlg, :frmAGUAP:showEliminarButton, :frmAGUAP:showModificarButton">
                            <p:ajax event="click" update=":frmAGUAP:showEliminarButton, :frmAGUAP:showModificarButton, :frmAGUAP:seleccionados, :frmAGUAP:cap, :frmAGUAP:asignar"/>
                            
                        </p:commandButton>
                         <p:commandButton value="Cancelar" oncomplete="confirmdlg.hide()"
-                                            icon="ui-icon-close"/>
+                                            icon="ui-icon-close"
+                                            rendered="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.renderCancelar}"/>
                    </h:form>  
                 </p:confirmDialog>   
                 

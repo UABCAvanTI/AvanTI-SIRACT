@@ -260,7 +260,7 @@ public String validarRepetidos() {
 
         mensaje = "";
         for (Cicloescolar ciclo : CicloescolarDelegate.getListaCicloEscolar()) {
-            if (ciclo.getCescicloEscolar().equals(cicloescolar.getCescicloEscolar())) {
+            if (ciclo.getCescicloEscolar().equals(cicloescolar.getCescicloEscolar()) && !ciclo.getCesid().equals(cicloescolar.getCesid())) {
                 mensaje = mensaje + "[Ciclo Escolar]";
                 blnciclo= false;
                 break;

@@ -4,9 +4,17 @@
   <session-factory>
     <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
     <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
-    <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/siract?zeroDateTimeBehavior=convertToNull</property>
+    <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/siract?zeroDateTimeBehavior=convertToNull&amp;autoReconnect=true</property>
     <property name="hibernate.connection.username">root</property>
-    <property name="hibernate.connection.password">admin</property>
+    <property name="hibernate.connection.password">adminadmin</property>
+    <property name="c3p0.autoCommitOnClose">true</property>
+    <property name="c3p0.acquire_increment">1</property>
+    <property name="c3p0.initialPoolSize">5</property>
+    <property name="c3p0.idle_test_period">100</property>
+    <property name="c3p0.max_size">50</property>
+    <property name="c3p0.max_statements">0</property>
+    <property name="c3p0.min_size">5</property>
+    <property name="c3p0.timeout">100</property>
     <mapping resource="mx/avanti/siract/business/entity/UnidadaprendizajeImparteProfesor.hbm.xml"/>
     <mapping resource="mx/avanti/siract/business/entity/Cicloescolar.hbm.xml"/>
     <mapping resource="mx/avanti/siract/business/entity/RolHasPermiso.hbm.xml"/>

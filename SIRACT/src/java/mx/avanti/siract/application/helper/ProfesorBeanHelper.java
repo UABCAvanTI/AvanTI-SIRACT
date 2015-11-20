@@ -376,6 +376,13 @@ public class ProfesorBeanHelper implements Serializable {
                         String CambioObjNum = Integer.toString(prof.getPronumeroEmpleado());
                         if (CambioObjNum.startsWith(busqueda)) {
                             listaFiltrada2.add(prof);
+                        } else {
+                            //cambios realizados por Marco
+                            CambioObj = prof.getUsuario().getUsuusuario().toLowerCase();
+                            if(CambioObj.startsWith(CambioBus)){
+                                listaFiltrada2.add(prof);
+                            }
+                            
                         }
                     }
                 }
@@ -432,9 +439,10 @@ public class ProfesorBeanHelper implements Serializable {
 //                        System.out.println("sout 6");
             }
 
-        } else if(rolSeleccionado.equalsIgnoreCase("Responsable de Programa Educativo")){
+        } else if(rolSeleccionado.equalsIgnoreCase("Responsable de Programa Educativo")
+                ||rolSeleccionado.equalsIgnoreCase("Coordinador de Formación Básica")){
 //            profesor2 = profesorDeleagate.findProfesorFromUser(usuario.getUsuid());
-            listaProgramaEducativo.add(programaEducativoDelegate.findProgramaEducativoById(programaEducativoDelegate.getResponsablePE(profesor2.getProid()).getPedid()));
+            listaProgramaEducativo.add(programaEducativoDelegate.findProgramaEducativoById(programaEducativoDelegate.getResponsablePE(profesor2.getProid()).get(0).getPedid()));
             
             listaFiltrada = profesorDeleagate.getProfPE(listaProgramaEducativo.get(0).getPedid());
             
@@ -446,7 +454,15 @@ public class ProfesorBeanHelper implements Serializable {
 //            if(profesor2.getProid() == responsableProgramaEducativo.getProfesor().getProid()){
 //                listaProgramaEducativo.add(programaEducativoDelegate.findProgramaEducativoById(responsableProgramaEducativo.getProgramaeducativo().getPedid()));
 //            }
-        } else{
+        } else{            
+                if(rolSeleccionado.equalsIgnoreCase("Coordinador de Área de Conocimiento")){
+                    //profesor = profesorDelegate.findProfesorFromUser(usuario.getUsuid());
+                    listaProgramaEducativo = programaEducativoDelegate.getPEdeCoordinadorAreaAdmin(profesor2.getProid());
+                    listaFiltrada = profesorDeleagate.getProfPE(listaProgramaEducativo.get(0).getPedid());
+                    for (Profesor prof : listaFiltrada) {
+                prof.setUsuario(usuarioDelegate.findUsuarioById(prof.getUsuario().getUsuid()));
+            }  
+                }
             ocultarLista = "false";
         }
 
@@ -508,7 +524,7 @@ public class ProfesorBeanHelper implements Serializable {
             //casos de que se repita un apellido o un nombre)
             if (prof.getPronumeroEmpleado() == profesor.getPronumeroEmpleado() && banNumEmp == true
                     && !prof.getProid().equals(profesor.getProid())) {
-                Mensaje = Mensaje + " [Numero de Empleado ]";
+                Mensaje = Mensaje + " Numero de Empleado, ";
                 banNumEmp = false;
             }
             if (prof.getPronombre().equals(profesor.getPronombre()) && banNom == true
@@ -517,21 +533,21 @@ public class ProfesorBeanHelper implements Serializable {
                 if (prof.getProapellidoPaterno().equals(profesor.getProapellidoPaterno()) && banAPaterno == true) {
                     banAPaterno = false;
                     if (prof.getProapellidoMaterno().equals(profesor.getProapellidoMaterno()) && banAMaterno == true) {
-                        Mensaje = Mensaje + " [Nombre]";
-                        Mensaje = Mensaje + " [Apellido Paterno]";
-                        Mensaje = Mensaje + "[Apellido Materno]";
+                        Mensaje = Mensaje + "Nombre, ";
+                        Mensaje = Mensaje + "Apellido Paterno, ";
+                        Mensaje = Mensaje + "Apellido Materno, ";
                         banAMaterno = false;
                     }
                 }
             }
             if (prof.getProrfc().equals(profesor.getProrfc()) && banNumEmp == true
                     && !prof.getProid().equals(profesor.getProid())) {
-                Mensaje = Mensaje + "[RFC]";
+                Mensaje = Mensaje + "RFC, ";
                 banNumEmp = false;
             }
             if (prof.getUsuario().getUsuid().equals(usuario2.getUsuid()) && banUs == true
                     && !prof.getProid().equals(profesor.getProid())) {
-                Mensaje = Mensaje + "[Usuario]";
+                Mensaje = Mensaje + "Usuario";
                 banUs = false;
             }
         }

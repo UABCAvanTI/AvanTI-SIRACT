@@ -4,11 +4,13 @@ import java.io.Serializable;
 import java.util.List;
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import mx.avanti.siract.application.helper.UnidadAcademicaBeanHelper;
 import mx.avanti.siract.business.entity.Unidadacademica;
 import mx.avanti.siract.business.entity.Campus;
+import mx.avanti.siract.business.entity.Rol;
 import org.primefaces.context.RequestContext;
 
 @ManagedBean
@@ -24,8 +26,28 @@ public class UnidadAcademicaBeanUI implements Serializable{
     private String deshabilitarBoton = "true";
     private String mensajeEliminar;
     private boolean Bandera;
+    private String renderCancelar;
     String uatipo="";
     int x=0;
+
+    @ManagedProperty(value = "#{loginBean}")
+    private LoginBean loginBean;
+
+    public LoginBean getLoginBean() {
+        return loginBean;
+    }
+
+    public void setLoginBean(LoginBean loginBean) {
+        this.loginBean = loginBean;
+    }
+    
+    public String getRenderCancelar() {
+        return renderCancelar;
+    }
+
+    public void setRenderCancelar(String renderCancelar) {
+        this.renderCancelar = renderCancelar;
+    }
 
     public String getMensajeEliminar() {
         return mensajeEliminar;
@@ -121,7 +143,14 @@ public class UnidadAcademicaBeanUI implements Serializable{
     }
     
     public void filtrado() {
+        List<Rol> list = null;
+        list = loginBean.Obtenerrol(loginBean.getLogueado().getUsuid());
+        String seleccionado=loginBean.getSeleccionado();
+        System.out.println(seleccionado+"ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ");
+        String catalogo="Administración de unidad académica";
+        loginBean.TienePermiso(list, seleccionado, catalogo);
         listaFiltrada = unidadAcademicaBeanHelper.filtrado(busqueda);
+        
     }
     
     public void filtrado2() {
@@ -129,6 +158,7 @@ public class UnidadAcademicaBeanUI implements Serializable{
     }
     
     public void nuevo(){
+        limpiar();
         cabecera(1);
         unidadAcademicaBeanHelper.setUnidadacademica(new Unidadacademica());
         unidadAcademicaBeanHelper.setCampus(new Campus());
@@ -196,7 +226,7 @@ public class UnidadAcademicaBeanUI implements Serializable{
                     unidadAcademicaBeanHelper.setUnidadacademica(new Unidadacademica());
                     RequestContext.getCurrentInstance().execute("dlg.show();");                    
                  }else{
-                        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "La unidad Académica ya existe");
+                        FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error de validación", "La unidad Académica ya existe");
                         RequestContext.getCurrentInstance().showMessageInDialog(message);
                     }}
             }
@@ -229,7 +259,7 @@ public class UnidadAcademicaBeanUI implements Serializable{
         if(unidadAcademicaBeanHelper.getCampus().getCamid()==0
                 || unidadAcademicaBeanHelper.getUnidadacademica().getUacclave()==0
                 || unidadAcademicaBeanHelper.getUnidadacademica().getUacnombre().isEmpty()){
-             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Aviso", "Llenar campo(s) faltantes");
+             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Error de validación", "Llenar campo(s) faltantes");
              RequestContext.getCurrentInstance().showMessageInDialog(message);
              return false;
          }else{
@@ -238,9 +268,10 @@ public class UnidadAcademicaBeanUI implements Serializable{
     
      public void eliminConfir(){
          if(header.equals("Eliminar Unidad Académica")){
-        FacesContext context = FacesContext.getCurrentInstance();
-        context.addMessage(null, new FacesMessage("","Se eliminó correctamente"));         
+             if(renderCancelar.equals("true")){  
         
+        FacesContext context = FacesContext.getCurrentInstance();
+        context.addMessage(null, new FacesMessage("","Se eliminó correctamente"));   
         unidadAcademicaBeanHelper.eliminarDeLista(unidadAcademicaBeanHelper.getUnidadacademica().getUacid());
         unidadAcademicaBeanHelper.getUnidadAcademicaDelegate().eliminarUnidadAcademica(unidadAcademicaBeanHelper.getUnidadacademica()); 
         unidadAcademicaBeanHelper.setSelecUnidadAcademica(new Unidadacademica());
@@ -254,6 +285,14 @@ public class UnidadAcademicaBeanUI implements Serializable{
              RequestContext.getCurrentInstance().execute("dlg.show();");
             
         }
+            
+         }else{                
+                RequestContext.getCurrentInstance().execute("conDlgElim.hide();");
+             RequestContext.getCurrentInstance().execute("dlg.hide();");
+                limpiar();
+                mostrarSeleccionUA();
+                botones();
+            }
          }else{
              if(header.equals("Modificar Unidad Académica")){
                     FacesContext context = FacesContext.getCurrentInstance();
@@ -298,6 +337,8 @@ public class UnidadAcademicaBeanUI implements Serializable{
           unidadAcademicaBeanHelper.setCampus(new Campus());
           unidadAcademicaBeanHelper.setSelecUnidadAcademica(new Unidadacademica());
           unidadAcademicaBeanHelper.setListaSeleccionUA(null);
+          mostrarSeleccionUA();
+          botones();
 //          filtrado();
 //          mostrarSeleccionUA();
 //          botones();
@@ -314,16 +355,19 @@ public class UnidadAcademicaBeanUI implements Serializable{
       public void setMensajeConfirmacion(){
           if (deshabilitar.equals("true")){
               if(unidadAcademicaBeanHelper.getUnidadAcademicaDelegate().getUAasignado(unidadAcademicaBeanHelper.getUnidadacademica().getUacid()).size()>0){
-             mensajeEliminar="La Unidad Académica está asignada a un programa educativo. ¿Está seguro de eliminarlo?";
+             mensajeEliminar="La Unidad Académica está asignada a un programa educativo";
+             renderCancelar="false";
          }else{
              mensajeEliminar="¿Estás seguro de eliminar el registro?";
+             renderCancelar="true";
          }
           }else{
               if(header.equals("Modificar Unidad Académica")){
+                  renderCancelar="true";
                   if(unidadAcademicaBeanHelper.getUnidadAcademicaDelegate().getUAasignado(unidadAcademicaBeanHelper.getUnidadacademica().getUacid()).size()>0){
-                      mensajeEliminar="La Unidad Académica está asignada a un programa educativo. ¿Está seguro de modificarlo?";
+                      mensajeEliminar="La Unidad Académica está asignada a un programa educativo";
                   }else{
-                      mensajeEliminar="¿Estás seguro de modificar el registro?";
+                      mensajeEliminar="¿Está seguro de guardar los cambios?";
                   }
               }
           }

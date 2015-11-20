@@ -17,6 +17,8 @@ and open the template in the editor.
             location.replace(history.forward(1));
         }
     </script>
+        
+    
     <f:view contentType="text/html" >
         <h:head>
             <f:facet name="first">
@@ -30,14 +32,14 @@ and open the template in the editor.
             </f:facet>
             <h:outputStylesheet name="Style.css" library="css"/>
         </h:head>
-        <h:body>
+        <h:body onload="#{loginBean.login()}">
             <p:panelGrid columns="1" id="panelgrid" >
                 <h:panelGroup id="anteencabezado">
                     <ui:include src="AnteEncabezado.xhtml" />
                 </h:panelGroup >
                 <h:panelGroup  id="encabezado" >
                     <h:panelGroup><ui:include src="Encabezado.xhtml"/><p:outputLabel value="Usuario:" style="font-weight: bold; margin-left: 75%;"/><p:spacer/><p:spacer/><p:spacer/>
-                        <p:spacer/><p:spacer/><p:spacer/><p:spacer/><p:spacer/><p:spacer/><p:outputLabel value="#{loginBean.usuario.usuusuario}@uabc.edu.mx"/></h:panelGroup>
+                        <p:spacer/><p:spacer/><p:spacer/><p:spacer/><p:spacer/><p:spacer/><p:outputLabel value="#{loginBean.logueado.usuusuario}@uabc.edu.mx"/></h:panelGroup>
 
                 </h:panelGroup> 
 

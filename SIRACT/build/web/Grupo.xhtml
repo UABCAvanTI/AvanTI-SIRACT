@@ -19,7 +19,11 @@
                 </f:facet>
             </h:head>
 
-            <h:body onload="#{grupoBeanUI.filtrado()}">
+            <h:body onload="#{grupoBeanUI.filtrado()}"
+                    onkeydown="if (event.keyCode == 13) {
+                                event.preventDefault();
+                                return false;
+                            }">
                 <h:form id="frmGrupo" rendered="#{loginBean.tienePermiso}">
                     <p:fieldset legend="Administración de Grupos">
                     <p:growl id="growl" showDetail="true" life="10000"/>                    
@@ -79,7 +83,7 @@
                     
 <!--se agrega el codigo para el filtro por grupo-->  
                     <div style="text-align: right">
-                        <p:outputLabel value="Búsqueda especifica de grupo: "/>
+                        <p:outputLabel value="Búsqueda específica de grupo: "/>
                         <p:inputText id="filtro" value="#{grupoBeanUI.busqueda}" 
                                      autocomplete="off" label="filtrado">
                             <p:ajax event="keyup" listener="#{grupoBeanUI.filtrado()}"
@@ -217,43 +221,26 @@
                     </p:dialog>
                     </p:fieldset>
                 </h:form>
+
                 
-<!-- mensaje de confirmacion para eliminacion-->                
-                <p:confirmDialog showEffect="fade" hideEffect="explode" 
-                                widgetVar="confdlgElim" header="Confirmación"
-                                message="¿Está seguro de eliminar el registro?"
-                                severity="alert" appendToBody="true">
-                   <h:form>
-                        <p:commandButton value="Aceptar" action="#{grupoBeanUI.eliminacionConfirmada()}"                                             
-                                            icon="ui-icon-check"
-                                            update=":frmGrupo:growl,:frmGrupo:grup, :frmGrupo:seleccionados"
-                                            >
-                            <p:ajax event="click" 
-                                    update=":frmGrupo:showEliminarButton, :frmGrupo:showModificarButton, :frmGrupo:seleccionados, :frmGrupo:grup" listener="#{grupoBeanUI.esconderBotones()}"/>
-                            
-                        </p:commandButton>
-                        <p:commandButton value="Cancelar" oncomplete="confdlgElim.hide()"
-                                         icon="ui-icon-close"/>
-                   </h:form>  
-                </p:confirmDialog>  
-                
-<!-- mensaje de confirmacion para modificacion-->                
+      
                 <p:confirmDialog id="confirmdlgId" showEffect="fade" hideEffect="explode" 
                                 widgetVar="confirmdlg" header="Confirmación"
                                 message="#{grupoBeanUI.mensajeConfirm}"
                                 severity="alert" appendToBody="true">
                    <h:form>
-                       <div style="padding-left: 35%">
+                       <div align="center">
                        <p:commandButton value="Aceptar" action="#{grupoBeanUI.confirmacionAceptada()}"                          
                                             icon="ui-icon-check"
-                                            update=":frmGrupo:growl,:frmGrupo:grup, :frmGrupo:cap, :frmGrupo:seleccionados, :frmGrupo:capdlg"
-                                            oncomplete="dlg.show()"
+                                            update=":frmGrupo:growl,:frmGrupo:grup, :frmGrupo:cap, :frmGrupo:seleccionados, :frmGrupo:capdlg, :frmGrupo:showEliminarButton, :frmGrupo:showModificarButton"                                            
                                             >
-                            <p:ajax event="click" update=":frmGrupo:showEliminarButton, :frmGrupo:showModificarButton, :frmGrupo:seleccionados, :frmGrupo:cap, :frmGrupo:grup" listener="#{grupoBeanUI.esconderBotones()}"/>
+                            <p:ajax event="click" 
+                                    update=":frmGrupo:showEliminarButton, :frmGrupo:showModificarButton, :frmGrupo:seleccionados, :frmGrupo:cap, :frmGrupo:grup" 
+                                    listener="#{grupoBeanUI.esconderBotones()}"/>
                            
                        </p:commandButton>
                         <p:commandButton value="Cancelar" oncomplete="confirmdlg.hide()"
-                                            icon="ui-icon-close"/>
+                                         icon="ui-icon-close" rendered="#{grupoBeanUI.botonAceptar}"/>
                        </div>
                    </h:form>  
                 </p:confirmDialog>                  

@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-To change this template, choose Tools | Templates
-and open the template in the editor.
--->
 <!DOCTYPE html>
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
@@ -13,6 +9,7 @@ and open the template in the editor.
                 template="/Template/MasterTemplate.xhtml">
     <ui:define name="contenido">
         <f:view contentType="text/html">   
+            
             <h:head>
                 <h:outputStylesheet name="Style_botones.css" library="css"/>
                 <f:facet name="first">
@@ -20,17 +17,27 @@ and open the template in the editor.
                     <title>Campus</title>
                 </f:facet>
             </h:head>
-            <!--<h:body> --> 
-                <h:body onload="#{campusBeanUI.filtrado()}"> 
-                <h:form id="frmCampus">
-                    <p:fieldset style="color:" legend="Administracion de Campus">
-
-                        <p:commandButton id="showAltaButton" image="btnAU" title="Captura de Campus" oncomplete="dlgCapturaCampus.show();" iconPos="center" actionListener="#{campusBeanUI.nuevo}" update="capCampus"/>
-                        <p:commandButton id="showEliminarButton" image="btnEU" title="Elimina Campus" oncomplete="dlgCapturaCampus.show();" iconPos="center" actionListener="#{campusBeanUI.eliminar}" update="capCampus"/>
-                        <p:commandButton id="showMostrarButton" image="btnMU" title="Modifica Campus" oncomplete="dlgCapturaCampus.show();" iconPos="center" actionListener="#{campusBeanUI.modificar()}" update="capCampus"/>
+            <!--<p:scrollPanel style="width:1500px;height:400px">-->
+                <h:body onload="#{campusBeanUI.filtrado()}"
+                        onkeydown="if (event.keyCode == 13) {
+                                event.preventDefault();
+                                return false;
+                            }">
+                    <h:form id="frmCampus" rendered="#{loginBean.tienePermiso}">                        
+                        <p:fieldset style="color:" legend="Administración de Campus">
+                            
+                            <p:commandButton id="showAltaButton" image="btnAU" title="Captura de Campus" rendered="#{loginBean.permisoAlta}"
+                                         oncomplete="dlgCapturaCampus.show();" 
+                                         actionListener="#{campusBeanUI.nuevo}" update="capCampus"/>
+                            <p:commandButton id="showEliminarButton" image="btnEU" title="Elimina Campus" rendered="#{loginBean.permisoBaja}" 
+                                             oncomplete="dlgCapturaCampus.show();" 
+                                         iconPos="center" actionListener="#{campusBeanUI.eliminar}" update="capCampus" disabled="#{campusBeanUI.deshabilitarBoton}"/>
+                        <p:commandButton id="showModificarButton" image="btnMU" title="Modifica Campus" 
+                                         rendered="#{loginBean.permisoModificar}" oncomplete="dlgCapturaCampus.show();" 
+                                         iconPos="center" actionListener="#{campusBeanUI.modificar()}" update="capCampus" disabled="#{campusBeanUI.deshabilitarBoton}"/>
 
                         <div style="text-align: right">
-                            <p:outputLabel style="font-size: 19px" value="Busqueda especifica de Campus: "/>
+                            <p:outputLabel style="font-size: 19px" value="Búsqueda específica de Campus: "/>
                             <p:inputText id="filtro"    
                                          value="#{campusBeanUI.busqueda}" 
                                          autocomplete="off"
@@ -38,16 +45,10 @@ and open the template in the editor.
                                 <p:ajax event="keyup"  listener="#{campusBeanUI.filtrado()}" 
                                         update="tbCampus" />
                             </p:inputText>
-                            <pe:keyFilter for="filtro" regEx="/[a-z''A-Z]/"/>
+                            <pe:keyFilter for="filtro" regEx="/[a-z''A-Z ]/"/>
                         </div>
-                        
-                        <center>
-                            <p:outputLabel style="font-size: 23px" value="Campus"/><br/>
-                        </center>
-                     
-                         <p:growl id="idgrowl" showDetail="true" sticky="true" life="10000"/>  
+                         <p:growl id="idgrowl" showDetail="true" life="10000"/>  
                          
-                        <!-- inicio de la tabla donde se muestran los datos-->
                         <p:dataTable id="tbCampus" var="campus" 
                                      value="#{campusBeanUI.listaFiltrada}"
                                      rowKey="#{campus.camid}"
@@ -60,77 +61,64 @@ and open the template in the editor.
                                      {FirstPageLink} {PreviousPageLink} {PageLinks} 
                                      {NextPageLink} {LastPageLink} 
                                      {RowsPerPageDropdown}"
-                                     currentPageReportTemplate="({currentPage} de {totalPages})"> 
-
-<!--                            <p:column selectionMode="multiple"
+                                     currentPageReportTemplate="({currentPage} de {totalPages})"
+                                     emptyMessage="No se encontró registro">
+                           <p:ajax event="rowSelect" listener="#{campusBeanUI.habilitarBotons()}" update=":frmCampus:showEliminarButton,:frmCampus:showModificarButton" />
+                           <p:ajax event="rowUnselect" listener="#{campusBeanUI.deshabilitarBotons()}" update=":frmCampus:showEliminarButton, :frmCampus:showModificarButton"/>
+                           <!-- Multiseleccion  
+                           <p:column selectionMode="multiple"
                                       style="width:16px;text-align:center">       
-                            </p:column>-->
-                            
-                            <p:column headerText="Lista de Campus">
+                            </p:column>
+                           -->
+                            <p:column headerText="Campus">
                                 <h:outputText value="#{campus.camnombre}" /> 
                             </p:column> 
                         </p:dataTable>
-                        <!-- fin de la tabla-->
-
-                        <!--inicio agregar, modificar y eliminar-->
-                        <p:dialog id="capCampus" header="#{campusBeanUI.header}" widgetVar="dlgCapturaCampus" appendToBody="false" modal="true">  
+                         
+                        <p:dialog id="capCampus" header="#{campusBeanUI.header}" widgetVar="dlgCapturaCampus" draggable="false" 
+                                      resizable="false" showEffect="fade" 
+                                      hideEffect="explode" modal="true">  
                             <p:panelGrid id="capCam" style="margin-top: 20px; position: relative"> 
                                 <p:row>
                                     <p:column><p:outputLabel value="Campus"/></p:column>
                                     <p:column><p:inputText id="ca" onkeyup="value = value.toUpperCase()" 
                                                            value="#{campusBeanUI.campusBeanHelper.campus.camnombre}"
                                                            disabled="#{campusBeanUI.deshabilitar}"/>
-                                        <pe:keyFilter for="ca" regEx="/[a-z ]/"/>
+                                        <pe:keyFilter for="ca" regEx="/[a-z''A-Z ]/"/>
                                     </p:column>
-                                 </p:row>
-                                
+                                 </p:row>                                
                             </p:panelGrid> 
                             <br/>
-                            <br/>
-                            <p:commandButton value="Aceptar" image="btnGuardar"  oncomplete="dlgCapturaCampus.hide()" action="#{campusBeanUI.onClickSubmit()}" update=":frmCampus:idgrowl,capCam,:frmCampus:tbCampus" icon="ui-icon-disk">
-                                <p:confirm header="Confirmación" message="¿Está seguro de querer guardar los cambios?" icon="ui-icon-alert" />
+                            <center>
+                            <p:commandButton value="Aceptar" image="btnGuardar"  oncomplete="" action="#{campusBeanUI.onClickSubmit()}" update=":frmCampus:idgrowl,capCam,:frmCampus:tbCampus">
+                            <p:ajax event="click" listener="#{campusBeanUI.deshabilitarBotons()}" update=":frmCampus:showEliminarButton,:frmCampus:showModificarButton"/>
                             </p:commandButton>
-                            <!-- confirmacion de eliminar-->
-                             <!-- confirmacion de modificacion-->
-                            <p:commandButton value="Cancelar" image="btnCancelar" oncomplete="dlgCapturaCampus.hide()"/>  
+                            <p:commandButton value="Cancelar" image="btnCancelar" oncomplete="dlgCapturaCampus.hide()">
+                            <p:ajax event="click" listener="#{campusBeanUI.deshabilitarBotons()}" update=":frmCampus:showEliminarButton,:frmCampus:showModificarButton, :frmCampus:tbCampus"/>    
+                            </p:commandButton>  
+                            </center>
                         </p:dialog>
-                        <!--fin agregar y modificar-->
                     </p:fieldset>
                 </h:form> 
-                <p:confirmDialog showEffect="fade" hideEffect="explode" 
-                                 widgetVar="conDlgElim" header="Confirmacion" 
-                                 message="¿Estas seguro de eliminar el registro?"
+                <p:confirmDialog id="confirmid" showEffect="fade" hideEffect="explode" 
+                                 widgetVar="conDlgElim" header="Confirmación" 
+                                 message="#{campusBeanUI.mensajeEliminar}"
                                  severity="alert" appendToBody="true">
                     <h:form>
+                        <center>
                         <p:commandButton value="Aceptar" action="#{campusBeanUI.eliminConfir()}"
                                          icon="ui-icon-check"
                                          update=":frmCampus:idgrowl,:frmCampus:tbCampus,:frmCampus:capCam">
-                            <p:ajax></p:ajax>
-
-                        </p:commandButton>
-                        <p:commandButton value="Cancelar" oncomplete="conDlgElim.hide()"
-                                         icon="ui-icon-close"/> 
+                           </p:commandButton>
+                        <p:commandButton value="Cancelar" oncomplete="conDlgElim.hide()" icon="ui-icon-close"/>
+                        </center>
                     </h:form>
                 </p:confirmDialog>
-                <!-- fin de confirmacion de eliminar-->
-                <!-- confirmacion de modificacion-->
-                 <p:confirmDialog showEffect="fade" hideEffect="explode" 
-                                 widgetVar="conDlgModif" header="Confirmacion" 
-                                 message="¿Estas seguro de modificar el registro?"
-                                 severity="alert" appendToBody="true">
-                    <h:form>
-                        <p:commandButton value="Aceptar" action="#{campusBeanUI.modifConfir()}"
-                                         icon="ui-icon-check"
-                                         update=":frmCampus:idgrowl,:frmCampus:tbCampus,:frmCampus:capCam">
-                            <p:ajax></p:ajax>
-
-                        </p:commandButton>
-                        <p:commandButton value="Cancelar" oncomplete="conDlgModif.hide()"
-                                         icon="ui-icon-close"/> 
+                    <h:form rendered="#{loginBean.formano}">
+                        <center><h1>No tienes permisos para ver esto</h1></center>
                     </h:form>
-                </p:confirmDialog>
-
             </h:body>
+            <!--</p:scrollPanel>-->
         </f:view>
     </ui:define>
 </ui:composition>

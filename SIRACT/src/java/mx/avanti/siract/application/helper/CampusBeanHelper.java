@@ -1,23 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package mx.avanti.siract.application.helper;
 
 import java.io.Serializable;
 import java.util.List;
 import mx.avanti.siract.business.CampusDelegate;
 import mx.avanti.siract.business.entity.Campus;
-/**
- *
- * @author Manuel Papa
- */
+
 public class CampusBeanHelper implements Serializable{
     private CampusDelegate campusDelegate;
     private Campus campus;
     private Campus selectedCampus;
     private List<Campus> listaFiltrada;
     private List<Campus> listaCampus;
+    private boolean banCiclo;
+    private String Mensaje;
+     boolean ban = true;
 
     public List<Campus> getListaCampus() {
         return listaCampus;
@@ -57,32 +53,9 @@ public class CampusBeanHelper implements Serializable{
         this.selectedCampus = selectedCampus;
     }
 
-//    public List<Campus> getListaFiltrada() {
-//        return listaFiltrada;
-//    }
-
     public void setListaFiltrada(List<Campus> listaFiltrada) {
         this.listaFiltrada = listaFiltrada;
     }
-
-//    public void setCampusDelegate(CampusDelegate campusDelegate) {
-//        this.campusDelegate = campusDelegate;
-//    }
-    
-//    public Campus getCampus() {
-//        Campus aux = new Campus();
-//        aux = (Campus)getFlash().get("selectCampus");
-//        try{
-//            if(aux.getPueid() == null){
-//                
-//            } else{
-//                campus = aux;
-//            }
-//        } catch(Exception ex){
-//            System.out.println(""+ex);
-//        }
-//        return campus;
-//    }
     
     public List<Campus> filtrado(String campo, String busqueda){  
         String CambioBus =busqueda.toLowerCase();
@@ -107,4 +80,18 @@ public class CampusBeanHelper implements Serializable{
             if (cam.getCamid().equals(selectedCampus.getCamid())) {
                 campus = cam;
             }}}
+    
+    public boolean Validar(String campu) {
+        banCiclo = true;
+
+        Mensaje = "";
+        for (Campus cam : campusDelegate.getListaCampus()) {
+            if (cam.getCamnombre().endsWith(campu)) {
+                ban = false;
+                break;
+            } else {
+                ban = true;
+            }}
+        return ban;
+    }
 }

@@ -14,6 +14,7 @@ import mx.avanti.business.logic.FacadeCatalogoReportes;
 import mx.avanti.business.logic.FacadeCicloEscolar;
 import mx.avanti.business.logic.FacadeCicloEscolarConfig;
 import mx.avanti.business.logic.FacadeConfiguracion;
+import mx.avanti.business.logic.FacadeCoordinadorAreaAdministrativa;
 import mx.avanti.business.logic.FacadeEsperados;
 import mx.avanti.business.logic.FacadeGrupo;
 import mx.avanti.business.logic.FacadeMensaje;
@@ -452,4 +453,13 @@ public class ServiceFacadeLocator {
         }
         
     }
+public static FacadeCoordinadorAreaAdministrativa facadeCoordinadorAreaAdministrativa;
+          public static FacadeCoordinadorAreaAdministrativa getInstanceFacadeCoordinadorAreaAdministrativa(){
+          if(facadeCoordinadorAreaAdministrativa == null){
+              facadeCoordinadorAreaAdministrativa = new FacadeCoordinadorAreaAdministrativa();
+              return facadeCoordinadorAreaAdministrativa;
+          }else{
+              return facadeCoordinadorAreaAdministrativa;
+          }
+      }
 }

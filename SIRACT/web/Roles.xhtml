@@ -40,14 +40,14 @@ and open the template in the editor.
                 </script>
             </h:head>
             <h:body onload="#{rolesBeanUI.refrescarForma()}">
-                <h:form id="frmRoles" onkeypress="return event.keyCode !== 13" rendered="#{loginBean.tienePermiso}">
+                <h:form id="frmRoles" onkeypress="return event.keyCode !== 13" rendered="#{loginBean.tienePermiso}" >
                     <p:growl widgetVar="mensaje" id="msgs" showDetail="false" sticky="true" />
                     <p:fieldset legend="Administración de Roles">
                         <p:commandButton id="showAltaButton" ajax="true" process="@this" image="btnAU" actionListener="#{rolesBeanUI.nuevo()}" oncomplete="dlg.show();"  iconPos="center"  update="capRoles" />
                         <p:commandButton id="showEliminarButton" disabled="#{rolesBeanUI.modEl}"  image="btnEU"  actionListener="#{rolesBeanUI.eliminar()}" oncomplete="dlg.show();" iconPos="center" update="capRoles" />
                         <p:commandButton id="showMostrarButton" disabled="#{rolesBeanUI.modEl}" image="btnMU" actionListener="#{rolesBeanUI.modificar()}" oncomplete="dlg.show();" iconPos="center" update="capRoles, :frmRoles:rol" />
 
-                        <h:outputText style="margin-left: 55%" value="Búsqueda específica de roles: " />
+                        <h:outputText style="margin-left: 55%" value="Búsqueda específica de usuarios: " />
                         <p:inputText id="globalFilter" value="#{rolesBeanUI.busqueda}" style="width:150px" placeholder="Buscar">
                             <p:ajax event="keyup"  listener="#{rolesBeanUI.filtrado()}" 
                                     update="tbRoles" />
@@ -61,16 +61,15 @@ and open the template in the editor.
                                      selectionMode="single" 
                                      widgetVar="rolSelected"
                                      rowIndexVar="rolIdTable"
-                                     rows="8"
+                                     rows="5"
                                      paginator="true"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15" rendered="true">
+                                     rowsPerPageTemplate="5,10,15,20" rendered="true">
                             <p:ajax event="rowSelect" listener="#{rolesBeanUI.onRowSelect}" update=":frmRoles:rol,:frmRoles:showEliminarButton,:frmRoles:showMostrarButton"  />
                             <p:ajax event="rowSelect" listener="#{rolesBeanUI.onRowSelect}" update=":frmRoles:perm" />                               
 
                             <p:ajax event="rowUnselect" listener="#{rolesBeanUI.noRowUnselect}" update=":frmRoles:rol,:frmRoles:showEliminarButton,:frmRoles:showMostrarButton"  />
-                            <p:ajax event="rowUnselect" listener="#{rolesBeanUI.noRowUnselect}" update=":frmRoles:perm" />              
-
+                            <p:ajax event="rowUnselect" listener="#{rolesBeanUI.noRowUnselect}" update=":frmRoles:perm" />  
                             <p:column headerText="Roles" width="50%">
                                 <h:outputText value="#{rol.roltipo}"/>
                             </p:column>
@@ -79,12 +78,13 @@ and open the template in the editor.
                                 <p:commandButton ajax="true" process="@this" onclick="arbol.show();
                                         statusDialog.show();
                                         rolSelected.selectRow(#{rolIdTable})" style="#{rolesBeanUI.boton};height: 20px;margin-top: 0px;margin-bottom: 0px"  id="obsPanel" type="button" icon="ui-icon-extlink">
-                                    <p:ajax event="click" update=":frmRoles:arbolPermS,:frmRoles:tbRoles,:frmRoles:showEliminarButton,:frmRoles:showMostrarButton"/>
+                                    <p:ajax event="click" update=":frmRoles:arbolPermS,:frmRoles:tbRoles"/>
                                 </p:commandButton>
+
                             </p:column>
                         </p:dataTable>
 
-                        <p:dialog id="dlgArbol" style="margin-top: 5%;" modal="true" widgetVar="arbol"  header="Rol: Permisos" >
+                        <p:dialog resizable="false"   id="dlgArbol" style="margin-top: 5%;" modal="true" widgetVar="arbol"  header="Rol:" >
 
                             <h:outputText value="Permisos:" style="padding-right: 15px;padding-left: 15px;padding-bottom: 5px;padding-top: 5px;font-size: large;font-weight: bolder;background-color: #52a412;-webkit-border-radius: 5px 5px 5px 5px;
                                           border-radius: 5px 5px 5px 5px;color: white;border-color:  #F1A733;border: 5px"/>
@@ -94,18 +94,15 @@ and open the template in the editor.
                                 </p:treeNode>
                             </p:tree>
                         </p:dialog>
-                        
-                        
-                        <p:dialog id="capRoles" header="#{rolesBeanUI.header}" widgetVar="dlg" modal="true">
+                        <p:dialog  style=" display: block;
+                                   text-align : center;" resizable="false"   id="capRoles" header="#{rolesBeanUI.header}" widgetVar="dlg" modal="true">
                             <p:panelGrid style="margin-top: 20px; position: relative" id="pG">
                                 <p:row>
                                     <p:column>
                                         <p:outputLabel value="Rol: "/>
                                     </p:column>
                                     <p:column>
-                                        <p:inputText id="rol" maxlength="40"  onkeypress="return inputLimiter(event, 'Letters')" disabled="#{rolesBeanUI.deshabilitar}" value="#{rolesBeanUI.rolObj.roltipo}" >
-
-                                        </p:inputText>
+                                        <p:inputText id="rol" maxlength="40"  onkeypress="return inputLimiter(event, 'Letters')" disabled="#{rolesBeanUI.deshabilitar}" value="#{rolesBeanUI.rolObj.roltipo}" />
                                     </p:column>
 
                                     <p:column>
@@ -117,15 +114,16 @@ and open the template in the editor.
                             </p:panelGrid>
 
 
+
                             <p:commandButton process="@(this)" ajax="true" value="Aceptar" onclick="statusDialog.show()"  action="#{rolesBeanUI.onClick()}" update="tbRoles,:frmRoles:msgs"  image="btnGuardar">
                                 <p:ajax update=":frmRoles:tbRoles" resetValues="true" />
                             </p:commandButton>
-
 
                             <p:commandButton value="Cancelar" image="btnCancelar" onclick="#{rolesBeanUI.resetForm()};
                                     statusDialog.show()"  update=":frmRoles:tbRoles" oncomplete="dlg.hide();window.location.replace(window.location.href='Roles.xhtml');"> 
                                 <p:ajax update=":frmRoles:tbRoles" resetValues="true" />
                             </p:commandButton>
+
                         </p:dialog>
                     </p:fieldset>
                 </h:form>
@@ -137,19 +135,20 @@ and open the template in the editor.
                                  widgetVar="confirmdlg" header="Confirmación"
                                  message="¿Está seguro de eliminar el registro?"
                                  severity="alert">        
-                    <h:form id="elFrm">
+                    <h:form id="elFrm" style=" display: block;
+                            text-align : center;">
                         <!--<p:growl widgetVar="message" id="msgsElim" showDetail="true" sticky="true" />-->
-
                         <p:commandButton actionListener="#{rolesBeanUI.eliminarConfirm()}" ajax="false" onclick="window.location.replace(window.location.href = 'Roles.xhtml');"  value="Si" styleClass="ui-confirmdialog-yes" image="btnAceptar"  >
 
                         </p:commandButton>
-                        <p:commandButton value="No" onclick="confirmdlg.hide()" type="button" styleClass="ui-confirmdialog-no" image="btnCancelar">
+                        <p:commandButton  onclick="confirmdlg.hide()" value="No" type="button" styleClass="ui-confirmdialog-no" image="btnCancelar">
                         </p:commandButton>
+
+
                     </h:form>
                 </p:confirmDialog>
                 <h:form rendered="#{loginBean.formano}">
                     <center><h1>No tienes permisos para ver esto</h1></center>
-
                 </h:form>
             </h:body>
         </f:view>

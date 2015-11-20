@@ -1,7 +1,9 @@
 /*
- * To change this template, choose Tools | Templates
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package mx.avanti.siract.application.helper;
 
 import java.io.Serializable;
@@ -19,43 +21,20 @@ import mx.avanti.siract.business.entity.Calendarioreporte;
 import mx.avanti.siract.business.entity.CalendarioreporteTieneAlerta;
 import mx.avanti.siract.business.entity.Catalogoreportes;
 import mx.avanti.siract.business.entity.Configuracion;
+import mx.avanti.siract.business.entity.Coordinadorareaadministrativa;
 import mx.avanti.siract.business.entity.Planestudio;
 import mx.avanti.siract.business.entity.Programaeducativo;
 import mx.avanti.siract.business.entity.Reporteavancecontenidotematico;
 import mx.avanti.siract.business.entity.Rol;
 import mx.avanti.siract.business.entity.UnidadaprendizajeImparteProfesor;
 import mx.avanti.siract.business.entity.Usuario;
-
+//import test.ReporteAvanceAux3;
 
 /**
  *
- * @author Moises
+ * @author Owner
  */
 public class FiltrosBeanHelper implements Serializable{
-    private ConsultaDelegate consultaDelegate;
-    
-    public FiltrosBeanHelper(){
-        try{
-            this.consultaDelegate = new ConsultaDelegate();
-
-        } catch(Exception ex){
-            ex.printStackTrace();
-        }
-                reporteAvanceContenidoTematicoDelegate = new ReporteavancecontenidotematicoDelegate();
-        listaAux = new ArrayList<ReporteAvanceAux>();
-        catalogoreportesDelegate = new CatalogoReportesDelegate();
-        programaeducativoDelegate = new ProgramaEducativoDelegate();
-        planEstudioDelegate = new PlanEstudioDelegate();
-        usuarioDelegate = new UsuarioDelegate();
-    }
-
-    public ConsultaDelegate getConsultaDelegate() {
-        return consultaDelegate;
-    }
-    
-    //PARTE ENVIADA POR GENERADOR DE REPORTES
-    
-    
     
     private ReporteavancecontenidotematicoDelegate reporteAvanceContenidoTematicoDelegate;
     private CatalogoReportesDelegate catalogoreportesDelegate;
@@ -78,7 +57,30 @@ public class FiltrosBeanHelper implements Serializable{
     private int uapclave;
     private int uacclave;
     public int creid;
+    public int aadid;
+    private ConsultaDelegate consultaDelegate;        
     
+    
+    public ConsultaDelegate getConsultaDelegate() {
+        return consultaDelegate;
+    }
+    
+    
+    public FiltrosBeanHelper() {
+        try{
+            this.consultaDelegate = new ConsultaDelegate();
+
+        } catch(Exception ex){
+            ex.printStackTrace();
+        }
+        
+        reporteAvanceContenidoTematicoDelegate = new ReporteavancecontenidotematicoDelegate();
+        listaAux = new ArrayList<ReporteAvanceAux>();
+        catalogoreportesDelegate = new CatalogoReportesDelegate();
+        programaeducativoDelegate = new ProgramaEducativoDelegate();
+        planEstudioDelegate = new PlanEstudioDelegate();
+        usuarioDelegate = new UsuarioDelegate();
+    }
     
     private void init(){
        reporteAvanceContenidoTematicoDelegate = new ReporteavancecontenidotematicoDelegate();
@@ -102,12 +104,6 @@ public class FiltrosBeanHelper implements Serializable{
        creid=0;
     }  
 
-    public Usuario mostrarUsuario(Usuario usuario,Rol rolSeleccionado){
-//        Usuario usuarioSelec=usuarioDelegate.getUsuario(usuario.getUsuid());
-         Usuario usuarioSelec=usuarioDelegate.getSeleccionUsuario();
-        return usuarioSelec;
-    }
-    
     public ReporteAux fijarAtributosReporte(ReporteAux reporteUI,String tipoReporte){
         ReporteAux reporteSet = new ReporteAux();
         
@@ -128,7 +124,7 @@ public class FiltrosBeanHelper implements Serializable{
             reporteSet.setPesvigencia(pesvigencia);                        
             reporteSet.setClave(clavepe);            
         }
-        if(tipoReporte.equalsIgnoreCase("AreaCon")){
+        if((tipoReporte.equalsIgnoreCase("AreaCon"))){
             reporteSet = new ReporteAux();
             //los atributos de esta clase toman los mismos valores del
             //parametro recibido en este mismo metodo desde el beanUI
@@ -137,6 +133,7 @@ public class FiltrosBeanHelper implements Serializable{
             setAcoclave(reporteUI.getAcoclave());
             setClavepe(reporteUI.getClavepe());
             setPesvigencia(reporteUI.getPesvigencia());
+            //setAadid(reporteUI.getAadid());
             
             //atributos necesarios para entregados en el objeto que se manda al
             //delegate
@@ -146,6 +143,28 @@ public class FiltrosBeanHelper implements Serializable{
             reporteSet.setClavepe(clavepe);
             reporteSet.setPesvigencia(pesvigencia);                       
             reporteSet.setClave(clavepe);            
+            //reporteSet.setAadid(aadid);
+        }
+        if((tipoReporte.equalsIgnoreCase("AreaAdmin"))){
+            reporteSet = new ReporteAux();
+            //los atributos de esta clase toman los mismos valores del
+            //parametro recibido en este mismo metodo desde el beanUI
+            setNumRact(reporteUI.getNumRact());
+            setCescicloEscolar(reporteUI.getCescicloEscolar());
+            //setAcoclave(reporteUI.getAcoclave());
+            setClavepe(reporteUI.getClavepe());
+            setPesvigencia(reporteUI.getPesvigencia());
+            setAadid(reporteUI.getAadid());
+            
+            //atributos necesarios para entregados en el objeto que se manda al
+            //delegate
+            reporteSet.setNumRact(numRact);//aqui cambie para hacer consulta al ract1
+            reporteSet.setCescicloEscolar(cescicloEscolar);
+            //reporteSet.setAcoclave(acoclave);
+            reporteSet.setClavepe(clavepe);
+            reporteSet.setPesvigencia(pesvigencia);                       
+            reporteSet.setClave(clavepe);            
+            reporteSet.setAadid(aadid);
         }
         if(tipoReporte.equalsIgnoreCase("UAGrupo")){
             reporteSet = new ReporteAux();
@@ -200,7 +219,7 @@ public class FiltrosBeanHelper implements Serializable{
     }
      
     
-    public String guardarConsulta(ReporteAux reporteUI,String tipoReporteUI,String CTRnombreUI){
+    public String guardarConsulta(ReporteAux reporteUI,String tipoReporteUI,String CTRnombreUI,int aadid){
           
         ReporteAux reporte = new ReporteAux();      
         
@@ -219,6 +238,21 @@ public class FiltrosBeanHelper implements Serializable{
             reporte = new ReporteAux();
         
             reporte = fijarAtributosReporte(reporteUI,"AreaCon");            
+        }
+        
+        //ATiempoAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("ATiempoAreaAdmin")){
+             
+            reporte = new ReporteAux();
+            
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin"); 
+        }
+        
+        //ATiempoAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("ATiempoAreaAdminTodosRacts")){
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
         }
         
         //ATiempoProfGrupo
@@ -277,6 +311,22 @@ public class FiltrosBeanHelper implements Serializable{
             reporte = new ReporteAux();
         
             reporte = fijarAtributosReporte(reporteUI,"AreaCon");        
+        }
+        
+        //ATiempoYNoYEnLimiteAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("ATiempoYNoYEnLimiteAreaAdmin")){
+             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        }
+        
+        //ATiempoYNoYEnLimiteAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("ATiempoYNoYEnLimiteAreaAdminTodosRacts")){
+             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");        
         }
         
         //ATiempoYNoYEnLimiteProfGrupo
@@ -361,6 +411,46 @@ public class FiltrosBeanHelper implements Serializable{
             reporte = fijarAtributosReporte(reporteUI,"AreaCon");            
         }
         
+        //PAGCAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("PAGCAreaAdmin")){
+             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        }
+        
+        //PAGCAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("PAGCAreaAdminTodosRacts")){
+             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        }
+        
+        //PAGCCompletoAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("PAGCCompletoAreaAdminTodosRacts")){
+             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        }
+        
+        //PAGCCompletoAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("PAGCCompletoAreaAdmin")){
+             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");        
+        }
+        
+        //PAGCompletoEIncompletoAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("PAGCompletoEIncompletoAreaAdmin")){
+             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        }
+        
         //PAGCompletoEIncompletoProfGrupo
         if(tipoReporteUI.equalsIgnoreCase("PAGCompletoEIncompletoProfGrupo")){
             reporte = new ReporteAux();        
@@ -409,6 +499,14 @@ public class FiltrosBeanHelper implements Serializable{
             reporte = new ReporteAux();
         
             reporte = fijarAtributosReporte(reporteUI,"AreaCon");            
+        }
+        
+        //PAGCompletosYNoAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("PAGCompletosYNoAreaAdminTodosRacts")){
+             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
         }
         
         //PAGCompletosYNoProfGrupoTodosRacts
@@ -511,6 +609,22 @@ public class FiltrosBeanHelper implements Serializable{
             reporte = fijarAtributosReporte(reporteUI,"AreaCon");        
         }
         
+        //enFechaLimiteTiempoAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("enFechaLimiteTiempoAreaAdmin")){
+             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");        
+        }
+        
+        //enFechaLimiteTiempoAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("enFechaLimiteTiempoAreaAdminTodosRacts")){
+             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");        
+        }
+        
         //enFechaLimiteTiempoProfGrupo
         if(tipoReporteUI.equalsIgnoreCase("enFechaLimiteTiempoProfGrupo")){
             reporte = new ReporteAux();        
@@ -575,6 +689,30 @@ public class FiltrosBeanHelper implements Serializable{
             reporte = new ReporteAux();
         
             reporte = fijarAtributosReporte(reporteUI,"AreaCon");            
+        }
+        
+        //entregadosAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("entregadosAreaAdmin")){
+             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        }
+        
+        //entregadosAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("entregadosAreaAdminTodosRacts")){
+             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        }
+        
+        //noEntregadosAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("noEntregadosAreaAdminTodosRacts")){
+             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
         }
         
         //entregadosProfGrupo
@@ -656,6 +794,22 @@ public class FiltrosBeanHelper implements Serializable{
             reporte = fijarAtributosReporte(reporteUI,"AreaCon");            
         }
         
+        //entregadosYNoAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("entregadosYNoAreaAdminTodosRacts")){
+             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        }
+        
+        //entregadosYNoEntregadosAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("entregadosYNoEntregadosAreaAdmin")){
+             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        }
+        
         //entregadosYNoEntregadosProfGrupo
         if(tipoReporteUI.equalsIgnoreCase("entregadosYNoEntregadosProfGrupo")){
             reporte = new ReporteAux();        
@@ -714,6 +868,22 @@ public class FiltrosBeanHelper implements Serializable{
             reporte = fijarAtributosReporte(reporteUI,"AreaCon");            
         }
         
+        //fueraTiempoAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("fueraTiempoAreaAdmin")){
+             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");        
+        }
+        
+        //fueraTiempoAreaConTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("fueraTiempoAreaAdminTodosRacts")){
+             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        }
+        
         //fueraTiempoProfGrupo
         if(tipoReporteUI.equalsIgnoreCase("fueraTiempoProfGrupo")){
             reporte = new ReporteAux();        
@@ -764,6 +934,14 @@ public class FiltrosBeanHelper implements Serializable{
             reporte = fijarAtributosReporte(reporteUI,"AreaCon");        
         }
         
+        //noEntregadosAreaCon
+        if(tipoReporteUI.equalsIgnoreCase("noEntregadosAreaAdmin")){
+             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");        
+        }
+        
         //noEntregadosProfGrupo
         if(tipoReporteUI.equalsIgnoreCase("noEntregadosProfGrupo")){
             reporte = new ReporteAux();        
@@ -795,7 +973,7 @@ public class FiltrosBeanHelper implements Serializable{
              "cescicloEscolar:"+reporte.getCescicloEscolar()+"#"+"acoclave:"+reporte.getAcoclave()+"#"+
              "clavepe:"+reporte.getClavepe()+"#"+"pesvigencia:"+reporte.getPesvigencia()+"#"+
              "pronumeroEmpleado:"+reporte.getPronumeroEmpleado()+"#"+"gponumero:"+reporte.getGponumero()+"#"+
-             "clave:"+reporte.getClavepe()+"#"+"uapclave:"+reporte.getUapclave();
+             "clave:"+reporte.getClavepe()+"#"+"uapclave:"+reporte.getUapclave()+"#"+"aadid:"+reporte.getAadid();
      
      Catalogoreportes catalogoreporte = new Catalogoreportes();
      
@@ -1601,6 +1779,11 @@ public class FiltrosBeanHelper implements Serializable{
     //toma el valor para uapclave
     reporteUI.setUapclave(Integer.parseInt(uapclaveSTRArray[1]));
     
+    String aadidSTRArray[]=CTRConsultaQueryArray[10].split(":");    
+        
+    //toma el valor para aadid
+    reporteUI.setAadid(Integer.parseInt(aadidSTRArray[1]));
+    
         System.out.println(" ");
     
 //    CTRConsultaQuery="tipoReporte:"+tipoReporte+"#"+"numRact:"+reporte.getNumRact()+"#"+
@@ -1623,6 +1806,15 @@ public class FiltrosBeanHelper implements Serializable{
         listaEjecutarQuery=ATiempoAreaCon(reporte);
         }
         
+        //ATiempoAreaAdmin
+        if(tipoReporteUI.equalsIgnoreCase("ATiempoAreaAdmin")){             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        
+        listaEjecutarQuery=ATiempoAreaAdmin(reporte,reporte.getAadid());
+        }
+        
         //ATiempoAreaConTodosRacts
         if(tipoReporteUI.equalsIgnoreCase("ATiempoAreaConTodosRacts")){
             reporte = new ReporteAux();
@@ -1632,6 +1824,15 @@ public class FiltrosBeanHelper implements Serializable{
         listaEjecutarQuery=ATiempoAreaConTodosRacts(reporte);
         }
         
+        //ATiempoAreaAdminTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("ATiempoAreaAdminTodosRacts")){
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        
+        listaEjecutarQuery=ATiempoAreaAdminTodosRacts(reporte,reporte.getAadid());
+        }
+        
         //fueraTiempoAreaConTodosRacts
         if(tipoReporteUI.equalsIgnoreCase("fueraTiempoAreaConTodosRacts")){
             reporte = new ReporteAux();
@@ -1639,6 +1840,15 @@ public class FiltrosBeanHelper implements Serializable{
             reporte = fijarAtributosReporte(reporteUI,"AreaCon");        
         
         listaEjecutarQuery=FueraTiempoAreaConTodosRacts(reporte);
+        }
+        
+        //fueraTiempoAreaAdminTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("fueraTiempoAreaAdminTodosRacts")){
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");        
+        
+        listaEjecutarQuery=FueraTiempoAreaAdminTodosRacts(reporte,reporte.getAadid());
         }
         
         //ATiempoProfGrupo
@@ -1731,6 +1941,15 @@ public class FiltrosBeanHelper implements Serializable{
         listaEjecutarQuery=ATiempoYNoYEnLimiteAreaCon(reporte);
         }
         
+        //ATiempoYNoYEnLimiteAreaAdmin
+        if(tipoReporteUI.equalsIgnoreCase("ATiempoYNoYEnLimiteAreaAdmin")){             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        
+        listaEjecutarQuery=ATiempoYNoYEnLimiteAreaAdmin(reporte,reporte.getAadid());
+        }
+        
         //ATiempoYNoYEnLimiteAreaConTodosRacts
         if(tipoReporteUI.equalsIgnoreCase("ATiempoYNoYEnLimiteAreaConTodosRacts")){             
             reporte = new ReporteAux();
@@ -1738,6 +1957,15 @@ public class FiltrosBeanHelper implements Serializable{
             reporte = fijarAtributosReporte(reporteUI,"AreaCon");            
         
         listaEjecutarQuery=ATiempoYNoYEnLimiteAreaConTodosRacts(reporte);
+        }
+        
+        //ATiempoYNoYEnLimiteAreaAdminTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("ATiempoYNoYEnLimiteAreaAdminTodosRacts")){             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        
+        listaEjecutarQuery=ATiempoYNoYEnLimiteAreaAdminTodosRacts(reporte,reporte.getAadid());
         }
         
         //ATiempoYNoYEnLimiteProfGrupo
@@ -1803,6 +2031,15 @@ public class FiltrosBeanHelper implements Serializable{
         listaEjecutarQuery=PAGCAreaCon(reporte);
         }
         
+        //PAGCAreaAdmin
+        if(tipoReporteUI.equalsIgnoreCase("PAGCAreaAdmin")){             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        
+        listaEjecutarQuery=PAGCAreaAdmin(reporte,reporte.getAadid());
+        }
+        
         //PAGCAreaConTodosRacts
         if(tipoReporteUI.equalsIgnoreCase("PAGCAreaConTodosRacts")){             
             reporte = new ReporteAux();
@@ -1810,6 +2047,15 @@ public class FiltrosBeanHelper implements Serializable{
             reporte = fijarAtributosReporte(reporteUI,"AreaCon");        
         
         listaEjecutarQuery=PAGCAreaConTodosRacts(reporte);
+        }
+        
+        //PAGCAreaAdminTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("PAGCAreaAdminTodosRacts")){             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");        
+        
+        listaEjecutarQuery=PAGCAreaAdminTodosRacts(reporte,reporte.getAadid());
         }
         
         //PAGCCompletoAreaConTodosRacts
@@ -1821,6 +2067,15 @@ public class FiltrosBeanHelper implements Serializable{
         listaEjecutarQuery=PAGCCompletoAreaConTodosRacts(reporte);
         }
         
+        //PAGCCompletoAreaAdminTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("PAGCCompletoAreaAdminTodosRacts")){             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        
+        listaEjecutarQuery=PAGCCompletoAreaAdminTodosRacts(reporte,reporte.getAadid());
+        }
+        
         //PAGCCompletoAreaCon
         if(tipoReporteUI.equalsIgnoreCase("PAGCCompletoAreaCon")){             
             reporte = new ReporteAux();
@@ -1830,6 +2085,15 @@ public class FiltrosBeanHelper implements Serializable{
         listaEjecutarQuery=PAGCCompletoAreaCon(reporte);
         }
         
+        //PAGCCompletoAreaAdmin
+        if(tipoReporteUI.equalsIgnoreCase("PAGCCompletoAreaAdmin")){             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");        
+        
+        listaEjecutarQuery=PAGCCompletoAreaAdmin(reporte,reporte.getAadid());
+        }
+        
         //PAGCompletoEIncompletoAreaCon
         if(tipoReporteUI.equalsIgnoreCase("PAGCompletoEIncompletoAreaCon")){             
             reporte = new ReporteAux();
@@ -1837,6 +2101,15 @@ public class FiltrosBeanHelper implements Serializable{
             reporte = fijarAtributosReporte(reporteUI,"AreaCon");            
         
         listaEjecutarQuery=PAGCCompletoEIncompletoAreaCon(reporte);
+        }
+        
+        //PAGCompletoEIncompletoAreaAdmin
+        if(tipoReporteUI.equalsIgnoreCase("PAGCompletoEIncompletoAreaAdmin")){             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        
+        listaEjecutarQuery=PAGCCompletoEIncompletoAreaAdmin(reporte,reporte.getAadid());
         }
         
         //PAGCompletoEIncompletoProfGrupo
@@ -1900,6 +2173,15 @@ public class FiltrosBeanHelper implements Serializable{
             reporte = fijarAtributosReporte(reporteUI,"AreaCon");            
         
         listaEjecutarQuery=PAGCCompletosYNoAreaConTodosRacts(reporte);
+        }
+        
+        //PAGCompletosYNoAreaAdminTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("PAGCompletosYNoAreaAdminTodosRacts")){             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        
+        listaEjecutarQuery=PAGCCompletosYNoAreaAdminTodosRacts(reporte,reporte.getAadid());
         }
         
         //PAGCompletosYNoProfGrupoTodosRacts
@@ -2019,6 +2301,15 @@ public class FiltrosBeanHelper implements Serializable{
         listaEjecutarQuery=EnFechaLimiteTiempoAreaCon(reporte);
         }
         
+        //enFechaLimiteTiempoAreaAdmin
+        if(tipoReporteUI.equalsIgnoreCase("enFechaLimiteTiempoAreaAdmin")){             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        
+//        listaEjecutarQuery=EnFechaLimiteTiempoAreaAdmin(reporte,reporte.getAadid());
+        }
+        
         //enFechaLimiteTiempoAreaConTodosRacts
         if(tipoReporteUI.equalsIgnoreCase("enFechaLimiteTiempoAreaConTodosRacts")){             
             reporte = new ReporteAux();
@@ -2026,6 +2317,15 @@ public class FiltrosBeanHelper implements Serializable{
             reporte = fijarAtributosReporte(reporteUI,"AreaCon");            
         
         listaEjecutarQuery=EnFechaLimiteTiempoAreaConTodosRacts(reporte);
+        }
+        
+        //enFechaLimiteTiempoAreaAdminTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("enFechaLimiteTiempoAreaAdminTodosRacts")){             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        
+//        listaEjecutarQuery=EnFechaLimiteTiempoAreaAdminTodosRacts(reporte,reporte.getAadid());
         }
         
         //enFechaLimiteTiempoProfGrupo
@@ -2091,6 +2391,15 @@ public class FiltrosBeanHelper implements Serializable{
         listaEjecutarQuery=entregadosAreaCon(reporte);
         }
         
+        //entregadosAreaAdmin
+        if(tipoReporteUI.equalsIgnoreCase("entregadosAreaAdmin")){             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+                
+        listaEjecutarQuery=entregadosAreaAdmin(reporte,reporte.getAadid());
+        }
+        
         //entregadosAreaConTodosRacts
         if(tipoReporteUI.equalsIgnoreCase("entregadosAreaConTodosRacts")){             
             reporte = new ReporteAux();
@@ -2098,6 +2407,15 @@ public class FiltrosBeanHelper implements Serializable{
             reporte = fijarAtributosReporte(reporteUI,"AreaCon");            
         
         listaEjecutarQuery=entregadosAreaConTodosRacts(reporte);
+        }
+        
+        //entregadosAreaAdminTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("entregadosAreaAdminTodosRacts")){             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        
+        listaEjecutarQuery=entregadosAreaAdminTodosRacts(reporte,reporte.getAadid());
         }
         
         //entregadosProfGrupo
@@ -2163,6 +2481,15 @@ public class FiltrosBeanHelper implements Serializable{
         listaEjecutarQuery=entregadosYNoAreaConTodosRacts(reporte);
         }
         
+        //entregadosYNoAreaAdminTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("entregadosYNoAreaAdminTodosRacts")){             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        
+        listaEjecutarQuery=entregadosYNoAreaAdminTodosRacts(reporte,reporte.getAadid());
+        }
+        
         //entregadosYNoEntregadosAreaCon
         if(tipoReporteUI.equalsIgnoreCase("entregadosYNoEntregadosAreaCon")){             
             reporte = new ReporteAux();
@@ -2170,6 +2497,15 @@ public class FiltrosBeanHelper implements Serializable{
             reporte = fijarAtributosReporte(reporteUI,"AreaCon");            
         
         listaEjecutarQuery=entregadosYNoEntregadosAreaCon(reporte);
+        }
+        
+        //entregadosYNoEntregadosAreaAdmin
+        if(tipoReporteUI.equalsIgnoreCase("entregadosYNoEntregadosAreaAdmin")){             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        
+        listaEjecutarQuery=entregadosYNoEntregadosAreaAdmin(reporte,reporte.getAadid());
         }
         
         //entregadosYNoEntregadosProfGrupo
@@ -2235,6 +2571,15 @@ public class FiltrosBeanHelper implements Serializable{
         listaEjecutarQuery=FueraTiempoAreaCon(reporte);
         }
         
+        //fueraTiempoAreaAdmin
+        if(tipoReporteUI.equalsIgnoreCase("fueraTiempoAreaAdmin")){             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        
+        listaEjecutarQuery=FueraTiempoAreaAdmin(reporte,reporte.getAadid());
+        }
+        
         //fueraTiempoProfGrupo
         if(tipoReporteUI.equalsIgnoreCase("fueraTiempoProfGrupo")){
             reporte = new ReporteAux();        
@@ -2271,6 +2616,15 @@ public class FiltrosBeanHelper implements Serializable{
         listaEjecutarQuery=noEntregadosAreaCon(reporte);
         }
         
+        //noEntregadosAreaAdmin
+        if(tipoReporteUI.equalsIgnoreCase("noEntregadosAreaAdmin")){             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        
+        listaEjecutarQuery=noEntregadosAreaAdmin(reporte,reporte.getAadid());
+        }
+        
         //noEntregadosAreaConTodosRacts
         if(tipoReporteUI.equalsIgnoreCase("noEntregadosAreaConTodosRacts")){             
             reporte = new ReporteAux();
@@ -2278,6 +2632,15 @@ public class FiltrosBeanHelper implements Serializable{
             reporte = fijarAtributosReporte(reporteUI,"AreaCon");            
         
         listaEjecutarQuery=noEntregadosAreaConTodosRacts(reporte);
+        }
+        
+        //noEntregadosAreaAdminTodosRacts
+        if(tipoReporteUI.equalsIgnoreCase("noEntregadosAreaAdminTodosRacts")){             
+            reporte = new ReporteAux();
+        
+            reporte = fijarAtributosReporte(reporteUI,"AreaAdmin");            
+        
+        listaEjecutarQuery=noEntregadosAreaAdminTodosRacts(reporte,reporte.getAadid());
         }
         
         //noEntregadosProfGrupo
@@ -2470,6 +2833,68 @@ public class FiltrosBeanHelper implements Serializable{
         return listaReporte;
     }
     
+    public ArrayList<ReporteAux> prepararAtribGuardarConsultaAreaAdmin(ReporteAux reporteUI,List<String> selectCicloEscolarList,List<String> selectPlanesEstudio,List<String> selectAreaAdministrativa){
+        //selectCicloEscolarList.size();
+        
+        Programaeducativo proged = new Programaeducativo();
+        
+        List<Planestudio> planestList = null;
+        
+        //ArrayList<ReporteAvanceAux> pelist = new ArrayList<ReporteAvanceAux>();
+        
+        //ArrayList<ReporteAvanceAux> pelist2 = new ArrayList<ReporteAvanceAux>();
+        
+        ArrayList<ReporteAux> listaReporte = new ArrayList<ReporteAux>(); 
+        
+        ReporteAux reporte = new ReporteAux();
+        
+        //for(String selectPEid: selectProgramEducativo){            
+          for(String selectCicloEs: selectCicloEscolarList){
+              for(String selectPlanEs: selectPlanesEstudio){
+                  for(String selectAreaAdmin: selectAreaAdministrativa){
+            
+            //int claveproged=Integer.parseInt(selectPEid.trim());
+            
+            proged = new Programaeducativo();
+            
+            //nota aqui comente
+            //proged=programaeducativoDelegate.getProgramaeducativo(idproged);
+    
+            //planestList=planEstudioDelegate.getByProgramaeducativo(reporteUI.getClavepe());
+            
+            int aadid2=Integer.parseInt(selectAreaAdmin);
+            
+            reporte = new ReporteAux();
+            
+            //los atributos de esta clase toman los mismos valores del
+            //parametro recibido en este mismo metodo desde el beanUI
+            setNumRact(reporteUI.getNumRact());                  
+            //setCescicloEscolar(reporteUI.getCescicloEscolar());             
+            setCescicloEscolar(selectCicloEs);             
+            //setClavepe(proged.getPedclave());                  
+            setClavepe(reporteUI.getClavepe());                  
+            setPesvigencia(selectPlanEs);
+            //setAcoclave(claveacon);
+            setAadid(aadid2);
+            
+            //atributos necesarios para entregados en el objeto que se manda al
+            //delegate
+            reporte.setNumRact(numRact);//aqui cambie para hacer consulta al ract1
+            reporte.setCescicloEscolar(cescicloEscolar);        
+            reporte.setClavepe(clavepe);
+            reporte.setPesvigencia(pesvigencia);
+            reporte.setClave(clavepe);        
+            //reporte.setAcoclave(acoclave);                
+            reporte.setAadid(aadid);
+            
+            listaReporte.add(reporte);
+            }
+           }
+          }
+        
+        return listaReporte;
+    }
+    
     public ArrayList<ReporteAux> prepararAtribGuardarConsultaUAprend(ReporteAux reporteUI,List<String> selectCicloEscolarList,List<String> selectPlanesEstudio,List<String> selectAreaConocimiento,List<String> selectUnidadAprendisaje,List<String> selectGrupo){
         //selectCicloEscolarList.size();
         
@@ -2490,7 +2915,7 @@ public class FiltrosBeanHelper implements Serializable{
               for(String selectPlanEs: selectPlanesEstudio){                                       
                 for(String selectAreaCon: selectAreaConocimiento){                 
                     for(String selectUAp: selectUnidadAprendisaje){
-                      for(String selectGr: selectGrupo){       
+    //                  for(String selectGr: selectGrupo){       
                               
                           
                       
@@ -2506,7 +2931,7 @@ public class FiltrosBeanHelper implements Serializable{
             
             int claveacon=Integer.parseInt(selectAreaCon);
             int claveuaprend=Integer.parseInt(selectUAp);
-            int clavegrupo=Integer.parseInt(selectGr);
+   //         int clavegrupo=Integer.parseInt(selectGr);
             
             reporte = new ReporteAux();
             
@@ -2520,7 +2945,7 @@ public class FiltrosBeanHelper implements Serializable{
             setPesvigencia(selectPlanEs);
             setAcoclave(claveacon);
             setUapclave(claveuaprend);
-            setGponumero(clavegrupo);
+   //         setGponumero(clavegrupo);
             
             //atributos necesarios para entregados en el objeto que se manda al
             //delegate
@@ -2531,10 +2956,10 @@ public class FiltrosBeanHelper implements Serializable{
             reporte.setClave(clavepe);        
             reporte.setAcoclave(acoclave);        
             reporte.setUapclave(uapclave);
-            reporte.setGponumero(gponumero);        
+   //         reporte.setGponumero(gponumero);        
             
             listaReporte.add(reporte);
-              }
+     //         }
              }
             }
            }
@@ -2563,7 +2988,7 @@ public class FiltrosBeanHelper implements Serializable{
               for(String selectPlanEs: selectPlanesEstudio){                                       
                 for(String selectAreaCon: selectAreaConocimiento){                 
                     for(String selectUAp: selectUnidadAprendisaje){
-    //                  for(String selectGr: selectGrupo){
+                      for(String selectGr: selectGrupo){
                           for(String selectProf: selectProfesor){
                               
                           
@@ -2580,7 +3005,7 @@ public class FiltrosBeanHelper implements Serializable{
             
             int claveacon=Integer.parseInt(selectAreaCon);
             int claveuaprend=Integer.parseInt(selectUAp);
-      //      int clavegrupo=Integer.parseInt(selectGr);
+            int clavegrupo=Integer.parseInt(selectGr);
             int claveprofesor=Integer.parseInt(selectProf);
             
             reporte = new ReporteAux();
@@ -2595,7 +3020,7 @@ public class FiltrosBeanHelper implements Serializable{
             setPesvigencia(selectPlanEs);
             setAcoclave(claveacon);
             setUapclave(claveuaprend);
-    //        setGponumero(clavegrupo);
+            setGponumero(clavegrupo);
             setPronumeroEmpleado(claveprofesor);
             
             //atributos necesarios para entregados en el objeto que se manda al
@@ -2607,12 +3032,12 @@ public class FiltrosBeanHelper implements Serializable{
             reporte.setClave(clavepe);        
             reporte.setAcoclave(acoclave);        
             reporte.setUapclave(uapclave);
-   //         reporte.setGponumero(gponumero);   
+            reporte.setGponumero(gponumero);   
             reporte.setPronumeroEmpleado(pronumeroEmpleado);
             
             listaReporte.add(reporte);
               }
-   //          }
+             }
             }
            }
           }
@@ -2998,6 +3423,197 @@ public class FiltrosBeanHelper implements Serializable{
         return pelist6;
     }
     
+    public ArrayList selectionAreaAdmin(ReporteAux reporteUI,String tipoReporteUI,List<String> selectCicloEscolarList,List<String> selectPlanesEstudio,List<String> selectAreaAdministrativa){
+        
+        //selectCicloEscolarList.size();
+        
+        Programaeducativo proged = new Programaeducativo();
+        
+        List<Planestudio> planestList = null;
+        
+        ArrayList<ReporteAvanceAux> pelist = new ArrayList<ReporteAvanceAux>();
+        
+        ArrayList<ReporteAvanceAux> pelist2 = new ArrayList<ReporteAvanceAux>();
+        
+        ArrayList<ReporteAvanceAux> pelist6 = new ArrayList<ReporteAvanceAux>();
+        
+        ReporteAux reporte = new ReporteAux();
+        
+        //for(String selectPEid: selectProgramEducativo){            
+          for(String selectCicloEs: selectCicloEscolarList){
+              for(String selectPlanEs: selectPlanesEstudio){
+                  for(String selectAreaAdmin: selectAreaAdministrativa){
+            
+            //int claveproged=Integer.parseInt(selectPEid.trim());
+            
+            proged = new Programaeducativo();
+            
+            //nota aqui comente
+            //proged=programaeducativoDelegate.getProgramaeducativo(idproged);
+    
+            //planestList=planEstudioDelegate.getByProgramaeducativo(reporteUI.getClavepe());
+            
+            int aadid=Integer.parseInt(selectAreaAdmin);
+            
+            reporte = new ReporteAux();
+            
+            //los atributos de esta clase toman los mismos valores del
+            //parametro recibido en este mismo metodo desde el beanUI
+            setNumRact(reporteUI.getNumRact());                  
+            //setCescicloEscolar(reporteUI.getCescicloEscolar());             
+            setCescicloEscolar(selectCicloEs);             
+            //setClavepe(proged.getPedclave());                  
+            setClavepe(reporteUI.getClavepe());                  
+            setPesvigencia(selectPlanEs);
+            //setAcoclave(claveacon);
+            
+            //atributos necesarios para entregados en el objeto que se manda al
+            //delegate
+            reporte.setNumRact(numRact);//aqui cambie para hacer consulta al ract1
+            reporte.setCescicloEscolar(cescicloEscolar);        
+            reporte.setClavepe(clavepe);
+            reporte.setPesvigencia(pesvigencia);
+            reporte.setClave(clavepe);        
+           // reporte.setAcoclave(acoclave);        
+            
+            pelist = new ArrayList<ReporteAvanceAux>();
+            
+            //pe=pe;
+            
+            //Opciones tipoReporteUI:        
+                
+            //ATiempoProgEd
+            if (tipoReporteUI.equalsIgnoreCase("ATiempoAreaAdmin")) {
+                pelist=ATiempoAreaAdmin(reporte,aadid);
+            }
+
+            //ATiempoProgEdTodosRacts
+            if (tipoReporteUI.equalsIgnoreCase("ATiempoAreaAdminTodosRacts")) {
+                pelist=ATiempoAreaAdminTodosRacts(reporte,aadid);
+            }
+
+            //ATiempoYNoYEnLimiteProgEd
+            if (tipoReporteUI.equalsIgnoreCase("ATiempoYNoYEnLimiteAreaAdmin")) {
+                pelist=ATiempoYNoYEnLimiteAreaAdmin(reporte,aadid);
+            }
+
+            //ATiempoYNoYEnLimiteProgEdTodosRacts
+            if (tipoReporteUI.equalsIgnoreCase("ATiempoYNoYEnLimiteAreaAdminTodosRacts")) {
+                pelist=ATiempoYNoYEnLimiteAreaAdminTodosRacts(reporte,aadid);
+            }
+
+            //PAGCompletoEIncompletoProgEd
+            if (tipoReporteUI.equalsIgnoreCase("PAGCompletoEIncompletoAreaAdmin")) {
+               pelist=PAGCCompletoEIncompletoAreaAdmin(reporte,aadid);
+            }
+
+            //PAGCompletoProgEd
+            if (tipoReporteUI.equalsIgnoreCase("PAGCCompletoAreaAdmin")) {
+                pelist=PAGCCompletoAreaAdmin(reporte,aadid);
+            }
+
+            //PAGCompletosYNoProgEdTodosRacts
+            if (tipoReporteUI.equalsIgnoreCase("PAGCompletosYNoAreaAdminTodosRacts")) {
+                pelist=PAGCCompletosYNoAreaAdminTodosRacts(reporte,aadid);
+            }
+
+            //PAGCProgEd
+            if (tipoReporteUI.equalsIgnoreCase("PAGCAreaAdmin")) {
+               pelist=PAGCAreaAdmin(reporte,aadid);
+            }
+
+            //PAGCProgEdTodosRacts
+            if (tipoReporteUI.equalsIgnoreCase("PAGCAreaAdminTodosRacts")) {
+                pelist=PAGCAreaAdminTodosRacts(reporte,aadid);
+            }
+
+            //PAGCCompletoProgEdTodosRacts
+            if (tipoReporteUI.equalsIgnoreCase("PAGCCompletoAreaAdminTodosRacts")) {
+                pelist=PAGCCompletoAreaAdminTodosRacts(reporte,aadid);
+            }
+
+            //enFechaLimiteTiempoProgEd
+            if (tipoReporteUI.equalsIgnoreCase("enFechaLimiteTiempoAreaAdmin")) {
+                //pelist=EnFechaLimiteTiempoAreaAdmin(reporte);
+            }
+
+            //enFechaLimiteTiempoProgEdTodosRacts
+            if (tipoReporteUI.equalsIgnoreCase("enFechaLimiteTiempoAreaAdminTodosRacts")) {
+                //pelist=EnFechaLimiteTiempoAreaAdminTodosRacts(reporte);
+            }
+
+            //entregadosProgEd
+            if (tipoReporteUI.equalsIgnoreCase("entregadosAreaAdmin")) {
+                pelist=entregadosAreaAdmin(reporte,aadid);
+            }
+
+            //entregadosProgEdTodosRacts
+            if (tipoReporteUI.equalsIgnoreCase("entregadosAreaAdminTodosRacts")) {                
+                pelist=entregadosAreaAdminTodosRacts(reporte,aadid);                
+            }
+
+            //noEntregadosProgEdTodosRacts
+            if (tipoReporteUI.equalsIgnoreCase("noEntregadosAreaAdminTodosRacts")) {
+                pelist=noEntregadosAreaAdminTodosRacts(reporte,aadid);
+            }
+
+            //entregadosYNoEntregadosProgEd
+            if (tipoReporteUI.equalsIgnoreCase("entregadosYNoEntregadosAreaAdmin")) {
+                pelist=entregadosYNoEntregadosAreaAdmin(reporte,aadid);
+            }
+
+            //entregadosYNoProgEdTodosRacts
+            if (tipoReporteUI.equalsIgnoreCase("entregadosYNoAreaAdminTodosRacts")) {
+                pelist=entregadosYNoAreaAdminTodosRacts(reporte,aadid);
+            }
+
+            //fueraTiempoProgEd
+            if (tipoReporteUI.equalsIgnoreCase("fueraTiempoAreaAdmin")) {
+                pelist=FueraTiempoAreaAdmin(reporte,aadid);
+            }
+
+            //fueraTiempoProgEdTodosRacts
+            if (tipoReporteUI.equalsIgnoreCase("fueraTiempoAreaAdminTodosRacts")) {
+                pelist=FueraTiempoAreaAdminTodosRacts(reporte,aadid);
+            }
+
+            //noEntregadosProgEd
+            if (tipoReporteUI.equalsIgnoreCase("noEntregadosAreaAdmin")) {
+                pelist=noEntregadosAreaAdmin(reporte,aadid);
+            }
+            
+            for(ReporteAvanceAux ra: pelist){                
+                pelist2.add(ra);                
+            }
+          }
+         }
+        }
+        
+        pelist6.addAll(pelist2);
+         
+         ReporteAvanceAux pelist7 = new ReporteAvanceAux();
+         
+         int cont=0;
+          
+         for(ReporteAvanceAux pelist4 :pelist2){
+             cont=0;
+             //idUipid.add(pelist4.getReporteAvance().getUnidadaprendizajeImparteProfesor().getUipid());
+             for(ReporteAvanceAux pelist5 :pelist2){
+               if(pelist4.reporteAvance.getUnidadaprendizajeImparteProfesor().getUipid()==pelist5.reporteAvance.getUnidadaprendizajeImparteProfesor().getUipid()){
+                cont++;                   
+               }          
+               if(cont>=2){
+                   pelist7=pelist5; 
+                   pelist6.remove(pelist7);
+                   break;
+               }
+             }
+         }  
+          
+        //programaeducativoDelegate.getProgramaeducativo(creid);
+        return pelist6;
+    }
+    
     public ArrayList selectionUAGrupo(ReporteAux reporteUI,String tipoReporteUI,List<String> selectCicloEscolarList,List<String> selectPlanesEstudio,List<String> selectAreaConocimiento,List<String> selectUnidadAprendisaje,List<String> selectGrupo){
         
         //selectCicloEscolarList.size();
@@ -3018,8 +3634,8 @@ public class FiltrosBeanHelper implements Serializable{
           for(String selectCicloEs: selectCicloEscolarList){
               for(String selectPlanEs: selectPlanesEstudio){                                       
                 for(String selectAreaCon: selectAreaConocimiento){                 
-                    for(String selectUAp: selectUnidadAprendisaje){
-                      for(String selectGr: selectGrupo){       
+                   for(String selectUAp: selectUnidadAprendisaje){
+       //              for(String selectGr: selectGrupo){
                               
                           
                       
@@ -3035,7 +3651,7 @@ public class FiltrosBeanHelper implements Serializable{
             
             int claveacon=Integer.parseInt(selectAreaCon);
             int claveuaprend=Integer.parseInt(selectUAp);
-            int clavegrupo=Integer.parseInt(selectGr);
+     //       int clavegrupo=Integer.parseInt(selectGr);
             
             reporte = new ReporteAux();
             
@@ -3049,7 +3665,7 @@ public class FiltrosBeanHelper implements Serializable{
             setPesvigencia(selectPlanEs);
             setAcoclave(claveacon);
             setUapclave(claveuaprend);
-            setGponumero(clavegrupo);
+     //       setGponumero(clavegrupo);
             
             //atributos necesarios para entregados en el objeto que se manda al
             //delegate
@@ -3060,7 +3676,7 @@ public class FiltrosBeanHelper implements Serializable{
             reporte.setClave(clavepe);        
             reporte.setAcoclave(acoclave);        
             reporte.setUapclave(uapclave);
-            reporte.setGponumero(gponumero);        
+    //        reporte.setGponumero(gponumero);        
             
             pelist = new ArrayList<ReporteAvanceAux>();
             
@@ -3172,7 +3788,7 @@ public class FiltrosBeanHelper implements Serializable{
                 pelist2.add(ra);                
             }
             
-            }
+    //        }
            }
           }
          }
@@ -3227,7 +3843,7 @@ public class FiltrosBeanHelper implements Serializable{
               for(String selectPlanEs: selectPlanesEstudio){                                       
                 for(String selectAreaCon: selectAreaConocimiento){                 
                     for(String selectUAp: selectUnidadAprendisaje){
-                      //for(String selectGr: selectGrupo){       
+                      for(String selectGr: selectGrupo){       
                           for(String selectProf: selectProfesor){       
                               
                           
@@ -3244,7 +3860,7 @@ public class FiltrosBeanHelper implements Serializable{
             
             int claveacon=Integer.parseInt(selectAreaCon);
             int claveuaprend=Integer.parseInt(selectUAp);
-   //         int clavegrupo=Integer.parseInt(selectGr);
+            int clavegrupo=Integer.parseInt(selectGr);
             int claveprofesor=Integer.parseInt(selectProf);
             
             reporte = new ReporteAux();
@@ -3259,7 +3875,7 @@ public class FiltrosBeanHelper implements Serializable{
             setPesvigencia(selectPlanEs);
             setAcoclave(claveacon);
             setUapclave(claveuaprend);
-   //         setGponumero(clavegrupo);
+            setGponumero(clavegrupo);
             setPronumeroEmpleado(claveprofesor);
             
             //atributos necesarios para entregados en el objeto que se manda al
@@ -3389,7 +4005,7 @@ public class FiltrosBeanHelper implements Serializable{
           }
          }
         }
-     //  }
+       }
     
          //ArrayList<Integer> idUipid = new ArrayList<Integer>();
          //ArrayList<Integer> idUipid2 = new ArrayList<Integer>();
@@ -4463,6 +5079,46 @@ public class FiltrosBeanHelper implements Serializable{
     
     //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
     //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento de
+    //solamente entregados 
+    public ArrayList entregadosAreaAdminTodosRacts(ReporteAux reporteUI,int aadid){        
+        init();  //este se ocupa siempre para refrescar los atributos y siempre sean nuevos y que requieres
+    
+        //listas donde se guardaran los entregados por el numero de ract que indica
+        ArrayList<ReporteAvanceAux> listaAuxRact1=new ArrayList<ReporteAvanceAux>();
+        ArrayList<ReporteAvanceAux> listaAuxRact2=new ArrayList<ReporteAvanceAux>();
+        ArrayList<ReporteAvanceAux> listaAuxRact3=new ArrayList<ReporteAvanceAux>();
+                
+        //objeto necesario para hacer la consulta del delegate en todas
+        //las capas hacia el dao, con los atributos necesarios para entregados
+        ReporteAux reporte=new ReporteAux();
+    
+        int cont=0;        
+        
+        reporte = fijarAtributosReporte(reporteUI,"AreaCon");        
+        
+        //atributos necesarios para entregados en el objeto que se manda al
+        //delegate
+        reporte.setOp("CompararAreaCon");
+        reporte.setTipo("Enviado");
+        reporte.setNumRact(1);//aqui cambie para hacer consulta al ract1
+        
+        listaAuxRact1=entregadosAreaAdmin(reporte,aadid);
+        
+        reporte.setNumRact(2);//aqui cambie para sobreescribir y ahora hacer consulta al ract2
+        
+        listaAuxRact2=entregadosAreaAdmin(reporte,aadid);
+        
+        reporte.setNumRact(3);//aqui cambie para sobreescribir y ahora hacer consulta al ract3
+        
+        listaAuxRact3=entregadosAreaAdmin(reporte,aadid);
+        
+        listaAux=ordenarTodosRactsEntregadosYNo(listaAuxRact1,listaAuxRact2,listaAuxRact3);
+                
+        return listaAux;
+    }
+    
+    //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
+    //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento de
     //solamente no entregados 
     public ArrayList noEntregadosAreaConTodosRacts(ReporteAux reporteUI){        
         init();  //este se ocupa siempre para refrescar los atributos y siempre sean nuevos y que requieres
@@ -4495,6 +5151,46 @@ public class FiltrosBeanHelper implements Serializable{
         reporte.setNumRact(3);//aqui cambie para sobreescribir y ahora hacer consulta al ract3
         
         listaAuxRact3=noEntregadosAreaCon(reporte);
+        
+        listaAux=ordenarTodosRactsEntregadosYNo(listaAuxRact1,listaAuxRact2,listaAuxRact3);
+                
+        return listaAux;
+    }
+    
+    //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
+    //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento de
+    //solamente no entregados 
+    public ArrayList noEntregadosAreaAdminTodosRacts(ReporteAux reporteUI,int aadid){        
+        init();  //este se ocupa siempre para refrescar los atributos y siempre sean nuevos y que requieres
+    
+        //listas donde se guardaran los entregados por el numero de ract que indica
+        ArrayList<ReporteAvanceAux> listaAuxRact1=new ArrayList<ReporteAvanceAux>();
+        ArrayList<ReporteAvanceAux> listaAuxRact2=new ArrayList<ReporteAvanceAux>();
+        ArrayList<ReporteAvanceAux> listaAuxRact3=new ArrayList<ReporteAvanceAux>();
+                
+        //objeto necesario para hacer la consulta del delegate en todas
+        //las capas hacia el dao, con los atributos necesarios para entregados
+        ReporteAux reporte=new ReporteAux();
+    
+        int cont=0;                        
+        
+        reporte = fijarAtributosReporte(reporteUI,"AreaCon");        
+        
+        //atributos necesarios para entregados en el objeto que se manda al
+        //delegate
+        reporte.setOp("CompararAreaCon");
+        reporte.setTipo("Enviado");
+        reporte.setNumRact(1);//aqui cambie para hacer consulta al ract1
+        
+        listaAuxRact1=noEntregadosAreaAdmin(reporte,aadid);
+        
+        reporte.setNumRact(2);//aqui cambie para sobreescribir y ahora hacer consulta al ract2
+        
+        listaAuxRact2=noEntregadosAreaAdmin(reporte,aadid);
+        
+        reporte.setNumRact(3);//aqui cambie para sobreescribir y ahora hacer consulta al ract3
+        
+        listaAuxRact3=noEntregadosAreaAdmin(reporte,aadid);
         
         listaAux=ordenarTodosRactsEntregadosYNo(listaAuxRact1,listaAuxRact2,listaAuxRact3);
                 
@@ -4541,6 +5237,46 @@ public class FiltrosBeanHelper implements Serializable{
         return listaAux;
     }
     
+    //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
+    //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento de
+    //la union entregados y no entregados
+    public ArrayList entregadosYNoAreaAdminTodosRacts(ReporteAux reporteUI,int aadid){        
+        init();  //este se ocupa siempre para refrescar los atributos y siempre sean nuevos y que requieres
+    
+        //listas donde se guardaran los entregados y no entregados por el numero de ract que indica
+        ArrayList<ReporteAvanceAux> listaAuxRact1=new ArrayList<ReporteAvanceAux>();
+        ArrayList<ReporteAvanceAux> listaAuxRact2=new ArrayList<ReporteAvanceAux>();
+        ArrayList<ReporteAvanceAux> listaAuxRact3=new ArrayList<ReporteAvanceAux>();
+                
+        //objeto necesario para hacer la consulta del delegate en todas
+        //las capas hacia el dao, con los atributos necesarios para entregados y no entregados
+        ReporteAux reporte=new ReporteAux();
+    
+        int cont=0;                        
+        
+        reporte = fijarAtributosReporte(reporteUI,"AreaCon");
+        
+        //atributos necesarios para entregados y no entregados en el objeto que se manda al
+        //delegate
+        reporte.setOp("CompararAreaCon");
+        reporte.setTipo("Enviado");
+        reporte.setNumRact(1);//aqui cambie para hacer consulta al ract1
+        
+        listaAuxRact1=entregadosYNoAreaAdmin(reporte,aadid);
+        
+        reporte.setNumRact(2);//aqui cambie para sobreescribir y ahora hacer consulta al ract2
+        
+        listaAuxRact2=entregadosYNoAreaAdmin(reporte,aadid);
+        
+        reporte.setNumRact(3);//aqui cambie para sobreescribir y ahora hacer consulta al ract3
+        
+        listaAuxRact3=entregadosYNoAreaAdmin(reporte,aadid);
+        
+        listaAux=ordenarTodosRactsEntregadosYNo(listaAuxRact1,listaAuxRact2,listaAuxRact3);       
+                
+        return listaAux;
+    }
+    
     //metodo auxiliar para obtener por cada ract(*no en una sola linea) 
     //de todos los registros en ract(no por unico profesor, unidad
     //de aprendizaje y grupo)
@@ -4575,6 +5311,49 @@ public class FiltrosBeanHelper implements Serializable{
         //recorre la lista de no entregados y lo une a la lista auxiliar que debe
         //tener la union de ambos
         for(ReporteAvanceAux ra: listaAuxNoEntregadosAreaCon){            
+                        
+            reporteAvanceAux=ra;
+            reporteAvanceAux.setTipoReporteSelec("No entregado");            
+            listaAux2.add(reporteAvanceAux);
+        }
+        
+        return listaAux2;
+    }
+    
+    //metodo auxiliar para obtener por cada ract(*no en una sola linea) 
+    //de todos los registros en ract(no por unico profesor, unidad
+    //de aprendizaje y grupo)
+    //para Area de conocimiento de la union de entregados y no entregados
+    public ArrayList entregadosYNoAreaAdmin(ReporteAux reporteUI,int aadid){
+                
+        init();        
+                
+        //listas donde se guardaran los entregados, no entregados y la lista temporal 
+        //donde esta la union de estas dos al finalizar el metodo
+        ArrayList<ReporteAvanceAux> listaAuxEntregadosAreaAdmin;
+        ArrayList<ReporteAvanceAux> listaAuxNoEntregadosAreaAdmin; 
+        ArrayList<ReporteAvanceAux> listaAux2=new ArrayList<ReporteAvanceAux>();
+        
+        ReporteAvanceAux reporteAvanceAux;
+                
+        //llama a los metodos de esta misma clase para entregados y no entregados
+        //mandandole el parametro de objeto recibido que tiene todos los atributos
+        //necesarios para la consulta al delegate y dao
+        listaAuxEntregadosAreaAdmin=entregadosAreaAdmin(reporteUI,aadid);
+        listaAuxNoEntregadosAreaAdmin=noEntregadosAreaAdmin(reporteUI,aadid);
+        
+        //recorre la lista de entregados y lo une a la lista auxiliar que debe
+        //tener la union de ambos
+        for(ReporteAvanceAux ra: listaAuxEntregadosAreaAdmin){            
+                        
+            reporteAvanceAux=ra;
+            reporteAvanceAux.setTipoReporteSelec("Entregado");            
+            listaAux2.add(reporteAvanceAux);
+        }
+        
+        //recorre la lista de no entregados y lo une a la lista auxiliar que debe
+        //tener la union de ambos
+        for(ReporteAvanceAux ra: listaAuxNoEntregadosAreaAdmin){            
                         
             reporteAvanceAux=ra;
             reporteAvanceAux.setTipoReporteSelec("No entregado");            
@@ -5694,6 +6473,47 @@ public class FiltrosBeanHelper implements Serializable{
     
     //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
     //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento
+    //de solamente Porcentaje de Avance General *Incompleto*
+    public ArrayList PAGCAreaAdminTodosRacts(ReporteAux reporteUI,int aadid){        
+        init();  //este se ocupa siempre para refrescar los atributos y siempre sean nuevos y que requieres
+    
+        //listas donde se guardaran los Porcentaje de Avance General Incompleto 
+        //por el numero de ract que indica
+        ArrayList<ReporteAvanceAux> listaAuxRact1=new ArrayList<ReporteAvanceAux>();
+        ArrayList<ReporteAvanceAux> listaAuxRact2=new ArrayList<ReporteAvanceAux>();
+        ArrayList<ReporteAvanceAux> listaAuxRact3=new ArrayList<ReporteAvanceAux>();
+                
+        //objeto necesario para hacer la consulta del delegate en todas
+        //las capas hacia el dao, con los atributos necesarios para Porcentaje de Avance General Incompleto        
+        ReporteAux reporte=new ReporteAux();
+    
+        int cont=0;                        
+        
+        reporte = fijarAtributosReporte(reporteUI,"AreaCon");
+                        
+        //atributos necesarios para Porcentaje de Avance General Incompleto en el objeto que se manda al
+        //delegate
+        reporte.setOp("CompararAreaCon");
+        reporte.setTipo("Enviado");
+        reporte.setNumRact(1);//aqui cambie para hacer consulta al ract1
+        
+        listaAuxRact1=PAGCAreaAdmin(reporte,aadid);
+        
+        reporte.setNumRact(2);//aqui cambie para sobreescribir y ahora hacer consulta al ract2
+        
+        listaAuxRact2=PAGCAreaAdmin(reporte,aadid);
+        
+        reporte.setNumRact(3);//aqui cambie para sobreescribir y ahora hacer consulta al ract3
+        
+        listaAuxRact3=PAGCAreaAdmin(reporte,aadid);
+        
+        listaAux=ordenarTodosRactsPAGCCompletosYNo(listaAuxRact1,listaAuxRact2,listaAuxRact3);
+                
+        return listaAux;
+    }
+    
+    //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
+    //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento
     //de solamente Porcentaje de Avance General *Completo*
     public ArrayList PAGCCompletoAreaConTodosRacts(ReporteAux reporteUI){        
         init();  //este se ocupa siempre para refrescar los atributos y siempre sean nuevos y que requieres
@@ -5727,6 +6547,47 @@ public class FiltrosBeanHelper implements Serializable{
         reporte.setNumRact(3);//aqui cambie para sobreescribir y ahora hacer consulta al ract3
         
         listaAuxRact3=PAGCCompletoAreaCon(reporte);
+        
+        listaAux=ordenarTodosRactsPAGCCompletosYNo(listaAuxRact1,listaAuxRact2,listaAuxRact3);
+                
+        return listaAux;
+    }
+    
+    //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
+    //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento
+    //de solamente Porcentaje de Avance General *Completo*
+    public ArrayList PAGCCompletoAreaAdminTodosRacts(ReporteAux reporteUI,int aadid){        
+        init();  //este se ocupa siempre para refrescar los atributos y siempre sean nuevos y que requieres
+    
+        //listas donde se guardaran los Porcentaje de Avance General Incompleto 
+        //por el numero de ract que indica
+        ArrayList<ReporteAvanceAux> listaAuxRact1=new ArrayList<ReporteAvanceAux>();
+        ArrayList<ReporteAvanceAux> listaAuxRact2=new ArrayList<ReporteAvanceAux>();
+        ArrayList<ReporteAvanceAux> listaAuxRact3=new ArrayList<ReporteAvanceAux>();
+                
+        //objeto necesario para hacer la consulta del delegate en todas
+        //las capas hacia el dao, con los atributos necesarios para Porcentaje de Avance General Incompleto        
+        ReporteAux reporte=new ReporteAux();
+    
+        int cont=0;                        
+        
+        reporte = fijarAtributosReporte(reporteUI,"AreaCon");
+                        
+        //atributos necesarios para Porcentaje de Avance General Incompleto en el objeto que se manda al
+        //delegate
+        reporte.setOp("CompararAreaCon");
+        reporte.setTipo("Enviado");
+        reporte.setNumRact(1);//aqui cambie para hacer consulta al ract1
+        
+        listaAuxRact1=PAGCCompletoAreaAdmin(reporte,aadid);
+        
+        reporte.setNumRact(2);//aqui cambie para sobreescribir y ahora hacer consulta al ract2
+        
+        listaAuxRact2=PAGCCompletoAreaAdmin(reporte,aadid);
+        
+        reporte.setNumRact(3);//aqui cambie para sobreescribir y ahora hacer consulta al ract3
+        
+        listaAuxRact3=PAGCCompletoAreaAdmin(reporte,aadid);
         
         listaAux=ordenarTodosRactsPAGCCompletosYNo(listaAuxRact1,listaAuxRact2,listaAuxRact3);
                 
@@ -5775,6 +6636,48 @@ public class FiltrosBeanHelper implements Serializable{
         return listaAux;
     }
     
+    //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
+    //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento
+    //para ambos Porcentaje de Avance General Completo e *Incompleto*
+    public ArrayList PAGCCompletosYNoAreaAdminTodosRacts(ReporteAux reporteUI,int aadid){        
+        init();  //este se ocupa siempre para refrescar los atributos y siempre sean nuevos y que requieres
+    
+        //listas donde se guardaran los Porcentaje de Avance General Completo e Incompleto 
+        //por el numero de ract que indica
+        ArrayList<ReporteAvanceAux> listaAuxRact1=new ArrayList<ReporteAvanceAux>();
+        ArrayList<ReporteAvanceAux> listaAuxRact2=new ArrayList<ReporteAvanceAux>();
+        ArrayList<ReporteAvanceAux> listaAuxRact3=new ArrayList<ReporteAvanceAux>();
+                
+        //objeto necesario para hacer la consulta del delegate en todas
+        //las capas hacia el dao, con los atributos necesarios para Porcentaje de Avance General Completo e
+        //Incompleto        
+        ReporteAux reporte=new ReporteAux();
+    
+        int cont=0;                        
+        
+        reporte = fijarAtributosReporte(reporteUI,"AreaCon");
+                        
+        //atributos necesarios para Porcentaje de Avance General Completo e Incompleto en el objeto que se manda al
+        //delegate
+        reporte.setOp("CompararAreaCon");
+        reporte.setTipo("Enviado");
+        reporte.setNumRact(1);//aqui cambie para hacer consulta al ract1
+        
+        listaAuxRact1=PAGCCompletosYNoAreaAdmin(reporte,aadid);
+        
+        reporte.setNumRact(2);//aqui cambie para sobreescribir y ahora hacer consulta al ract2
+        
+        listaAuxRact2=PAGCCompletosYNoAreaAdmin(reporte,aadid);
+        
+        reporte.setNumRact(3);//aqui cambie para sobreescribir y ahora hacer consulta al ract3
+        
+        listaAuxRact3=PAGCCompletosYNoAreaAdmin(reporte,aadid);
+        
+        listaAux=ordenarTodosRactsPAGCCompletosYNo(listaAuxRact1,listaAuxRact2,listaAuxRact3);
+                
+        return listaAux;
+    }
+    
     //metodo auxiliar para obtener por cada ract(*no en una sola linea) 
     //de todos los registros en ract(no por unico profesor, unidad
     //de aprendizaje y grupo)
@@ -5810,6 +6713,50 @@ public class FiltrosBeanHelper implements Serializable{
         //recorre la lista de Porcentaje Avance General Incompleto y lo une a la lista auxiliar que debe
         //tener la union de ambos
         for(ReporteAvanceAux ra: listaAuxPAGCAreaCon){            
+                        
+            reporteAvanceAux=ra;
+            reporteAvanceAux.setTipoReporteSelec("Incompleto");            
+            listaAux2.add(reporteAvanceAux);
+        }
+        
+        return listaAux2;
+    }
+    
+    //metodo auxiliar para obtener por cada ract(*no en una sola linea) 
+    //de todos los registros en ract(no por unico profesor, unidad
+    //de aprendizaje y grupo)
+    //para Area de conocimiento de ambos Porcentaje Avance General 
+    //Completo e *Incompleto*
+    public ArrayList PAGCCompletosYNoAreaAdmin(ReporteAux reporteUI,int aadid){
+                
+        init();        
+                
+        //listas donde se guardaran los Porcentaje Avance General Completo y los Icompletos y la lista temporal 
+        //donde esta la union de estas dos al finalizar el metodo
+        ArrayList<ReporteAvanceAux> listaAuxPAGCCompletoAreaAdmin;
+        ArrayList<ReporteAvanceAux> listaAuxPAGCAreaAdmin; 
+        ArrayList<ReporteAvanceAux> listaAux2=new ArrayList<ReporteAvanceAux>();
+        
+        ReporteAvanceAux reporteAvanceAux;
+                
+        //llama a los metodos de esta misma clase para Porcentaje Avance General Completo y los Icompletos
+        //mandandole el parametro de objeto recibido que tiene todos los atributos
+        //necesarios para la consulta al delegate y dao
+        listaAuxPAGCCompletoAreaAdmin=PAGCCompletoAreaAdmin(reporteUI,aadid);
+        listaAuxPAGCAreaAdmin=PAGCAreaAdmin(reporteUI,aadid);
+        
+        //recorre la lista de Porcentaje Avance General Completo y lo une a la lista auxiliar que debe
+        //tener la union de ambos
+        for(ReporteAvanceAux ra: listaAuxPAGCCompletoAreaAdmin){            
+                        
+            reporteAvanceAux=ra;
+            reporteAvanceAux.setTipoReporteSelec("Completo");            
+            listaAux2.add(reporteAvanceAux);
+        }
+        
+        //recorre la lista de Porcentaje Avance General Incompleto y lo une a la lista auxiliar que debe
+        //tener la union de ambos
+        for(ReporteAvanceAux ra: listaAuxPAGCAreaAdmin){            
                         
             reporteAvanceAux=ra;
             reporteAvanceAux.setTipoReporteSelec("Incompleto");            
@@ -6188,6 +7135,10 @@ public class FiltrosBeanHelper implements Serializable{
                  repRact1.setFechaLimiteRact2(null);
                  repRact1.setFechaLimiteRact3(null);
                  
+                 repRact1.setFechaCorteRact1(repRact1.fechaCorte);
+                 repRact1.setFechaCorteRact2(null);
+                 repRact1.setFechaCorteRact3(null);
+                 
                  repRact1.setTipoReporteSelecRact1(repRact1.tipoReporteSelec);
                  repRact1.setTipoReporteSelecRact2("Incompleto");
                  repRact1.setTipoReporteSelecRact3("Incompleto");
@@ -6216,6 +7167,10 @@ public class FiltrosBeanHelper implements Serializable{
                   repRact1.setFechaLimiteRact2(null);
                   //repRact1.setFechaLimiteRact3(repRact1.fechaLimite);
                   
+                  repRact1.setFechaCorteRact1(repRact1.fechaCorte);
+                  repRact1.setFechaCorteRact2(null);
+                  //repRact1.setFechaLimiteRact3(repRact1.fechaLimite);
+                  
                   repRact1.setTipoReporteSelecRact1(repRact1.tipoReporteSelec);
                   repRact1.setTipoReporteSelecRact2("Incompleto");
                   //repRact1.setTipoReporteSelecRact3("Incompleto");
@@ -6242,6 +7197,10 @@ public class FiltrosBeanHelper implements Serializable{
                       repRact1.setFechaLimiteRact1(repRact1.fechaLimite);
                       //repRact1.setFechaLimiteRact2(repRact1.fechaLimite);
                       repRact1.setFechaLimiteRact3(null);
+                      
+                      repRact1.setFechaCorteRact1(repRact1.fechaCorte);
+                      //repRact1.setFechaLimiteRact2(repRact1.fechaLimite);
+                      repRact1.setFechaCorteRact3(null);
                   
                       repRact1.setTipoReporteSelecRact1(repRact1.tipoReporteSelec);
                       //repRact1.setTipoReporteSelecRact2("Incompleto");
@@ -6472,6 +7431,9 @@ public class FiltrosBeanHelper implements Serializable{
                  repRact1.setFechaLimiteRact1(repRact1.fechaLimite);
                  repRact1.setFechaLimiteRact2(repRact2.fechaLimite);
                  
+                 repRact1.setFechaCorteRact1(repRact1.fechaCorte);
+                 repRact1.setFechaCorteRact2(repRact2.fechaCorte);
+                 
                  repRact1.setTipoReporteSelecRact1(repRact1.tipoReporteSelec);
                  repRact1.setTipoReporteSelecRact2(repRact2.tipoReporteSelec);
                  
@@ -6494,6 +7456,9 @@ public class FiltrosBeanHelper implements Serializable{
                  
                  repRact1.setFechaLimiteRact1(repRact1.fechaLimite);
                  repRact1.setFechaLimiteRact2(repRact2.fechaLimite);
+                 
+                 repRact1.setFechaCorteRact1(repRact1.fechaCorte);
+                 repRact1.setFechaCorteRact2(repRact2.fechaCorte);
                  
                  repRact1.setTipoReporteSelecRact1(repRact1.tipoReporteSelec);
                  repRact1.setTipoReporteSelecRact2("No entregado");
@@ -6530,6 +7495,9 @@ public class FiltrosBeanHelper implements Serializable{
                  repRact1.setFechaLimiteRact1(repRact1.fechaLimite);
                  repRact1.setFechaLimiteRact3(repRact3.fechaLimite);
                  
+                 repRact1.setFechaCorteRact1(repRact1.fechaCorte);
+                 repRact1.setFechaCorteRact3(repRact3.fechaCorte);
+                 
                  repRact1.setTipoReporteSelecRact1(repRact1.tipoReporteSelec);
                  repRact1.setTipoReporteSelecRact3(repRact3.tipoReporteSelec);
                  
@@ -6552,6 +7520,9 @@ public class FiltrosBeanHelper implements Serializable{
                  
                  repRact1.setFechaLimiteRact1(repRact1.fechaLimite);
                  repRact1.setFechaLimiteRact3(repRact3.fechaLimite);
+                 
+                 repRact1.setFechaCorteRact1(repRact1.fechaCorte);
+                 repRact1.setFechaCorteRact3(repRact3.fechaCorte);
                  
                  repRact1.setTipoReporteSelecRact1(repRact1.tipoReporteSelec);
                  repRact1.setTipoReporteSelecRact3("No entregado");
@@ -6619,6 +7590,10 @@ public class FiltrosBeanHelper implements Serializable{
                                     repRact2.setFechaLimiteRact2(repRact2.fechaLimite);
                                     repRact2.setFechaLimiteRact3(repRact3.fechaLimite);
                                     //repRact2.setFechaLimiteRact1(null);
+                                    
+                                    repRact2.setFechaCorteRact2(repRact2.fechaCorte);
+                                    repRact2.setFechaCorteRact3(repRact3.fechaCorte);
+                                    //repRact2.setFechaLimiteRact1(null);
 
                                     repRact2.setTipoReporteSelecRact2(repRact2.tipoReporteSelec);
                                     repRact2.setTipoReporteSelecRact3(repRact3.tipoReporteSelec);
@@ -6680,6 +7655,9 @@ public class FiltrosBeanHelper implements Serializable{
 
                         repRact2.setFechaLimiteRact2(repRact2.fechaLimite);
                         //repRact2.setFechaLimiteRact1(null);
+                        
+                        repRact2.setFechaCorteRact2(repRact2.fechaCorte);
+                        //repRact2.setFechaLimiteRact1(null);
 
                         repRact2.setTipoReporteSelecRact2(repRact2.tipoReporteSelec);
                         //repRact2.setTipoReporteSelecRact1("No entregado");
@@ -6710,6 +7688,9 @@ public class FiltrosBeanHelper implements Serializable{
                         //repRact2.setFechaElaboracRact1(null);
 
                         repRact3.setFechaLimiteRact3(repRact3.fechaLimite);
+                        //repRact2.setFechaLimiteRact1(null);
+                        
+                        repRact3.setFechaCorteRact3(repRact3.fechaCorte);
                         //repRact2.setFechaLimiteRact1(null);
 
                         repRact3.setTipoReporteSelecRact3(repRact3.tipoReporteSelec);
@@ -6993,6 +7974,47 @@ public class FiltrosBeanHelper implements Serializable{
     
     //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
     //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento
+    //para solo A Tiempo(comparando la fecha limite)
+    public ArrayList ATiempoAreaAdminTodosRacts(ReporteAux reporteUI,int aadid){        
+        init();  //este se ocupa siempre para refrescar los atributos y siempre sean nuevos y que requieres
+    
+        //listas donde se guardaran los Entregados A Tiempo  
+        //por el numero de ract que indica
+        ArrayList<ReporteAvanceAux> listaAuxRact1=new ArrayList<ReporteAvanceAux>();
+        ArrayList<ReporteAvanceAux> listaAuxRact2=new ArrayList<ReporteAvanceAux>();
+        ArrayList<ReporteAvanceAux> listaAuxRact3=new ArrayList<ReporteAvanceAux>();
+                
+        //objeto necesario para hacer la consulta del delegate en todas
+        //las capas hacia el dao, con los atributos necesarios para Entregados A Tiempo        
+        ReporteAux reporte=new ReporteAux();
+    
+        int cont=0;                        
+        
+        reporte = fijarAtributosReporte(reporteUI,"AreaCon");
+        
+        //atributos necesarios para Entregados A Tiempo
+        //en el objeto que se manda al delegate
+        reporte.setOp("ATiempoYNo");
+        reporte.setTipo("ATiempo");
+        reporte.setNumRact(1);//aqui cambie para consultar ract1
+           
+        listaAuxRact1=ATiempoAreaAdmin(reporte,aadid);
+        
+        reporte.setNumRact(2);//aqui cambie para sobreescribir y ahora hacer consulta al ract2
+        
+        listaAuxRact2=ATiempoAreaAdmin(reporte,aadid);
+        
+        reporte.setNumRact(3);//aqui cambie para sobreescribir y ahora hacer consulta al ract3
+        
+        listaAuxRact3=ATiempoAreaAdmin(reporte,aadid);
+        
+        listaAux=ordenarTodosRactsATiempoYNoYEnLimite(listaAuxRact1,listaAuxRact2,listaAuxRact3);        
+                
+        return listaAux;
+    }
+    
+    //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
+    //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento
     //para solo Fuera Tiempo(comparando la fecha limite)
     public ArrayList FueraTiempoAreaConTodosRacts(ReporteAux reporteUI){        
         init();  //este se ocupa siempre para refrescar los atributos y siempre sean nuevos y que requieres
@@ -7026,6 +8048,47 @@ public class FiltrosBeanHelper implements Serializable{
         reporte.setNumRact(3);//aqui cambie para sobreescribir y ahora hacer consulta al ract3
         
         listaAuxRact3=FueraTiempoAreaCon(reporte);
+        
+        listaAux=ordenarTodosRactsATiempoYNoYEnLimite(listaAuxRact1,listaAuxRact2,listaAuxRact3);
+                
+        return listaAux;
+    }
+    
+    //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
+    //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento
+    //para solo Fuera Tiempo(comparando la fecha limite)
+    public ArrayList FueraTiempoAreaAdminTodosRacts(ReporteAux reporteUI,int aadid){        
+        init();  //este se ocupa siempre para refrescar los atributos y siempre sean nuevos y que requieres
+    
+        //listas donde se guardaran los Entregados A Tiempo  
+        //por el numero de ract que indica
+        ArrayList<ReporteAvanceAux> listaAuxRact1=new ArrayList<ReporteAvanceAux>();
+        ArrayList<ReporteAvanceAux> listaAuxRact2=new ArrayList<ReporteAvanceAux>();
+        ArrayList<ReporteAvanceAux> listaAuxRact3=new ArrayList<ReporteAvanceAux>();
+                
+        //objeto necesario para hacer la consulta del delegate en todas
+        //las capas hacia el dao, con los atributos necesarios para Entregados A Tiempo        
+        ReporteAux reporte=new ReporteAux();
+    
+        int cont=0;                        
+        
+        reporte = fijarAtributosReporte(reporteUI,"AreaCon");
+        
+        //atributos necesarios para Entregados A Tiempo
+        //en el objeto que se manda al delegate
+        reporte.setOp("ATiempoYNo");
+        reporte.setTipo("ATiempo");
+        reporte.setNumRact(1);//aqui cambie para consultar ract1
+           
+        listaAuxRact1=FueraTiempoAreaAdmin(reporte,aadid);
+        
+        reporte.setNumRact(2);//aqui cambie para sobreescribir y ahora hacer consulta al ract2
+        
+        listaAuxRact2=FueraTiempoAreaAdmin(reporte,aadid);
+        
+        reporte.setNumRact(3);//aqui cambie para sobreescribir y ahora hacer consulta al ract3
+        
+        listaAuxRact3=FueraTiempoAreaAdmin(reporte,aadid);
         
         listaAux=ordenarTodosRactsATiempoYNoYEnLimite(listaAuxRact1,listaAuxRact2,listaAuxRact3);
                 
@@ -7117,6 +8180,49 @@ public class FiltrosBeanHelper implements Serializable{
         return listaAux;
     }
     
+    //metodo para obtener en una linea los 3 ract de la union de un mismo profesor con misma unidad de
+    //aprendizaje y mismo grupo(un solo registro en una sola linea) para Area de conocimiento
+    //para todos A Tiempo, En Fecha Limite y Despues de Fecha Limite(comparando la fecha limite)
+    public ArrayList ATiempoYNoYEnLimiteAreaAdminTodosRacts(ReporteAux reporteUI,int aadid){        
+        init();  //este se ocupa siempre para refrescar los atributos y siempre sean nuevos y que requieres
+    
+        //listas donde se guardaran los Entregados A Tiempo, Despues de fecha limite y en fecha limite  
+        //por el numero de ract que indica
+        ArrayList<ReporteAvanceAux> listaAuxRact1=new ArrayList<ReporteAvanceAux>();
+        ArrayList<ReporteAvanceAux> listaAuxRact2=new ArrayList<ReporteAvanceAux>();
+        ArrayList<ReporteAvanceAux> listaAuxRact3=new ArrayList<ReporteAvanceAux>();
+                
+        //objeto necesario para hacer la consulta del delegate en todas
+        //las capas hacia el dao, con los atributos necesarios para Entregados A Tiempo,
+        //Despues de fecha limite y en fecha limite
+        ReporteAux reporte=new ReporteAux();
+    
+        int cont=0;                        
+                
+        reporte = fijarAtributosReporte(reporteUI,"AreaCon");
+        
+        //atributos necesarios para Entregados A Tiempo, 
+        //Despues de fecha limite y en fecha limite
+        //en el objeto que se manda al delegate
+        reporte.setOp("ATiempoYNo");
+        reporte.setTipo("ATiempo");
+        reporte.setNumRact(1);//aqui cambie para consultar ract1
+       
+        listaAuxRact1=ATiempoYNoYEnLimiteAreaAdmin(reporte,aadid);
+        
+        reporte.setNumRact(2);//aqui cambie para sobreescribir y ahora hacer consulta al ract2
+        
+        listaAuxRact2=ATiempoYNoYEnLimiteAreaAdmin(reporte,aadid);
+        
+        reporte.setNumRact(3);//aqui cambie para sobreescribir y ahora hacer consulta al ract3
+        
+        listaAuxRact3=ATiempoYNoYEnLimiteAreaAdmin(reporte,aadid);
+        
+        listaAux=ordenarTodosRactsATiempoYNoYEnLimite(listaAuxRact1,listaAuxRact2,listaAuxRact3);
+                
+        return listaAux;
+    }
+    
     //metodo auxiliar para obtener por cada ract(*no en una sola linea) 
     //de todos los registros en ract(no por unico profesor, unidad
     //de aprendizaje y grupo)
@@ -7160,6 +8266,62 @@ public class FiltrosBeanHelper implements Serializable{
             reporteAvanceAux.setTipoReporteSelec("En fecha Limite");            
             listaAux2.add(reporteAvanceAux);
         }
+        
+        //recorre la lista de Entregados Despues fecha limite y lo une a la lista auxiliar que debe
+        //tener la union de ambos
+        for(ReporteAvanceAux ra: listaAuxFueraTiempo){            
+                        
+            reporteAvanceAux=ra;
+            reporteAvanceAux.setTipoReporteSelec("Despues fecha limite");            
+            listaAux2.add(reporteAvanceAux);
+        }
+        
+        return listaAux2;
+    }
+    
+    //metodo auxiliar para obtener por cada ract(*no en una sola linea) 
+    //de todos los registros en ract(no por unico profesor, unidad
+    //de aprendizaje y grupo)
+    //para Area de conocimiento de todos A Tiempo, En Fecha Limite, 
+    // Despues de Fecha Limite(comparando la fecha Limite)
+    public ArrayList ATiempoYNoYEnLimiteAreaAdmin(ReporteAux reporteUI,int aadid){        
+                
+        init();
+        
+        //listas donde se guardaran los Entregados A Tiempo, Despues de fecha limite y en fecha limite
+        //y la lista temporal donde esta la union de estas tres al finalizar el metodo
+        ArrayList<ReporteAvanceAux> listaAuxATiempo;
+        //ArrayList<ReporteAvanceAux> listaAuxEnFechaLimiteTiempo;        
+        ArrayList<ReporteAvanceAux> listaAuxFueraTiempo;
+        ArrayList<ReporteAvanceAux> listaAux2=new ArrayList<ReporteAvanceAux>();
+        
+        ReporteAvanceAux reporteAvanceAux;
+        
+        //llama a los metodos de esta misma clase para Entregados A Tiempo, 
+        //Despues de fecha limite y en fecha limite
+        //mandandole el parametro de objeto recibido que tiene todos los atributos
+        //necesarios para la consulta al delegate y dao
+        listaAuxATiempo=ATiempoAreaAdmin(reporteUI,aadid);
+        //listaAuxEnFechaLimiteTiempo=EnFechaLimiteTiempoAreaAdmin(reporteUI);
+        listaAuxFueraTiempo=FueraTiempoAreaAdmin(reporteUI,aadid);
+        
+        //recorre la lista de Entregados A Tiempo y lo une a la lista auxiliar que debe
+        //tener la union de ambos
+        for(ReporteAvanceAux ra: listaAuxATiempo){            
+                        
+            reporteAvanceAux=ra;
+            reporteAvanceAux.setTipoReporteSelec("A tiempo");            
+            listaAux2.add(reporteAvanceAux);
+        }        
+        
+//        //recorre la lista de Entregados En fecha limite y lo une a la lista auxiliar que debe
+//        //tener la union de ambos
+//        for(ReporteAvanceAux ra: listaAuxEnFechaLimiteTiempo){            
+//                        
+//            reporteAvanceAux=ra;
+//            reporteAvanceAux.setTipoReporteSelec("En fecha Limite");            
+//            listaAux2.add(reporteAvanceAux);
+//        }
         
         //recorre la lista de Entregados Despues fecha limite y lo une a la lista auxiliar que debe
         //tener la union de ambos
@@ -7763,6 +8925,78 @@ public class FiltrosBeanHelper implements Serializable{
     }
     
     //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
+    //para los entregados por Area de conocimiento segun los atributos de consulta
+    //de la especificación(Todo esto por un solo numero de Ract)
+    public ArrayList entregadosAreaAdmin(ReporteAux reporteUI,int aadid){
+        
+        init();
+        
+        //objeto que se pasa al delegate y este por las capas al dao
+        //que contiene los atributos necesarios para la consulta de entregados
+        //con el criteri(restricciones), necesita inicializarse asi los ceros y
+        //nulos de los atributos que no van a necesitar
+        ReporteAux reporte=new ReporteAux();
+        
+        int cont=0;      
+    
+        reporte = fijarAtributosReporte(reporteUI,"AreaCon");
+        
+        //se pasan al objeto reporte los atributos que necesita segun 
+        //tipo consulta de criteria en el dao
+        reporte.setOp("CompararAreaCon");
+        reporte.setTipo("Enviado");
+        
+        //llama el metodo desde el delegate hacia el dao para que realice la consulta
+        //de criteria segun los atributos que se le paso(restricciones) y este regresa
+        //una lista de tipo Reporteavancecontenidotematico que une 11 tablas con los 
+        //valores para presentar en el reporte en excel se obtienen estos valores con
+        //gets de una tabla a otra siguiendo el camino desde el primera a la enesima
+        //que estan unidas por este join
+        List<Reporteavancecontenidotematico> lista3=reporteAvanceContenidoTematicoDelegate.getReporteAvanceContenidoTematico(reporte);      
+                
+        //recupera cuantos valores(tuplas) encontro en la lista anterior
+        int cont2=lista3.size();
+                
+        float auxPAvance=0;
+        int auxUipid;
+        int auxNumRact;        
+        
+        //esta objeto raAux sirve para obtener en un ArrayList que devuelve al final
+        //este metodo donde ademas de la lista normal de esta consulta principal
+        //anterior se guardan otras variable o datos importantes por tupla o una
+        //sola linea para presentarlo asi en la vista o excel
+        ReporteAvanceAux raAux;
+        
+        List<Areaconocimiento> areaCon;
+        List<Coordinadorareaadministrativa> coordAreaAdmin;
+                
+        //este ciclo cuenta cuantos valores unicos hay por el id de
+        //unidadaprendizajeimparteprofesor(union de 3 id: profesor,
+        //unidad de aprendizaje y grupo) es la misma consulta y lista 
+        //al delegate anterior pero cuenta esta restriccion cuantos 
+        //entregados hay por cada id unidadaprendizajeimparteprofesor
+        for(Reporteavancecontenidotematico reporteAvance : lista3){          
+
+            areaCon=reporteAvanceContenidoTematicoDelegate.getAreaConocimiento(reporteAvance.getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave());
+            coordAreaAdmin=reporteAvanceContenidoTematicoDelegate.getCoordAreaAdminProfUAprend(reporteAvance.getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave(),reporteAvance.getUnidadaprendizajeImparteProfesor().getGrupo().getPlanestudio().getProgramaeducativo().getPedclave(),aadid);
+            if(!(coordAreaAdmin.isEmpty())){
+            //une en un ArrayList, la lista reporteAvance, cont2: cuantos valores de la
+            //consulta normal, cont: cuantos valores del id unidadaprendizajeimparteprofesor
+            //y *auxPAvance: cuanto fue el mayor porcentaje entregado en el mayor ract*(aqui no se usa)
+//            raAux=new ReporteAvanceAux(reporteAvance,cont,cont2,auxPAvance);
+            if(reporte.getAcoclave() == areaCon.get(0).getAcoclave() || reporte.getAcoclave() == 0){
+            raAux=new ReporteAvanceAux(reporteAvance,areaCon.get(0),cont2,auxPAvance,coordAreaAdmin.get(0).getProfesor().getPronombre()+" "+coordAreaAdmin.get(0).getProfesor().getProapellidoPaterno()+" "+coordAreaAdmin.get(0).getProfesor().getProapellidoMaterno(),coordAreaAdmin.get(0).getAreaadministrativa().getAadnombre());
+            listaAux.add(raAux);
+            }
+            }
+            cont=0;
+            auxPAvance=0;
+       } 
+        
+      return listaAux;
+    }
+    
+    //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
     //para los entregados por Unidad de aprendizaje con Grupo segun los atributos de consulta
     //de la especificación(Todo esto por un solo numero de Ract)
     public ArrayList entregadosUAGrupo(ReporteAux reporteUI){
@@ -8175,6 +9409,154 @@ public class FiltrosBeanHelper implements Serializable{
     }
     
     //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
+    //para los no entregados por Area de conocimiento segun los atributos de consulta
+    //de la especificación(Todo esto por un solo numero de Ract)
+    public ArrayList noEntregadosAreaAdmin(ReporteAux reporteUI,int aadid){
+        
+        init();
+        
+        //objeto que se pasa al delegate y este por las capas al dao
+        //que contiene los atributos necesarios para la consulta de no entregados
+        //con el criteri(restricciones), necesita inicializarse asi los ceros y
+        //nulos de los atributos que no van a necesitar
+        ReporteAux reporte=new ReporteAux();
+        
+        int cont=0;        
+            
+        reporte = fijarAtributosReporte(reporteUI,"AreaCon");
+        
+        //se pasan al objeto reporte los atributos que necesita segun 
+        //tipo consulta de criteria en el dao
+        reporte.setOp("CompararAreaCon");
+        reporte.setTipo("Parcial");
+        
+        //llama el metodo desde el delegate hacia el dao para que realice la consulta
+        //de criteria segun los atributos que se le paso(restricciones) y este regresa
+        //una lista de tipo Reporteavancecontenidotematico que une 11 tablas con los 
+        //valores para presentar en el reporte en excel se obtienen estos valores con
+        //gets de una tabla a otra siguiendo el camino desde el primera a la enesima
+        //que estan unidas por este join
+        List<Reporteavancecontenidotematico> lista3=reporteAvanceContenidoTematicoDelegate.getReporteAvanceContenidoTematico(reporte);      
+                
+        //recupera cuantos valores(tuplas) encontro en la lista anterior
+        int cont2=lista3.size();
+                
+        float auxPAvance=0;
+        int auxUipid;
+        int auxNumRact;        
+        
+        //esta objeto raAux sirve para obtener en un ArrayList que devuelve al final
+        //este metodo donde ademas de la lista normal de esta consulta principal
+        //anterior se guardan otras variable o datos importantes por tupla o una
+        //sola linea para presentarlo asi en la vista o excel
+        ReporteAvanceAux raAux;
+                
+        List<Areaconocimiento> areaCon;
+        List<Coordinadorareaadministrativa> coordAreaAdmin;
+                
+        //este ciclo cuenta cuantos valores unicos hay por el id de
+        //unidadaprendizajeimparteprofesor(union de 3 id: profesor,
+        //unidad de aprendizaje y grupo) es la misma consulta y lista 
+        //al delegate anterior pero cuenta esta restriccion cuantos 
+        //entregados hay por cada id unidadaprendizajeimparteprofesor
+        for(Reporteavancecontenidotematico reporteAvance : lista3){          
+
+            areaCon=reporteAvanceContenidoTematicoDelegate.getAreaConocimiento(reporteAvance.getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave());
+            coordAreaAdmin=reporteAvanceContenidoTematicoDelegate.getCoordAreaAdminProfUAprend(reporteAvance.getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave(),reporteAvance.getUnidadaprendizajeImparteProfesor().getGrupo().getPlanestudio().getProgramaeducativo().getPedclave(),aadid);
+            if(!(coordAreaAdmin.isEmpty())){
+            //une en un ArrayList, la lista reporteAvance, cont2: cuantos valores de la
+            //consulta normal, cont: cuantos valores del id unidadaprendizajeimparteprofesor
+            //y *auxPAvance: cuanto fue el mayor porcentaje entregado en el mayor ract*(aqui no se usa)
+//            raAux=new ReporteAvanceAux(reporteAvance,cont,cont2,auxPAvance);
+            if(reporte.getAcoclave() == areaCon.get(0).getAcoclave() || reporte.getAcoclave() == 0){
+            raAux=new ReporteAvanceAux(reporteAvance,areaCon.get(0),cont2,auxPAvance,coordAreaAdmin.get(0).getProfesor().getPronombre()+" "+coordAreaAdmin.get(0).getProfesor().getProapellidoPaterno()+" "+coordAreaAdmin.get(0).getProfesor().getProapellidoMaterno(),coordAreaAdmin.get(0).getAreaadministrativa().getAadnombre());
+            listaAux.add(raAux);
+            }
+            }
+            cont=0;
+            auxPAvance=0;
+       } 
+        
+         //nuevo no entregado vacio
+        
+        //esta parte es para la consulta de no entregado vacio es decir
+        //que tiene registro en unidadaprendizajeimparteprofesor pero no
+        //tiene registro(o ningun ract) en reporteavancecontenidotematico
+        //se le mandan los atributos necesarios para la consulta de criteria
+        //al delegate y de ahi al dao igual con objeto nuevo de reporte
+        //para inicializar con ceros o nulos los atributos que no se necesitan
+        reporte=new ReporteAux();
+            
+        //atributos necesarios para la consulta de no entregado vacio
+        reporte.setOp("NoEntregadoVacio");
+        //reporte.setNumRact(numRact);
+        reporte.setCescicloEscolar(cescicloEscolar);
+        reporte.setAcoclave(acoclave);
+        reporte.setClavepe(clavepe);
+        reporte.setPesvigencia(pesvigencia);
+        reporte.setClave(clavepe);
+    
+        //llama al metodo del delegate y al dao para la consulta de no entregado vacio
+        List<UnidadaprendizajeImparteProfesor> lista11=reporteAvanceContenidoTematicoDelegate.getUnidadaprendizajeImparteProfesor(reporte);
+       
+        List<Reporteavancecontenidotematico> lista12;            
+              
+        Reporteavancecontenidotematico ravanceAux2=new Reporteavancecontenidotematico();
+        
+        //recorre la lista de no entregado vacio y la compara con la que
+        //si incluye reporteavancecontenidotematico para saber que el ract no esta presente
+        for(UnidadaprendizajeImparteProfesor uaip: lista11){
+            
+            reporte=new ReporteAux();
+            
+            reporte.setOp("EnviadosYParciales");
+            reporte.setNumProfUIPid(uaip.getUipid());
+            reporte.setNumRact(numRact);
+            
+            lista12=reporteAvanceContenidoTematicoDelegate.getReporteAvanceContenidoTematico(reporte);
+            
+            //si no encuentra el id de unidadaprendizajeimparteprofesor agrega la
+            //materia y profesor lo convierte de tipo reporteavancecontenidotematico
+            //con valors vacios o nulos para que si tenga un registro y si presente
+            //por lo menos estos datos y se tenga contemplado en la consulta
+            if(lista12.isEmpty()){
+                
+                ravanceAux2=new Reporteavancecontenidotematico();
+                                                
+                ravanceAux2.setRacnumero(""+numRact);
+                ravanceAux2.setRacstatus(null);
+                ravanceAux2.setRacfechaElaboracion(null);
+                ravanceAux2.setRacavanceGlobal(0);
+                ravanceAux2.setUnidadaprendizajeImparteProfesor(uaip);
+                
+                areaCon=reporteAvanceContenidoTematicoDelegate.getAreaConocimiento(uaip.getUnidadaprendizaje().getUapclave());
+                coordAreaAdmin=reporteAvanceContenidoTematicoDelegate.getCoordAreaAdminProfUAprend(uaip.getUnidadaprendizaje().getUapclave(),uaip.getGrupo().getPlanestudio().getProgramaeducativo().getPedclave(),aadid);
+                if(!(coordAreaAdmin.isEmpty())){
+                //areaCon=reporteAvanceContenidoTematicoDelegate.getAreaConocimiento(uaip.getUnidadaprendizaje().getUapclave());
+                
+                //if(reporte.getAcoclave() == areaCon.get(0).getAcoclave() || reporte.getAcoclave() == 0){
+                if(areaCon.isEmpty()){
+                //raAux=new ReporteAvanceAux(ravanceAux2,null,0,0,0);
+                raAux=new ReporteAvanceAux(ravanceAux2,null,0,0,coordAreaAdmin.get(0).getProfesor().getPronombre()+" "+coordAreaAdmin.get(0).getProfesor().getProapellidoPaterno()+" "+coordAreaAdmin.get(0).getProfesor().getProapellidoMaterno(),coordAreaAdmin.get(0).getAreaadministrativa().getAadnombre());    
+                listaAux.add(raAux);
+                }else{
+                    if(areaCon.get(0).getAcoclave() == acoclave || acoclave == 0){
+                    //raAux=new ReporteAvanceAux(ravanceAux2,areaCon.get(0),0,0,0);
+                    raAux=new ReporteAvanceAux(ravanceAux2,areaCon.get(0),0,0,coordAreaAdmin.get(0).getProfesor().getPronombre()+" "+coordAreaAdmin.get(0).getProfesor().getProapellidoPaterno()+" "+coordAreaAdmin.get(0).getProfesor().getProapellidoMaterno(),coordAreaAdmin.get(0).getAreaadministrativa().getAadnombre());
+                    listaAux.add(raAux);
+                    }                    
+                }
+                }
+                
+                //}
+            }               
+            
+        }        
+                     
+        return listaAux;
+    }
+    
+    //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
     //para los no entregados por Unidad de aprendizaje con Grupo segun los atributos de consulta
     //de la especificación(Todo esto por un solo numero de Ract)
     public ArrayList noEntregadosUAGrupo(ReporteAux reporteUI){
@@ -8533,6 +9915,51 @@ public class FiltrosBeanHelper implements Serializable{
         
         //agrega a la misma lista principal los no entregados
         for(ReporteAvanceAux ra: listaAuxNoEntregadosAreaCon){            
+                        
+            reporteAvanceAux=ra;
+            reporteAvanceAux.setTipoReporteSelec("No entregado");            
+            listaAux2.add(reporteAvanceAux);
+            
+        }
+        
+        return listaAux2;
+    }
+    
+    //metodo que une los entregados y no entregados por un solo numero de
+    //ract *no por una sola linea los tres racts de un mismo id de 
+    //unidadaprendizajeimparteprofesor
+    public ArrayList entregadosYNoEntregadosAreaAdmin(ReporteAux reporteUI,int aadid){        
+        //objeto que esta inicializado a ceros o nulos los atributos
+        //que no necesita y posteriormente se guardan con los set los
+        //atributos que se van a necesitar
+        ReporteAux reporte=new ReporteAux();
+        
+        init();
+        
+        reporte = fijarAtributosReporte(reporteUI,"AreaCon");
+        
+        ArrayList<ReporteAvanceAux> listaAuxEntregadosAreaAdmin;
+        ArrayList<ReporteAvanceAux> listaAuxNoEntregadosAreaAdmin;
+        ArrayList<ReporteAvanceAux> listaAux2=new ArrayList<ReporteAvanceAux>();
+        
+        ReporteAvanceAux reporteAvanceAux;
+                
+        //hace dos listas llamando los metodos de entregados en una
+        //y no entregados en otra
+        listaAuxEntregadosAreaAdmin=entregadosAreaAdmin(reporteUI,aadid);
+        listaAuxNoEntregadosAreaAdmin=noEntregadosAreaAdmin(reporteUI,aadid);
+        
+        //agrega a la lista principal los entregados
+        for(ReporteAvanceAux ra: listaAuxEntregadosAreaAdmin){            
+                        
+            reporteAvanceAux=ra;
+            reporteAvanceAux.setTipoReporteSelec("Entregado");            
+            listaAux2.add(reporteAvanceAux);
+            
+        }
+        
+        //agrega a la misma lista principal los no entregados
+        for(ReporteAvanceAux ra: listaAuxNoEntregadosAreaAdmin){            
                         
             reporteAvanceAux=ra;
             reporteAvanceAux.setTipoReporteSelec("No entregado");            
@@ -8929,6 +10356,159 @@ public class FiltrosBeanHelper implements Serializable{
             }
             }
             
+            cont=0;
+            auxPAvance=0;
+       }         
+              
+        return listaAux;
+    }
+    
+    //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
+    //para Porcentaje Avance General *Incompleto* por Area de conocimiento
+    //segun los atributos de consulta de la especificación
+    //(Todo esto por un solo numero de Ract)
+    public ArrayList PAGCAreaAdmin(ReporteAux reporteUI,int aadid){        
+        init();
+        
+        //objeto que se pasa al delegate y este por las capas al dao
+        //que contiene los atributos necesarios para la consulta de Porcentaje de
+        //Avance General Incompleto
+        //con el criteri(restricciones), necesita inicializarse asi los ceros y
+        //nulos de los atributos que no van a necesitar
+        ReporteAux reporte=new ReporteAux();
+        
+        int cont=0;        
+          
+        reporte = fijarAtributosReporte(reporteUI,"AreaCon");
+        
+        //se pasan al objeto reporte los atributos que necesita segun 
+        //tipo consulta de criteria en el dao
+        reporte.setOp("CompararAreaCon");
+        reporte.setTipo("EnviadoYParcial");
+       
+        //llama el metodo desde el delegate hacia el dao para que realice la consulta
+        //de criteria segun los atributos que se le paso(restricciones) y este regresa
+        //una lista de tipo Reporteavancecontenidotematico que une 11 tablas con los 
+        //valores para presentar en el reporte en excel se obtienen estos valores con
+        //gets de una tabla a otra siguiendo el camino desde el primera a la enesima
+        //que estan unidas por este join
+        List<Reporteavancecontenidotematico> lista3=reporteAvanceContenidoTematicoDelegate.getReporteAvanceContenidoTematico(reporte);      
+        
+        //recupera cuantos valores(tuplas) encontro en la lista anterior
+        int cont2=lista3.size();
+                
+        float auxPAvance=0;
+        int auxUipid;
+        int auxNumRact;
+        
+        //esta objeto raAux sirve para obtener en un ArrayList que devuelve al final
+        //este metodo donde ademas de la lista normal de esta consulta principal
+        //anterior se guardan otras variable o datos importantes por tupla o una
+        //sola linea para presentarlo asi en la vista o excel
+        ReporteAvanceAux raAux;
+                
+        List<Areaconocimiento> areaCon;
+        List<Coordinadorareaadministrativa> coordAreaAdmin;
+                
+        //este ciclo cuenta cuantos valores unicos hay por el id de
+        //unidadaprendizajeimparteprofesor(union de 3 id: profesor,
+        //unidad de aprendizaje y grupo) es la misma consulta y lista 
+        //al delegate anterior pero cuenta esta restriccion cuantos 
+        //entregados hay por cada id unidadaprendizajeimparteprofesor
+        for(Reporteavancecontenidotematico reporteAvance : lista3){          
+
+            areaCon=reporteAvanceContenidoTematicoDelegate.getAreaConocimiento(reporteAvance.getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave());
+            coordAreaAdmin=reporteAvanceContenidoTematicoDelegate.getCoordAreaAdminProfUAprend(reporteAvance.getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave(),reporteAvance.getUnidadaprendizajeImparteProfesor().getGrupo().getPlanestudio().getProgramaeducativo().getPedclave(),aadid);
+            if(!(coordAreaAdmin.isEmpty())){
+            //une en un ArrayList, la lista reporteAvance, cont2: cuantos valores de la
+            //consulta normal, cont: cuantos valores del id unidadaprendizajeimparteprofesor
+            //y *auxPAvance: cuanto fue el mayor porcentaje entregado en el mayor ract*(aqui no se usa)
+            
+            //en esta parte se recorre individualmente cada ract(3ro, 2do o 1ero)
+            // y segun el id de unidadaprendizajeimparteprofesor encuentra el porcentaje
+            //que le corresponde para despues comparar cada numero de ract por el mismo
+            //profesor con misma unidadaprendizaje y grupo para saber y calcular despues
+            //el mayor porcentaje alcanzado de este            
+            auxNumRact=3;
+            
+            reporte=new ReporteAux();
+            
+            reporte.setOp("PorcentAvanceSolo");
+            reporte.setTipo("EnviadoYParcial");
+            reporte.setNumRact(auxNumRact);
+            reporte.setCescicloEscolar(cescicloEscolar);
+            reporte.setAcoclave(acoclave);
+            reporte.setClavepe(clavepe);
+            reporte.setPesvigencia(pesvigencia);
+            reporte.setNumProfUIPid(reporteAvance.getUnidadaprendizajeImparteProfesor().getUipid());
+            reporte.setClave(clavepe);
+            
+            List<Reporteavancecontenidotematico> lista6=reporteAvanceContenidoTematicoDelegate.getReporteAvanceContenidoTematico(reporte);            
+                        
+            //se calcula el porcentaje ahora ract2 por id unidadaprendizajeimparteprofesor
+            auxNumRact=2;
+            
+            reporte=new ReporteAux();
+            
+            reporte.setOp("PorcentAvanceSolo");
+            reporte.setTipo("EnviadoYParcial");
+            reporte.setNumRact(auxNumRact);
+            reporte.setCescicloEscolar(cescicloEscolar);
+            reporte.setAcoclave(acoclave);
+            reporte.setClavepe(clavepe);
+            reporte.setPesvigencia(pesvigencia);
+            reporte.setNumProfUIPid(reporteAvance.getUnidadaprendizajeImparteProfesor().getUipid());
+            reporte.setClave(clavepe);
+            
+            List<Reporteavancecontenidotematico> lista7=reporteAvanceContenidoTematicoDelegate.getReporteAvanceContenidoTematico(reporte);                       
+                     
+            //se calcula el porcentaje ahora ract1 por id unidadaprendizajeimparteprofesor
+            auxNumRact=1;
+            
+            reporte=new ReporteAux();
+            
+            reporte.setOp("PorcentAvanceSolo");
+            reporte.setTipo("EnviadoYParcial");
+            reporte.setNumRact(auxNumRact);
+            reporte.setCescicloEscolar(cescicloEscolar);
+            reporte.setAcoclave(acoclave);
+            reporte.setClavepe(clavepe);
+            reporte.setPesvigencia(pesvigencia);
+            reporte.setNumProfUIPid(reporteAvance.getUnidadaprendizajeImparteProfesor().getUipid());
+            reporte.setClave(clavepe);
+            
+            List<Reporteavancecontenidotematico> lista8=reporteAvanceContenidoTematicoDelegate.getReporteAvanceContenidoTematico(reporte);            
+
+            //compara la lista6 que contiene el porcentaje del ract3 junto con
+            //compara la lista7 que contiene el porcentaje del ract2 junto con
+            //compara la lista8 que contiene el porcentaje del ract1
+            //solo toma en auxPAvance el valor del procentaje mayor por id
+            // de unidadprendizajeimparteprofesor
+            if(lista6.size()>0){
+                auxPAvance=lista6.get(0).getRacavanceGlobal();
+            }else{
+                if(lista7.size()>0){
+                    auxPAvance=lista7.get(0).getRacavanceGlobal();
+                }else{
+                    if(lista8.size()>0){
+                        auxPAvance=lista8.get(0).getRacavanceGlobal();
+                    }
+                }
+            }            
+                       
+            //une en un ArrayList, la lista reporteAvance, cont2: cuantos valores de la
+            //consulta normal, cont: cuantos valores del id unidadaprendizajeimparteprofesor
+            //y *auxPAvance: cuanto fue el mayor porcentaje entregado en el mayor ract*
+            if(reporte.getAcoclave() == areaCon.get(0).getAcoclave() || reporte.getAcoclave() == 0){
+            raAux=new ReporteAvanceAux(reporteAvance,areaCon.get(0),cont,cont2,auxPAvance,coordAreaAdmin.get(0).getProfesor().getPronombre()+" "+coordAreaAdmin.get(0).getProfesor().getProapellidoPaterno()+" "+coordAreaAdmin.get(0).getProfesor().getProapellidoMaterno(),coordAreaAdmin.get(0).getAreaadministrativa().getAadnombre());
+            
+            //solo guarda los valores en la lista cuando no alcanzaron el 100% en el
+            //mayor ract que son los Porcentaje Avance Global Incompleto
+            if(auxPAvance!=100){
+            listaAux.add(raAux);
+            }
+            }
+            }
             cont=0;
             auxPAvance=0;
        }         
@@ -9558,6 +11138,161 @@ public class FiltrosBeanHelper implements Serializable{
     }
     
     //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
+    //para Porcentaje Avance General Completo por Area de conocimiento
+    //segun los atributos de consulta de la especificación
+    //(Todo esto por un solo numero de Ract)
+    public ArrayList PAGCCompletoAreaAdmin(ReporteAux reporteUI,int aadid){
+        
+        init();
+        
+        //objeto que se pasa al delegate y este por las capas al dao
+        //que contiene los atributos necesarios para la consulta de Porcentaje de
+        //Avance General Completo
+        //con el criteri(restricciones), necesita inicializarse asi los ceros y
+        //nulos de los atributos que no van a necesitar
+        ReporteAux reporte=new ReporteAux();
+        
+        int cont=0;        
+        
+        reporte = fijarAtributosReporte(reporteUI,"AreaCon");
+        
+        //se pasan al objeto reporte los atributos que necesita segun 
+        //tipo consulta de criteria en el dao
+        reporte.setOp("CompararAreaCon");
+        reporte.setTipo("EnviadoYParcial");
+        
+        //llama el metodo desde el delegate hacia el dao para que realice la consulta
+        //de criteria segun los atributos que se le paso(restricciones) y este regresa
+        //una lista de tipo Reporteavancecontenidotematico que une 11 tablas con los 
+        //valores para presentar en el reporte en excel se obtienen estos valores con
+        //gets de una tabla a otra siguiendo el camino desde el primera a la enesima
+        //que estan unidas por este join
+        List<Reporteavancecontenidotematico> lista3=reporteAvanceContenidoTematicoDelegate.getReporteAvanceContenidoTematico(reporte);      
+        
+        //recupera cuantos valores(tuplas) encontro en la lista anterior
+        int cont2=lista3.size();
+               
+        float auxPAvance=0;
+        int auxUipid;
+        int auxNumRact;
+        
+        //esta objeto raAux sirve para obtener en un ArrayList que devuelve al final
+        //este metodo donde ademas de la lista normal de esta consulta principal
+        //anterior se guardan otras variable o datos importantes por tupla o una
+        //sola linea para presentarlo asi en la vista o excel
+        ReporteAvanceAux raAux;
+               
+        List<Areaconocimiento> areaCon;
+        List<Coordinadorareaadministrativa> coordAreaAdmin;
+                
+        //este ciclo cuenta cuantos valores unicos hay por el id de
+        //unidadaprendizajeimparteprofesor(union de 3 id: profesor,
+        //unidad de aprendizaje y grupo) es la misma consulta y lista 
+        //al delegate anterior pero cuenta esta restriccion cuantos 
+        //entregados hay por cada id unidadaprendizajeimparteprofesor
+        for(Reporteavancecontenidotematico reporteAvance : lista3){          
+
+            areaCon=reporteAvanceContenidoTematicoDelegate.getAreaConocimiento(reporteAvance.getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave());
+            coordAreaAdmin=reporteAvanceContenidoTematicoDelegate.getCoordAreaAdminProfUAprend(reporteAvance.getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave(),reporteAvance.getUnidadaprendizajeImparteProfesor().getGrupo().getPlanestudio().getProgramaeducativo().getPedclave(),aadid);
+            if(!(coordAreaAdmin.isEmpty())){
+            //une en un ArrayList, la lista reporteAvance, cont2: cuantos valores de la
+            //consulta normal, cont: cuantos valores del id unidadaprendizajeimparteprofesor
+            //y *auxPAvance: cuanto fue el mayor porcentaje entregado en el mayor ract*(aqui no se usa)
+            
+            //en esta parte se recorre individualmente cada ract(3ro, 2do o 1ero)
+            // y segun el id de unidadaprendizajeimparteprofesor encuentra el porcentaje
+            //que le corresponde para despues comparar cada numero de ract por el mismo
+            //profesor con misma unidadaprendizaje y grupo para saber y calcular despues
+            //el mayor porcentaje alcanzado de este            
+            auxNumRact=3;
+            
+            reporte=new ReporteAux();
+            
+            reporte.setOp("PorcentAvanceSolo");
+            reporte.setTipo("EnviadoYParcial");
+            reporte.setNumRact(auxNumRact);
+            reporte.setCescicloEscolar(cescicloEscolar);
+            reporte.setAcoclave(acoclave);
+            reporte.setClavepe(clavepe);
+            reporte.setPesvigencia(pesvigencia);
+            reporte.setNumProfUIPid(reporteAvance.getUnidadaprendizajeImparteProfesor().getUipid());
+            reporte.setClave(clavepe);
+            
+            List<Reporteavancecontenidotematico> lista6=reporteAvanceContenidoTematicoDelegate.getReporteAvanceContenidoTematico(reporte);            
+                        
+            //se calcula el porcentaje ahora ract2 por id unidadaprendizajeimparteprofesor
+            auxNumRact=2;
+            
+            reporte=new ReporteAux();
+            
+            reporte.setOp("PorcentAvanceSolo");
+            reporte.setTipo("EnviadoYParcial");
+            reporte.setNumRact(auxNumRact);
+            reporte.setCescicloEscolar(cescicloEscolar);
+            reporte.setAcoclave(acoclave);
+            reporte.setClavepe(clavepe);
+            reporte.setPesvigencia(pesvigencia);
+            reporte.setNumProfUIPid(reporteAvance.getUnidadaprendizajeImparteProfesor().getUipid());
+            reporte.setClave(clavepe);
+            
+            List<Reporteavancecontenidotematico> lista7=reporteAvanceContenidoTematicoDelegate.getReporteAvanceContenidoTematico(reporte);            
+                                    
+            //se calcula el porcentaje ahora ract1 por id unidadaprendizajeimparteprofesor
+            auxNumRact=1;
+            
+            reporte=new ReporteAux();
+            
+            reporte.setOp("PorcentAvanceSolo");
+            reporte.setTipo("EnviadoYParcial");
+            reporte.setNumRact(auxNumRact);
+            reporte.setCescicloEscolar(cescicloEscolar);
+            reporte.setAcoclave(acoclave);
+            reporte.setClavepe(clavepe);
+            reporte.setPesvigencia(pesvigencia);
+            reporte.setNumProfUIPid(reporteAvance.getUnidadaprendizajeImparteProfesor().getUipid());
+            reporte.setClave(clavepe);
+            
+            List<Reporteavancecontenidotematico> lista8=reporteAvanceContenidoTematicoDelegate.getReporteAvanceContenidoTematico(reporte);            
+            
+            //compara la lista6 que contiene el porcentaje del ract3 junto con
+            //compara la lista7 que contiene el porcentaje del ract2 junto con
+            //compara la lista8 que contiene el porcentaje del ract1
+            //solo toma en auxPAvance el valor del procentaje mayor por id
+            // de unidadprendizajeimparteprofesor
+            if(lista6.size()>0){
+                auxPAvance=lista6.get(0).getRacavanceGlobal();
+            }else{
+                if(lista7.size()>0){
+                    auxPAvance=lista7.get(0).getRacavanceGlobal();
+                }else{
+                    if(lista8.size()>0){
+                        auxPAvance=lista8.get(0).getRacavanceGlobal();
+                    }
+                }
+            }            
+                   
+            //une en un ArrayList, la lista reporteAvance, cont2: cuantos valores de la
+            //consulta normal, cont: cuantos valores del id unidadaprendizajeimparteprofesor
+            //y *auxPAvance: cuanto fue el mayor porcentaje entregado en el mayor ract*
+//            raAux=new ReporteAvanceAux(reporteAvance,cont,cont2,auxPAvance);
+            if(reporte.getAcoclave() == areaCon.get(0).getAcoclave() || reporte.getAcoclave() == 0){
+            raAux=new ReporteAvanceAux(reporteAvance,areaCon.get(0),cont2,auxPAvance,coordAreaAdmin.get(0).getProfesor().getPronombre()+" "+coordAreaAdmin.get(0).getProfesor().getProapellidoPaterno()+" "+coordAreaAdmin.get(0).getProfesor().getProapellidoMaterno(),coordAreaAdmin.get(0).getAreaadministrativa().getAadnombre());
+            
+            //solo guarda los valores en la lista cuando alcanzaron el 100% en el
+            //mayor ract que son los Porcentaje Avance Global Completo
+            if(auxPAvance==100){
+            listaAux.add(raAux);
+            }
+            }
+            }
+            cont=0;
+            auxPAvance=0;
+       }        
+              
+        return listaAux;
+    }
+    
+    //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
     //para Porcentaje Avance General Completo por Unidad de aprendizaje con Grupo
     //segun los atributos de consulta de la especificación
     //(Todo esto por un solo numero de Ract)
@@ -9973,6 +11708,51 @@ public class FiltrosBeanHelper implements Serializable{
     //este metodo une los Porcentaje Avance Global Completo con Incompleto
     //por un solo numero de ract, *no en una sola linea los tres ract por 
     //id de unidadaprendizajeimparteprofesor
+    public ArrayList PAGCCompletoEIncompletoAreaAdmin(ReporteAux reporteUI,int aadid){
+        
+        ReporteAux reporte=new ReporteAux();
+        
+        init();
+        
+        reporte = fijarAtributosReporte(reporteUI,"AreaCon");
+        
+        ArrayList<ReporteAvanceAux> listaAuxPAGCCompleto;
+        ArrayList<ReporteAvanceAux> listaAuxPAGCIncompleto;        
+        ArrayList<ReporteAvanceAux> listaAux2=new ArrayList<ReporteAvanceAux>();
+        
+        ReporteAvanceAux reporteAvanceAux;
+                
+        //hace las consultas para Porcentaje Avance Global Completo
+        //en una lista y Porcentaje Avance Global Incompleto(*PAGC*) en
+        //otra lista
+        listaAuxPAGCCompleto=PAGCCompletoAreaAdmin(reporteUI,aadid);
+        listaAuxPAGCIncompleto=PAGCAreaAdmin(reporteUI,aadid);
+                
+        //une en la lista principal los Porcentaje Avance Global Completo
+        for(ReporteAvanceAux ra: listaAuxPAGCCompleto){
+                        
+            reporteAvanceAux=ra;
+            reporteAvanceAux.setTipoReporteSelec("Completo");            
+            listaAux2.add(reporteAvanceAux);
+            
+        }
+        
+        //une en la misma lista principal los Porcentaje Avance 
+        //Global Incompleto(*PAGC*)
+        for(ReporteAvanceAux ra: listaAuxPAGCIncompleto){            
+                        
+            reporteAvanceAux=ra;
+            reporteAvanceAux.setTipoReporteSelec("Incompleto");            
+            listaAux2.add(reporteAvanceAux);
+            
+        }
+        
+        return listaAux2;
+    }
+    
+    //este metodo une los Porcentaje Avance Global Completo con Incompleto
+    //por un solo numero de ract, *no en una sola linea los tres ract por 
+    //id de unidadaprendizajeimparteprofesor
     public ArrayList PAGCCompletoEIncompletoUAGrupo(ReporteAux reporteUI){
         
         ReporteAux reporte=new ReporteAux();
@@ -10142,6 +11922,9 @@ public class FiltrosBeanHelper implements Serializable{
         reporte.setOp("ATiempoYNo");
         reporte.setTipo("ATiempo");
         reporte.setFecha1(fechaLimite);
+        //tal vez no se necesita
+        //reporte.setFecha2(fechaCorte);
+        //tal vez no se necesita
     
         //llama el metodo desde el delegate hacia el dao para que realice la consulta
         //de criteria segun los atributos que se le paso(restricciones) y este regresa
@@ -10319,6 +12102,144 @@ public class FiltrosBeanHelper implements Serializable{
             listaAux.add(raAux);
             }
             
+            cont=0;
+            auxPAvance=0;
+       } 
+        
+        return listaAux;
+    }
+    
+    //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
+    //para A Tiempo(comparando la fecha límite por numero de ract y ciclo escolar) 
+    //por Area de conocimiento segun los atributos de consulta de la especificación
+    //(Todo esto por un solo numero de Ract)
+    public ArrayList ATiempoAreaAdmin(ReporteAux reporteUI,int aadid){
+        
+        init();
+        
+        int cont=0;
+        
+        //objeto que se pasa al delegate y este por las capas al dao
+        //que contiene los atributos necesarios para la consulta de Entregados 
+        //A Tiempo
+        //con el criteri(restricciones), necesita inicializarse asi los ceros y
+        //nulos de los atributos que no van a necesitar
+        ReporteAux reporte=new ReporteAux();      
+        
+        //toma esta clase solo los atributos que necesita que son
+        //los que posteriormente le pasa al objeto reporte que necesita
+        //inicializarse para que los atributos que no necesita sean ceros
+        //o nulos y los ignore el metodo del dao
+        setNumRact(reporteUI.getNumRact());                  
+        setCescicloEscolar(reporteUI.getCescicloEscolar());  
+                
+        reporte=new ReporteAux();
+        
+        reporte.setOp("ConfigSet");
+        
+        //tipo de consulta del delegate al dao obtiene las tablas desde configuración
+        List<Configuracion> lista10=reporteAvanceContenidoTematicoDelegate.getConfiguracion(reporte);
+        
+        //lista para unir id de configuracion con el id correspondiente de calendario reporte
+        List<Calendarioreporte> listaCalendario;
+        
+        Date fechaCorte=null;
+        Date fechaLimite=null;
+        
+        //lista para unir id de calendarioreporte con el id correspondiente de calendarioreportetienealerta
+        List<CalendarioreporteTieneAlerta> lista7;
+        
+        //recorre la lista de configuracion y compara el ciclo escolar del objeto reporteUI que viene del
+        //beanUI con el ciclo escolar que le corresponde a la consulta o criteria de configuración
+        for(Configuracion con: lista10){
+            if (con.getCicloescolar().getCescicloEscolar().equalsIgnoreCase(cescicloEscolar) ) {
+                //busca el id de configuración en una lista con criteria o consulta de calendarioreporte
+                listaCalendario=reporteAvanceContenidoTematicoDelegate.getCalendarioreporte(con.getConfechaInicioSemestre());
+       
+               
+                for (Calendarioreporte cr : listaCalendario) {
+                    
+                    reporte=new ReporteAux();
+                    
+                    reporte.setOp("CalendReportTieneAlerta");
+                    
+                    reporte.setCreid(cr.getCreid());
+                    reporte.setCalnumeroReporte(numRact);
+               
+                    //busca por numero de ract en calendarioreportetienealerta el numero correspondiente
+                    //de id de la lista o criteria consultada de calendario reporte
+                    //*todas estas uniones son para no usar los set de las tablas por medio de un
+                    //query de join(en estas tres partes coincidan por el mismo id que las une)*
+                    lista7 =reporteAvanceContenidoTematicoDelegate.getCalendarioreporteTieneAlerta(reporte);
+
+                    if(lista7.size()>0){
+                        
+                    //toma la fecha correspondiente de todas las uniones correspondientes al
+                    //numero ract con el ciclo escolar y plan de estudios correcto
+                    fechaCorte = lista7.get(0).getCalendarioreporte().getCrefechaCorte();
+                    fechaLimite = lista7.get(0).getCalendarioreporte().getCrefechaLimite();
+                    
+                    }
+                }   
+            }
+        }
+        
+        reporte = new ReporteAux();
+        
+        reporte = fijarAtributosReporte(reporteUI,"AreaCon");
+                
+        //se pasan al objeto reporte los atributos que necesita segun 
+        //tipo consulta de criteria en el dao
+        reporte.setOp("ATiempoYNo");
+        reporte.setTipo("ATiempo");
+        reporte.setFecha1(fechaLimite);
+
+        //llama el metodo desde el delegate hacia el dao para que realice la consulta
+        //de criteria segun los atributos que se le paso(restricciones) y este regresa
+        //una lista de tipo Reporteavancecontenidotematico que une 11 tablas con los 
+        //valores para presentar en el reporte en excel se obtienen estos valores con
+        //gets de una tabla a otra siguiendo el camino desde el primera a la enesima
+        //que estan unidas por este join
+        List<Reporteavancecontenidotematico> lista3=reporteAvanceContenidoTematicoDelegate.getReporteAvanceContenidoTematico(reporte);        
+        
+        //recupera cuantos valores(tuplas) encontro en la lista anterior
+        int cont2=lista3.size();
+        
+        float auxPAvance=0;
+        int auxUipid;
+        int auxNumRact;
+        
+        //esta objeto raAux sirve para obtener en un ArrayList que devuelve al final
+        //este metodo donde ademas de la lista normal de esta consulta principal
+        //anterior se guardan otras variable o datos importantes por tupla o una
+        //sola linea para presentarlo asi en la vista o excel
+        ReporteAvanceAux raAux;
+        listaAux=new ArrayList<ReporteAvanceAux>();
+        
+        int cont3;
+        int cont4;
+        
+        List<Areaconocimiento> areaCon;
+        List<Coordinadorareaadministrativa> coordAreaAdmin;
+                
+        //este ciclo cuenta cuantos valores unicos hay por el id de
+        //unidadaprendizajeimparteprofesor(union de 3 id: profesor,
+        //unidad de aprendizaje y grupo) es la misma consulta y lista 
+        //al delegate anterior pero cuenta esta restriccion cuantos 
+        //entregados hay por cada id unidadaprendizajeimparteprofesor
+        for(Reporteavancecontenidotematico reporteAvance : lista3){          
+
+            areaCon=reporteAvanceContenidoTematicoDelegate.getAreaConocimiento(reporteAvance.getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave());
+            coordAreaAdmin=reporteAvanceContenidoTematicoDelegate.getCoordAreaAdminProfUAprend(reporteAvance.getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave(),reporteAvance.getUnidadaprendizajeImparteProfesor().getGrupo().getPlanestudio().getProgramaeducativo().getPedclave(),aadid);
+            if(!(coordAreaAdmin.isEmpty())){
+            //une en un ArrayList, la lista reporteAvance, cont2: cuantos valores de la
+            //consulta normal, cont: cuantos valores del id unidadaprendizajeimparteprofesor
+            //y *auxPAvance: cuanto fue el mayor porcentaje entregado en el mayor ract*(aqui no se usa)
+            if(reporte.getAcoclave() == areaCon.get(0).getAcoclave() || reporte.getAcoclave() == 0){
+            raAux=new ReporteAvanceAux(reporteAvance,areaCon.get(0),cont2,auxPAvance,fechaCorte,fechaLimite,coordAreaAdmin.get(0).getProfesor().getPronombre()+" "+coordAreaAdmin.get(0).getProfesor().getProapellidoPaterno()+" "+coordAreaAdmin.get(0).getProfesor().getProapellidoMaterno(),coordAreaAdmin.get(0).getAreaadministrativa().getAadnombre());
+            listaAux.add(raAux);
+            }
+            }
             cont=0;
             auxPAvance=0;
        } 
@@ -10856,6 +12777,142 @@ public class FiltrosBeanHelper implements Serializable{
             listaAux.add(raAux);
             }
             
+            cont=0;
+            auxPAvance=0;
+       } 
+        
+        return listaAux;
+    }
+    
+    //metodo para hacer la consulta o join(criteria del dao por todas las capas) 
+    //para "Despues de fecha límite"(comparando la fecha límite por numero de ract y ciclo escolar) 
+    //por Area de conocimiento segun los atributos de consulta de la especificación
+    //(Todo esto por un solo numero de Ract)
+    public ArrayList FueraTiempoAreaAdmin(ReporteAux reporteUI,int aadid){        
+        init();
+        
+        int cont=0;
+        
+        //objeto que se pasa al delegate y este por las capas al dao
+        //que contiene los atributos necesarios para la consulta de Entregados 
+        //Despues de fecha limite
+        //con el criteri(restricciones), necesita inicializarse asi los ceros y
+        //nulos de los atributos que no van a necesitar
+        ReporteAux reporte=new ReporteAux();        
+        
+        //toma esta clase solo los atributos que necesita que son
+        //los que posteriormente le pasa al objeto reporte que necesita
+        //inicializarse para que los atributos que no necesita sean ceros
+        //o nulos y los ignore el metodo del dao
+        setNumRact(reporteUI.getNumRact());                  
+        setCescicloEscolar(reporteUI.getCescicloEscolar());  
+                
+        reporte=new ReporteAux();
+        
+        reporte.setOp("ConfigSet");
+        
+        //tipo de consulta del delegate al dao obtiene las tablas desde configuración
+        List<Configuracion> lista10=reporteAvanceContenidoTematicoDelegate.getConfiguracion(reporte);
+        
+        //lista para unir id de configuracion con el id correspondiente de calendario reporte
+        List<Calendarioreporte> listaCalendario;
+        
+        Date fechaCorte=null;
+        Date fechaLimite=null;
+        
+        //lista para unir id de calendarioreporte con el id correspondiente de calendarioreportetienealerta
+        List<CalendarioreporteTieneAlerta> lista7;
+        
+        //recorre la lista de configuracion y compara el ciclo escolar del objeto reporteUI que viene del
+        //beanUI con el ciclo escolar que le corresponde a la consulta o criteria de configuración
+        for(Configuracion con: lista10){
+            if (con.getCicloescolar().getCescicloEscolar().equalsIgnoreCase(cescicloEscolar) ) {
+                //busca el id de configuración en una lista con criteria o consulta de calendarioreporte
+                listaCalendario=reporteAvanceContenidoTematicoDelegate.getCalendarioreporte(con.getConfechaInicioSemestre());       
+               
+                for (Calendarioreporte cr : listaCalendario) {
+                    
+                    reporte=new ReporteAux();
+                    
+                    reporte.setOp("CalendReportTieneAlerta");
+                    
+                    reporte.setCreid(cr.getCreid());
+                    reporte.setCalnumeroReporte(numRact);
+               
+                    //busca por numero de ract en calendarioreportetienealerta el numero correspondiente
+                    //de id de la lista o criteria consultada de calendario reporte
+                    //*todas estas uniones son para no usar los set de las tablas por medio de un
+                    //query de join(en estas tres partes coincidan por el mismo id que las une)*
+                    lista7 =reporteAvanceContenidoTematicoDelegate.getCalendarioreporteTieneAlerta(reporte);
+
+                    if(lista7.size()>0){
+        
+                    //toma la fecha correspondiente de todas las uniones correspondientes al
+                    //numero ract con el ciclo escolar y plan de estudios correcto    
+                    fechaCorte = lista7.get(0).getCalendarioreporte().getCrefechaCorte();
+                    fechaLimite = lista7.get(0).getCalendarioreporte().getCrefechaLimite();
+                    
+                    }
+                }   
+            }
+        }                              
+        
+        reporte = new ReporteAux();
+        
+        reporte = fijarAtributosReporte(reporteUI,"AreaCon");
+                
+        //se pasan al objeto reporte los atributos que necesita segun 
+        //tipo consulta de criteria en el dao
+        reporte.setOp("ATiempoYNo");
+        reporte.setTipo("FueraTiempo");
+        reporte.setFecha1(fechaLimite);
+        
+        //llama el metodo desde el delegate hacia el dao para que realice la consulta
+        //de criteria segun los atributos que se le paso(restricciones) y este regresa
+        //una lista de tipo Reporteavancecontenidotematico que une 11 tablas con los 
+        //valores para presentar en el reporte en excel se obtienen estos valores con
+        //gets de una tabla a otra siguiendo el camino desde el primera a la enesima
+        //que estan unidas por este join
+        List<Reporteavancecontenidotematico> lista3=reporteAvanceContenidoTematicoDelegate.getReporteAvanceContenidoTematico(reporte);                
+               
+        //recupera cuantos valores(tuplas) encontro en la lista anterior
+        int cont2=lista3.size();
+        
+        float auxPAvance=0;
+        int auxUipid;
+        int auxNumRact;        
+        
+        //esta objeto raAux sirve para obtener en un ArrayList que devuelve al final
+        //este metodo donde ademas de la lista normal de esta consulta principal
+        //anterior se guardan otras variable o datos importantes por tupla o una
+        //sola linea para presentarlo asi en la vista o excel
+        ReporteAvanceAux raAux;
+        listaAux=new ArrayList<ReporteAvanceAux>();
+        
+        int cont3;
+        int cont4;
+        
+        List<Areaconocimiento> areaCon;
+        List<Coordinadorareaadministrativa> coordAreaAdmin;
+                
+        //este ciclo cuenta cuantos valores unicos hay por el id de
+        //unidadaprendizajeimparteprofesor(union de 3 id: profesor,
+        //unidad de aprendizaje y grupo) es la misma consulta y lista 
+        //al delegate anterior pero cuenta esta restriccion cuantos 
+        //entregados hay por cada id unidadaprendizajeimparteprofesor
+        for(Reporteavancecontenidotematico reporteAvance : lista3){          
+
+            areaCon=reporteAvanceContenidoTematicoDelegate.getAreaConocimiento(reporteAvance.getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave());
+            coordAreaAdmin=reporteAvanceContenidoTematicoDelegate.getCoordAreaAdminProfUAprend(reporteAvance.getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave(),reporteAvance.getUnidadaprendizajeImparteProfesor().getGrupo().getPlanestudio().getProgramaeducativo().getPedclave(),aadid);
+            if(!(coordAreaAdmin.isEmpty())){
+            //une en un ArrayList, la lista reporteAvance, cont2: cuantos valores de la
+            //consulta normal, cont: cuantos valores del id unidadaprendizajeimparteprofesor
+            //y *auxPAvance: cuanto fue el mayor porcentaje entregado en el mayor ract*(aqui no se usa)
+            if(reporte.getAcoclave() == areaCon.get(0).getAcoclave() || reporte.getAcoclave() == 0){
+            raAux=new ReporteAvanceAux(reporteAvance,areaCon.get(0),cont2,auxPAvance,fechaCorte,fechaLimite,coordAreaAdmin.get(0).getProfesor().getPronombre()+" "+coordAreaAdmin.get(0).getProfesor().getProapellidoPaterno()+" "+coordAreaAdmin.get(0).getProfesor().getProapellidoMaterno(),coordAreaAdmin.get(0).getAreaadministrativa().getAadnombre());
+            listaAux.add(raAux);
+            }
+            }
             cont=0;
             auxPAvance=0;
        } 
@@ -11786,6 +13843,14 @@ public class FiltrosBeanHelper implements Serializable{
     public void setCreid(int creid) {
         this.creid = creid;
     }
+
+    public int getAadid() {
+        return aadid;
+    }
+
+    public void setAadid(int aadid) {
+        this.aadid = aadid;
+    }
             
     public ReporteavancecontenidotematicoDelegate getReporteAvanceContenidoTematicoDelegate() {
         return reporteAvanceContenidoTematicoDelegate;
@@ -11815,5 +13880,5 @@ public class FiltrosBeanHelper implements Serializable{
         this.planEstudioDelegate = planEstudioDelegate;
     } 
     //agregue aqui jesus ruelas
-    
+
 }

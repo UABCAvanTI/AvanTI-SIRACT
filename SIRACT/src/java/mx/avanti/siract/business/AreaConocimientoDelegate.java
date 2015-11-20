@@ -74,4 +74,9 @@ public class AreaConocimientoDelegate implements Serializable {
          public List<Areaconocimiento> getAreaMismoPlan(int idPlan){
         return ServiceFacadeLocator.getInstanceFacadeAreaConocimiento().getAreaMismoPlan(idPlan);
     } 
+         
+             public List<Areaconocimiento> getAreaPorUA(int uaid) {
+        return ServiceFacadeLocator.getInstanceFacadeAreaConocimiento().getAreaPorUA(uaid);        
+    }
+
 }

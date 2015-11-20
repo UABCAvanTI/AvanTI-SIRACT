@@ -97,13 +97,17 @@ public class FacadeProgramaEducativo {
         return listaPE;
     }
     
-      public Programaeducativo getPEdeResponsable(int profResponsableId){
+
+    
+    public Programaeducativo getPEdeResponsable(int profResponsableId){
         List<Programaeducativo> listaPE = null;
         ServiceLocator.getInstanceBaseDAO().setTipo(Programaeducativo.class);
-        listaPE = ServiceLocator.getInstanceBaseDAO().findFromWhere("Programaeducativo","profesor", "proid", String.valueOf(profResponsableId));
+        listaPE = ServiceLocator.getInstanceBaseDAO().findFromWhere("Programaeducativo","profesors_1", "proid", String.valueOf(profResponsableId));
+        if(listaPE==null||listaPE.size()<1){
+         return null;   
+        }
         return listaPE.get(0);
     }
-      
        public Programaeducativo getPEdeUA(int uaId){
         List<Programaeducativo> listaPE = null;
         ServiceLocator.getInstanceBaseDAO().setTipo(Programaeducativo.class);
@@ -210,17 +214,41 @@ public class FacadeProgramaEducativo {
 //    }  
 
 //Responsable de PE
-     public Programaeducativo getResponsablePE(int proid){
+//     public Programaeducativo getResponsablePE(int proid){
+//        List<Programaeducativo> listaPE = null;
+//        ServiceLocator.getInstanceBaseDAO().setTipo(Programaeducativo.class);
+//        listaPE = ServiceLocator.getInstanceBaseDAO().findFromWhere("profesors", "proid", String.valueOf(proid));
+//        return listaPE.get(0);
+//    }
+         public List<Programaeducativo> getResponsablePE(int proid){
         List<Programaeducativo> listaPE = null;
         ServiceLocator.getInstanceBaseDAO().setTipo(Programaeducativo.class);
-        listaPE = ServiceLocator.getInstanceBaseDAO().findFromWhere("profesors", "proid", String.valueOf(proid));
-        return listaPE.get(0);
+        listaPE = ServiceLocator.getInstanceBaseDAO().findFromWhere("profesors_1", "proid", String.valueOf(proid));
+        return listaPE;
     }
      
       public List<Programaeducativo> findByUnidadAcademicaClave(int claveUnidad){
         List<Programaeducativo> result = null;
         result = ServiceLocator.getInstanceProgramaeducativo().findByCriteriaClave(claveUnidad);
         return result;
+    }
+
+    public List<Programaeducativo> getPEperteneceProf(int proid){
+        List<Programaeducativo> listaPE = null;
+        ServiceLocator.getInstanceBaseDAO().setTipo(Programaeducativo.class);
+        listaPE = ServiceLocator.getInstanceBaseDAO().findFromWhere("profesors", "proid", String.valueOf(proid));
+        return listaPE;
+    }
+    
+        //Metodos Nuevos
+    public List<Programaeducativo> getPEdeCoordinadorAreaAdmin(int profResponsableId){
+        List<Programaeducativo> listaPE = null;
+        ServiceLocator.getInstanceBaseDAO().setTipo(Programaeducativo.class);
+        listaPE = ServiceLocator.getInstanceBaseDAO().findFromWhere("Programaeducativo","areaadministrativas c join c.coordinadorareaadministrativas","profesor.proid", String.valueOf(profResponsableId));
+        if(listaPE==null||listaPE.size()<1){
+         return null;   
+        }
+        return listaPE;
     }
 
 

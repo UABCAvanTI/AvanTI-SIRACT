@@ -158,4 +158,61 @@ public class FacadeAreaConocimiento {
         result = ServiceLocator.getInstanceAreaconocimiento().findByProgramaEducativo(idPrograma);
         return result;
     }
+          
+              public List<Areaconocimiento> getAreaPorUA(int uaid) {
+        List<Areaconocimiento> listaArea = null;
+        ServiceLocator.getInstanceBaseDAO().setTipo(Areaconocimiento.class);
+        listaArea = ServiceLocator.getInstanceBaseDAO().findFromWhere("unidadaprendizajes", "uapid", String.valueOf(uaid));
+        return listaArea;
+    }
+              
+              public List<Areaconocimiento> getAreasByPlanYProgramaeducativoRPE(int idPlan,String idProgramaEducativo,String proId){
+         List<Areaconocimiento> result = null;
+       ServiceLocator.getInstanceBaseDAO().setTipo(Areaconocimiento.class);
+        result = ServiceLocator.getInstanceBaseDAO().findFromWhere("Areaconocimiento","planestudio.programaeducativo.profesors_1", "proid='"+proId+"' AND a.planestudio","'"+idPlan+"' ORDER BY aconombre");
+        return result;
+    }
+    
+    public List<Areaconocimiento> getAreasByProgramaeducativoRPE(String idProgramaEducativo,String proId){
+         List<Areaconocimiento> result = null;
+       ServiceLocator.getInstanceBaseDAO().setTipo(Areaconocimiento.class);
+        result = ServiceLocator.getInstanceBaseDAO().findFromWhere("Areaconocimiento","planestudio.programaeducativo.profesors_1", "proid='"+proId+"' AND a.planestudio.programaeducativo.pedid ","'"+idProgramaEducativo+"' ORDER BY aconombre");
+        return result;
+    }
+     public List<Areaconocimiento> getAreasByRPE(String proId){
+         List<Areaconocimiento> result = null;
+       ServiceLocator.getInstanceBaseDAO().setTipo(Areaconocimiento.class);
+        result = ServiceLocator.getInstanceBaseDAO().findFromWhere("Areaconocimiento","planestudio.programaeducativo.profesors_1", "proid","'"+proId+"' ORDER BY aconombre");
+        return result;
+}
+     
+     //Metodos Nuevos
+              public List<Areaconocimiento> getAreasByCoordinadorAreaAdmin(String idProgramaEducativo,String proId){
+         List<Areaconocimiento> result = null;
+       ServiceLocator.getInstanceBaseDAO().setTipo(Areaconocimiento.class);
+        result = ServiceLocator.getInstanceBaseDAO().findFromWhere("planestudio","unidadaprendizajes c join c.coordinadorareaadministrativas" ,"profesor.proid="+proId+" AND a.programaeducativo.pedid ","'"+idProgramaEducativo+"' order by aconombre");
+        return result;
+    }
+              public List<Areaconocimiento> getAreasByPlanYProgramaeducativoCAA(int idPlan,String idProgramaEducativo,String proId){
+         List<Areaconocimiento> result = null;
+       ServiceLocator.getInstanceBaseDAO().setTipo(Areaconocimiento.class);
+
+        result = ServiceLocator.getInstanceBaseDAO().findFromWhere("Areaconocimiento","planestudio.programaeducativo.areaadministrativas d join d.coordinadorareaadministrativas c join a.planestudio.programaeducativo.profesors_1",
+                "proid='"+proId+"' AND a.planestudio='"+idPlan+"' AND "+
+                        "c.profesor.proid","'"+proId+"' ORDER BY aconombre");
+        return result;
+    }
+              public List<Areaconocimiento> getAreasByProgramaeducativoCAA(String idProgramaEducativo,String proId){
+         List<Areaconocimiento> result = null;
+       ServiceLocator.getInstanceBaseDAO().setTipo(Areaconocimiento.class);
+        result = ServiceLocator.getInstanceBaseDAO().findFromWhere("Areaconocimiento","planestudio.programaeducativo.areaadministrativas d join d.coordinadorareaadministrativas","profesor.proid='"+proId+"' AND "+
+                 "a.planestudio.programaeducativo.pedid ","'"+idProgramaEducativo+"' ORDER BY aconombre");
+        return result;
+    }
+              public List<Areaconocimiento> getAreasByCAA(String proId){
+         List<Areaconocimiento> result = null;
+       ServiceLocator.getInstanceBaseDAO().setTipo(Areaconocimiento.class);
+        result = ServiceLocator.getInstanceBaseDAO().findFromWhere("Areaconocimiento","planestudio.programaeducativo.areaadministrativas d join d.coordinadorareaadministrativas", "profesor.proid","'"+proId+"' ORDER BY aconombre");
+        return result;
+    }
 }
