@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<!-- Generated 17-ago-2015 14:50:32 by Hibernate Tools 3.6.0 -->
+<hibernate-mapping>
+    <class name="mx.avanti.siract.business.entity.Subtemaunidad" table="subtemaunidad" catalog="siract">
+        <id name="sutid" type="java.lang.Integer">
+            <column name="SUTid" />
+            <generator class="identity" />
+        </id>
+        <many-to-one name="temaunidad" class="mx.avanti.siract.business.entity.Temaunidad" fetch="select">
+            <column name="TemaUnidad_TUNid" not-null="true" />
+        </many-to-one>
+        <property name="sutnumero" type="string">
+            <column name="SUTnumero" length="10" not-null="true" />
+        </property>
+        <property name="sutnombre" type="string">
+            <column name="SUTnombre" length="120" not-null="true" />
+        </property>
+        <property name="sutvalorPorcentaje" type="float">
+            <column name="SUTvalorPorcentaje" precision="12" scale="0" not-null="true" />
+        </property>
+        <property name="suthoras" type="java.lang.Float">
+            <column name="SUThoras" precision="12" scale="0" />
+        </property>
+    </class>
+</hibernate-mapping>

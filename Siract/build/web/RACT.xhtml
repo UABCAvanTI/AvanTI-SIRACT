@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+               template="/Template/MasterTemplate.xhtml" > 
+    <ui:define name="contenido">
+    <f:view contentType="text/html">  
+
+        <h:head>
+            <h:outputStylesheet name="Style.css" library="css"/>
+
+            <!--Script para poder anidar tablas expandibles -->
+            <script type="text/javascript">
+                var siteFunctions = {
+                    //patch to fix a problem that the context menu disappears after update
+                    //delay the show to occure after the update 
+                    patchContextMenuShow: function() {
+                        'use strict';
+                        var protShow = PrimeFaces.widget.ContextMenu.prototype.show;
+                        siteFunctions.patchContextMenuShow.lastEvent = null;
+                        PrimeFaces.widget.ContextMenu.prototype.show = function(e) {
+                            var ret;
+                            if (e) {
+
+//                console.log('saving last event');
+
+                                siteFunctions.patchContextMenuShow.lastEvent = e;
+                                siteFunctions.patchContextMenuShow.lastEventArg = arguments;
+                                siteFunctions.patchContextMenuShow.lastEventContext = this;
+                            } else if (siteFunctions.patchContextMenuShow.lastEvent) {
+
+//                console.log('executing last event');
+
+                                ret = protShow.apply(siteFunctions.patchContextMenuShow.lastEventContext, siteFunctions.patchContextMenuShow.lastEventArg);
+
+//                console.log('clearing last event');
+                                siteFunctions.patchContextMenuShow.lastEvent = null;
+                            }
+                            return ret;
+                        };
+                    }
+                };
+
+                $(document).ready(function() {
+                    'use strict';
+                    try {
+                        siteFunctions.patchContextMenuShow();
+                    } catch (e) {
+                        console.error(e);
+                    }
+                });
+
+                function sincronizar(valor) {
+                    document.getElementById("formId:observacion").value = valor;
+                }   
+                                
+                //Funcion utilizada para actualizar etiqueta porcentaje desde el BackBean
+                function avance(porcentaje){
+                    document.getElementById("formId:actualizarAvance").click();
+                }
+                
+                function pop(){
+                }
+                
+            </script>
+            
+            
+            <f:facet  name="first">
+                <meta content='text/html; charset=UTF-8' http-equiv="Content-Type"/>
+                <title>Unidad academica</title> 
+            </f:facet>
+        </h:head>
+        <h:body>
+            <center>
+                <h:form id="formId" styleClass="formulario" style="width: 80%" rendered="#{loginBean.tienePermiso}">
+                    <!--Se preciona desde el BackBean para actualizar el porcentaje de avance -->
+                    <p:commandButton style="display: none;visibility: hidden" value="" id="actualizarAvance" update="formId:cAvance :formId:ge :formId:gs  " />
+                    <p:growl id="growl" showDetail="true" life="5000" />                    
+                    
+                    <!--Esta etiqueta mustra el nombre del profesor-->
+                    <!--
+                    <p:outputLabel id="profesor" value="Bienvenid@ #{rACTBeanUI.nombreProfesor}"></p:outputLabel>
+                    -->
+                    <p:fieldset legend="Reporte de avance de contenido temático" styleClass="myFieldset" style="width: 100%">
+                        <p:outputPanel >
+                            <div>
+                                <p:panelGrid styleClass="mypanelgrid" columnClasses="centered">
+                                    <p:row>           
+                                        <p:column colspan="2" styleClass="esquina">
+                                            <b> Programa educativo: </b>
+                                            <h:selectOneMenu id="selectProgramaEducativo"  value="#{rACTBeanUI.programaEducativoSeleccionado}" style="width: 400px">
+                                                <f:selectItem itemValue="00"
+                                                              itemLabel="-- Seleccione una opción  --"/> 
+                                                <f:selectItems value="#{rACTBeanUI.programasEducativos}" var="programa"
+                                                               itemValue="#{programa.pedid}"
+                                                               itemLabel="#{programa.pednombre}"/> 
+                                                <p:ajax event="valueChange" listener="#{rACTBeanUI.onSelectPE()}" update="formId:UnidadesAprendisaje 
+                                                        formId:gs cAvance formId:ge formId:imprimir UnidadesAprendisaje unidades arbol tableContextMenu tablaPDF  " />
+
+                                            </h:selectOneMenu>
+                                        </p:column>
+                                        <p:column styleClass="superior">
+                                            <span><b>Fecha: </b></span>
+                                            <p:outputLabel id="fecha" value="#{rACTBeanUI.fechaActual}"></p:outputLabel>
+                                        </p:column>
+                                        <p:column styleClass="superior">
+
+                                            <span><b>Ciclo escolar: </b></span>
+                                            <p:outputLabel value="#{rACTBeanUI.cicloEscolar}"></p:outputLabel>
+
+                                        </p:column>
+                                        <p:column rowspan="2" styleClass="avance">
+                                            <center><h3 id="identificador"><span><b>Avance global: </b></span><br></br>
+                                                    <p:outputLabel  value="#{rACTBeanUI.porcentajeAvance}" id="cAvance"></p:outputLabel></h3></center>
+                                        </p:column>
+                                    </p:row>
+                                    <p:row >
+                                        <p:column  colspan="2">
+                                            <span><b>Unidad de aprendizaje: </b></span>
+                                            <h:selectOneMenu  id="UnidadesAprendisaje" value="#{rACTBeanUI.unidadAprendizajeSeleccionada}"  style="width: 380px" disabled="#{rACTBeanUI.disable}" >
+                                                <f:selectItem itemValue="00"
+                                                              itemLabel="-- Seleccione una Opción-- " /> 
+                                                <f:selectItems id="select" value="#{rACTBeanUI.getUnidadesaprendisajeConGrupo()}" 
+                                                               var="profe"
+                                                               itemValue="#{profe.uapid}"
+                                                               itemLabel="#{profe.uapnombre} " />
+                                                <p:ajax event="valueChange" listener="#{rACTBeanUI.onSelectUA()}"  update="formId:gs  formId:ge formId:imprimir formId:cAvance 
+                                                        unidades arbol tableContextMenu formId:arbol:numeroReporte tablaPDF" />                                                
+                                            </h:selectOneMenu>  
+                                        </p:column>
+
+                                        <p:column>
+                                            <span><b>Clave: </b></span>
+                                            <p:outputLabel id="unidades" value="#{rACTBeanUI.claveUnidadAprendizajeSeleccionada}"></p:outputLabel>
+                                        </p:column>
+                                        
+                                        <p:column>
+                                            <span><b>Número de empleado: </b></span>
+                                            <p:outputLabel id="numEmp" value="#{rACTBeanUI.profesor.pronumeroEmpleado}"></p:outputLabel>
+                                        </p:column>
+                                    </p:row>
+                                </p:panelGrid>
+                                <br></br>
+                                <p:contextMenu id="tableContextMenu" for="arbol" widgetVar="tableContextMenuWV" />
+                                
+                                <h:inputTextarea value="#{rACTBeanUI.observacion}" id="observacion" rows="6" cols="33" style="display: none;" />
+                                <p:messages id="message" for="validarEnviado" />
+                                <p:treeTable value="#{rACTBeanUI.pintarArbol()}" var="raiz" emptyMessage="Seleccione los conceptos para realizar su reporte de avance contenido temático."
+                                             selectionMode="#{rACTBeanUI.unselectOnEnviado()}" selection="#{rACTBeanUI.selectedNodes}"
+                                             id="arbol" style="max-width: 1200px!important;" > 
+
+                                    <p:ajax event="select" listener="#{rACTBeanUI.onNodeSelect}" update=":formId:cAvance :formId:gs :formId:ge "/>
+                                    <p:ajax event="unselect" listener="#{rACTBeanUI.onNodeUnselect}" update=" :formId:cAvance :formId:gs :formId:ge"/>
+                                    
+                          
+                                    <f:facet name="header"  >
+                                        <!-- Reporte #1 -->
+                                        <h:outputLabel id="numeroReporte" value="#{rACTBeanUI.numeroReporte}"></h:outputLabel>
+                                    </f:facet>
+
+                                    <p:column style="width: 500px!important;">
+
+                                        <f:facet name="header">
+                                            Nombre de la unidad
+                                        </f:facet>
+                                        <p:graphicImage name="imagenes/check.png" width="20" height="20" rendered="#{rACTBeanUI.selectableToImage(raiz)}"/>
+                                        <h:outputText style="white-space: pre-line" escape="false" value="#{raiz.numero}. #{raiz.nombre}&#10;"  />
+                                    </p:column>
+
+                                    <p:column style="width:100px!important" >
+                                        <f:facet name="header">
+                                            Horas
+                                        </f:facet>
+                                        <h:outputText value="#{rACTBeanUI.horasAFormato(raiz.horas)}" />
+                                    </p:column>
+                                    <p:column style="width:100px!important">
+                                        <f:facet name="header">
+                                            Porcentaje de avance
+                                        </f:facet>
+                                        <h:outputText value="#{rACTBeanUI.dosDecimales(raiz.porcentajeAvance)}" />
+                                    </p:column>
+                                    <p:column style="width:100px!important">
+                                        <f:facet name="header">
+                                            Observaciones
+                                        </f:facet>
+                                        <center>   
+                                            <p:commandButton ajax="true" actionListener ="#{rACTBeanUI.prepararObservacion(raiz)}" process="@this" update=":formId:textObservacion" id="obsPanel"  oncomplete="PF('panelObservacion').show()" styleClass="invisible" icon="#{rACTBeanUI.observacionVacia(raiz)}" title="Observación" />
+                                                              
+                                        </center>
+                                    </p:column>
+                                    <f:facet name="footer">
+                                    </f:facet>
+                                </p:treeTable>
+                                                                
+                                <!--PARTE DEL DIALOGO DE OBSERVACIONES-->
+                                <!--Opcional cambiarlo a dialog-->
+                                <!--<p:overlayPanel for=":formId:arbol:obsPanel" widgetVar="panelObservacion" showEffect="fade" hideEffect="fade" dismissable="false" showCloseIcon="true">-->
+                                <p:dialog  resizable="false" widgetVar="panelObservacion" showEffect="fade" hideEffect="fade" header="Notas" >
+                                    
+                                    <center>
+                                      <h:outputText id="contadorh" />
+                                      <br/>
+                                        <p:inputTextarea id="textObservacion" maxlength="250" onfocus="this.value = this.value;" counter="contadorh" counterTemplate="Caracteres disponibles {0} de 250 " onkeyup="sincronizar(this.value)" value="#{rACTBeanUI.observacion}"  rows="6" cols="33" style="overflow:auto;border-bottom: 5px solid  #F1A733 !important;" autoResize="false">
+                                            <p:ajax event="change" listener="#{rACTBeanUI.ponerObservacion('a')}" />
+                                        </p:inputTextarea>  
+                                    <br/>
+
+                                   
+                                    <p:commandButton value="Guardar" oncomplete="PF('panelObservacion').hide()" ajax="true" process="@this" id="imageBtn"  styleClass="boton" title="Observación"  image="btnGuardar" update=":formId:arbol" >
+                                            <p:ajax listener="#{rACTBeanUI.agregarObservacion()}" update=":formId:arbol:obsPanel"/>
+                                        </p:commandButton>
+                                    
+                                        <p:commandButton value="Cancelar" oncomplete="PF('panelObservacion').hide()" ajax="true" process="@this" id="verObservacion" styleClass="boton"  image="btnCancelar" title="Observación"   >
+                                            <p:ajax update=":formId:textObservacion" />
+                                        </p:commandButton>
+                                        
+                                        
+
+                                    </center>
+                                  </p:dialog>
+
+                                <br/>
+                            </div>
+                        </p:outputPanel>
+
+                        <p:commandButton ajax="true" process="@this"  value="Guardar cambios"  id="gs" icon="ui-icon-disk" styleClass="boton" action="#{rACTBeanUI.guardarReporte()}" update="formId:arbol growl" disabled="#{rACTBeanUI.disable2}">
+                            <p:confirm header="Confirmación" message="Su avance será guardado y podrá continuar después, ¿Desea continuar?" icon="ui-icon-alert" />
+                        </p:commandButton>
+
+                        
+                        
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" id="gsCD" >
+                            <p:commandButton value="Aceptar" type="button" styleClass="ui-confirmdialog-yes" image="btnGuardar" />
+                            <p:commandButton value="Cancelar" type="button" styleClass="ui-confirmdialog-no" image="btnCancelar" /> 
+                        </p:confirmDialog>
+
+                        <p:commandButton id="imprimir" ajax="false" value="Genarar PDF" icon="ui-icon-disk" style="display: none;visibility: hidden" >                              
+                        <p:dataExporter id="exporter" preProcessor="#{rACTBeanUI.preProcessPDF}" postProcessor="#{rACTBeanUI.postProcessPDF}" encoding="iso-8859-1" type="PDF" target="tablaPDF"  fileName="Reporte" />
+                    </p:commandButton>             
+
+                        <p:tooltip id="gsT" for="gs" value="Guarde su avance y continue después." showEffect="" hideEffect="" />
+
+                        <p:commandButton ajax="true" process="@this" value="Guardar y enviar"  id="ge" icon="ui-icon-disk" styleClass="boton" update="formId:arbol message growl :formId:ge :formId:gs" action="#{rACTBeanUI.enviarReporte()}" disabled="#{rACTBeanUI.disable2}" >
+                            <p:confirm header="Confirmación" message="Su avance será enviado y no podrá ser modificado, ¿Desea continuar?" icon="ui-icon-alert"  />                      
+                        </p:commandButton>
+
+                        <p:confirmDialog  global="true" id="geCD" showEffect="fade" hideEffect="fade" style="color: #ccc" styleClass="ventana" >
+                            <center>   
+                                <p:commandButton value="Aceptar " type="button" styleClass="ui-confirmdialog-yes"  image="btnGuardar"  onclick="document.getElementById('formId:imprimir').click();"  update=":formId:ge :formId:gs"/>
+                                <p:commandButton value="Cancelar " type="button" styleClass="ui-confirmdialog-no" image="btnCancelar" />                   
+
+                            </center>
+                        </p:confirmDialog>
+
+                        <p:tooltip id="geT" for="ge" value="Envie el Avance." showEffect="" hideEffect="" />
+                    </p:fieldset>
+
+                    <!--PARTE DE DESCARGAR PDF
+                    -->
+                    <p:dataTable  rendered="false" id="tablaPDF" var="valor" value="#{rACTBeanUI.filaTabla}" >
+                        <p:column width="20">
+                            <p:outputLabel value=""></p:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+                           <h:form rendered="#{loginBean.formano}">
+                    <center><h1>No tienes permisos para ver esto</h1></center>
+                </h:form>
+            </center>            
+        </h:body>
+    </f:view>
+    </ui:define>   
+</ui:composition>

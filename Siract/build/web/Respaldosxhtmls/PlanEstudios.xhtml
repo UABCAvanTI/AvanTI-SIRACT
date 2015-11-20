@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+--> 
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/Template/MasterTemplate.xhtml">
+    <ui:define name="contenido">
+        <f:view contentType="text/html">      
+            <h:head>
+                <h:outputStylesheet name="Style_botones.css" library="css"/>
+                <f:facet name="first">
+                    <meta content='text/html; charset=UTF-8' http-equiv="Content-Type"/>
+                    <title>Plan de estudios</title> 
+                </f:facet>
+            </h:head>
+            <h:body onload="#{planEstudioBeanUI.filtro()}">
+                <h:form id="formPlanEs">
+                    <p:fieldset legend="Plan de estudios"> 
+
+                        <p:commandButton id="showAltaButton"  image="btnAU"  onclick="dlg.show()" iconPos="center" actionListener="#{planEstudioBeanUI.nuevo}" update="cap"/>
+                        <p:commandButton id="showEliminarButton"  image="btnEU"  onclick="dlg1.show()" iconPos="center" update="display"/>
+                        <p:commandButton id="showMostrarButton"  image="btnMU"  onclick="dlg.show()" iconPos="center" actionListener="#{planEstudioBeanUI.modificar}" update="cap"/>
+
+                        <p:dataTable id="edu" var="Plandeestudios" 
+                                     value="#{planEstudioBeanUI.listaFiltrada}"
+                                     rowKey="#{Plandeestudios.pesid}"
+                                     selection="#{planEstudioBeanUI.planEstudioBeanHelper.selecPlanEstudio}"
+                                     selectionMode="single">  
+
+                            <p:column headerText="Programa educativo">  
+                                <h:outputText value="#{Plandeestudios.programaeducativo.pednombre}" />  
+                            </p:column>  
+                            <p:column headerText="Plan de estudios">  
+                                <h:outputText value="#{Plandeestudios.pesvigenciaPlan}" />  
+                            </p:column>  
+                            <p:column headerText="Creditos obligatorios">  
+                                <h:outputText value="#{Plandeestudios.pescreditosObligatorios}" />  
+                            </p:column>
+                            <p:column headerText="Creditos optativos">  
+                                <h:outputText value="#{Plandeestudios.pescreditosOptativos}" />  
+                            </p:column>
+                            <p:column headerText="Total de creditos">  
+                                <h:outputText value="#{Plandeestudios.pestotalCreditos}" />  
+                            </p:column>
+                        </p:dataTable> 
+
+                        <p:dialog header="Captura plan de estudios" widgetVar="dlg" resizable="false" showEffect="fade" hideEffect="explode" modal="true">  
+                            <p:panelGrid id="cap" style="margin-top: 20px; position: relative"> 
+
+                                <p:row>
+
+                                    <p:column style="font-weight: bold;">Programa educativo</p:column>  
+                                    <p:column  style="font-weight: bold;">
+                                        <p:selectOneMenu id="programaeducativo" value="#{planEstudioBeanUI.planEstudioBeanHelper.programaeducativo.pedid}">  
+                                            <f:selectItem itemLabel="Seleccione el programa educativo" itemValue="#{0}" />  
+                                            <f:selectItems value="#{programaEducativoBeanUI.programaEducativoBeanHelper.programaEducativoDelegate.listaProgramaEducativo}" 
+                                                           var="prog"
+                                                           itemLabel="#{prog.pednombre}"
+                                                           itemValue="#{prog.pedid}"/>  
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+
+                                <p:row>
+                                    <p:column><p:outputLabel value="Plan de estudios"/></p:column>
+                                    <p:column><p:inputText value="#{planEstudioBeanUI.planEstudioBeanHelper.planEstudio.pesvigenciaPlan}"/></p:column>
+                                    <p:column><p:outputLabel value="Creditos obligatorios"/></p:column>
+                                    <p:column><p:inputText value="#{planEstudioBeanUI.planEstudioBeanHelper.planEstudio.pescreditosObligatorios}"/></p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column><p:outputLabel value="Creditos optativos"/></p:column>
+                                    <p:column><p:inputText value="#{planEstudioBeanUI.planEstudioBeanHelper.planEstudio.pescreditosOptativos}"/></p:column>
+                                    <p:column><p:outputLabel value="Total de creditos"/></p:column>
+                                    <p:column><p:inputText value="#{planEstudioBeanUI.planEstudioBeanHelper.planEstudio.pestotalCreditos}"/></p:column>
+                                </p:row>
+                            </p:panelGrid> 
+                            <p:commandButton value="Guardar" image="btnGuardar" oncomplete="dlg.hide()" action="#{planEstudioBeanUI.onClickSubmit()}" update=":formPlanEs:edu">
+                                <p:confirm header="Confirmación" message="¿Está seguro de querer guardar los cambios?" icon="ui-icon-alert" />
+                            </p:commandButton>
+                            <p:confirmDialog global="true" showEffect="fade" hideEffect="explode">
+                                <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                            </p:confirmDialog>
+                            <p:commandButton value="Cancelar" image="btnCancelar" oncomplete="dlg.hide()"/>  
+                        </p:dialog>
+
+
+                        <p:dialog header="Eliminar Plan de estudios" widgetVar="dlg1" resizable="false" showEffect="fade" hideEffect="explode" modal="true">  
+
+                            <p:panelGrid id="display" > 
+                                <p:row>  
+                                    <p:column><h:outputText value="Unidad academica: " /></p:column>
+                                    <p:column><h:outputText value="#{planEstudioBeanUI.planEstudioBeanHelper.selecPlanEstudio.programaeducativo.unidadacademica.uacnombre}" style="font-weight: bold"/> </p:column>                                       
+                                </p:row> 
+                                <p:row>  
+                                    <p:column><h:outputText value="Programa educativo: " /></p:column>
+                                    <p:column><h:outputText value="#{planEstudioBeanUI.planEstudioBeanHelper.selecPlanEstudio.programaeducativo.pednombre}" style="font-weight: bold"/> </p:column>                                       
+                                </p:row>    
+                                <p:row>
+                                    <p:column ><h:outputText value="Plan de estudios:" /></p:column >
+                                    <p:column ><h:outputText  value="#{planEstudioBeanUI.planEstudioBeanHelper.selecPlanEstudio.pesvigenciaPlan}" style="font-weight: bold"/></p:column>
+                                </p:row>
+                            </p:panelGrid> 
+                            <br/>
+                            Seguro que desea eliminar los datos
+                            <br/>
+                            <br/>
+                            <p:commandButton value="Aceptar" image="btnAceptar" oncomplete="dlg1.hide()" actionListener="#{planEstudioBeanUI.eliminar}" update=":formPlanEs:edu">
+                                <p:confirm header="Confirmación" message="¿Está seguro de querer eliminar los registros?" icon="ui-icon-alert" />
+                            </p:commandButton>
+                            <p:confirmDialog global="true" showEffect="fade" hideEffect="explode">
+                                <p:commandButton value="Aceptar" action="#{planEstudioBeanUI.filtro()}" update=":formPlanEs:edu" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                                <p:commandButton value="Cancelar" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                            </p:confirmDialog>
+                            <p:commandButton  value="Cancelar" image="btnCancelar" oncomplete="dlg1.hide()" /> 
+                        </p:dialog>
+
+                    </p:fieldset> 
+                </h:form>  
+            </h:body>
+        </f:view>
+    </ui:define>
+</ui:composition>  

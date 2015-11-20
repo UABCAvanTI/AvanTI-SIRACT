@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+
+<!--//22/02/2015-->
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:pe="http://primefaces.org/ui/extensions"                
+                template="/Template/MasterTemplate.xhtml">
+    <ui:define name="contenido">
+
+        <f:view contentType="text/html">    
+            <h:head>
+                <h:outputStylesheet name="Style_botones.css" library="css"/>
+                <f:facet name="first">
+                    <meta content='text/html; charset=UTF-8' http-equiv="Content-Type"/>
+                    <title>Grupo</title>
+                </f:facet>
+            </h:head>
+
+            <h:body onload="#{grupoBeanUI.filtrado()}">
+                <h:form id="frmGrupo">
+                    <p:fieldset legend="Administración de grupos">
+                    <p:growl id="growl" showDetail="true" life="10000"/>                    
+                    <p:commandButton id="showAltaButton" title="Agregar" image="btnAU" oncomplete="dlg.show();" iconPos="center" actionListener="#{grupoBeanUI.nuevo}" update="capdlg"/>                    
+                    <p:commandButton id="showEliminarButton" title="#{grupoBeanUI.toolTip(1)}" disabled="#{grupoBeanUI.botonesModElim()}" image="btnEU"  oncomplete="dlg.show();" iconPos="center" actionListener="#{grupoBeanUI.eliminar()}" update="capdlg"/>
+                    <p:commandButton id="showModificarButton" title="#{grupoBeanUI.toolTip(2)}" disabled="#{grupoBeanUI.botonesModElim()}"  image="btnMU"  oncomplete="dlg.show();" iconPos="center" actionListener="#{grupoBeanUI.modificar}" update="capdlg" />
+
+                   
+                    
+                           
+                    
+<!--se agrega el codigo para el filtro por grupo-->  
+                    <div style="text-align: right">
+                        <p:outputLabel value="Búsqueda especifica de grupo: "/>
+                        <p:inputText id="filtro" value="#{grupoBeanUI.busqueda}" 
+                                     autocomplete="off" label="filtrado">
+                            <p:ajax event="keyup" listener="#{grupoBeanUI.filtrado()}"
+                                    update="grup"/>                        
+                        </p:inputText>
+                        <pe:keyFilter for="filtro" regEx="/[0-9]/"/> 
+                    </div>
+<!-- se termina el codigo para el filtrado -->
+
+<!--inicio del codigo para paginacion, mensaje por si esta vacia la tabla
+    y un ajax para el control de los botones de eliminar y modificar
+-->
+                    <p:dataTable id="grup" var="grupo" 
+                                 value="#{grupoBeanUI.listaFiltrada}"
+                                 rowKey="#{grupo.gpoid}"
+                                 selection="#{grupoBeanUI.grupoBeanHelper.listaGpoSeleccionada}"
+                                 rows="10"
+                                 rowsPerPageTemplate="5,10,15,20"
+                                 paginator="true"                              
+                                 rowSelectMode="add"
+                                 selectionMode="checkbox"
+                                 widgetVar="stest"                                 
+                                 paginatorTemplate="{CurrentPageReport}
+                                 {FirstPageLink} {PreviousPageLink} {PageLinks} 
+                                 {NextPageLink} {LastPageLink} 
+                                 {RowsPerPageDropdown}"
+                                 currentPageReportTemplate="({currentPage} de {totalPages})"
+                                 emptyMessage="No se han encontrado registros">
+                        <p:ajax event="rowSelect" update=":frmGrupo:showEliminarButton, :frmGrupo:showModificarButton"/>
+                        <p:ajax event="rowUnselect" listener="#{grupoBeanUI.onRowUnselect}" update=":frmGrupo:showEliminarButton, :frmGrupo:showModificarButton"/>
+                        <p:ajax event="rowSelectCheckbox" update=":frmGrupo:showEliminarButton, :frmGrupo:showModificarButton"/>
+                        <p:ajax event="rowUnselectCheckbox" update=":frmGrupo:showEliminarButton, :frmGrupo:showModificarButton"/>
+                        <p:ajax event="toggleSelect" update=":frmGrupo:showEliminarButton, :frmGrupo:showModificarButton"/>
+<!-- termino del codigo para paginacion, mensaje y ajax-->
+
+                        <p:column selectionMode="multiple" 
+                                  style="width:1%;text-align:center">                             
+                        </p:column>
+
+                        <p:column headerText="Grupo" style="width:24%">  
+                            <h:outputText value="#{grupo.gponumero} " />  
+                        </p:column>  
+
+                        <p:column headerText="Plan de Estudios" style="width:24%">
+                            <h:outputText value="#{grupo.planestudio.pesvigenciaPlan}"/>
+                        </p:column>
+                    </p:dataTable>  
+
+
+<!-- se agrego el atributo header en la propiedad header del dialog para que cambie segun el boton elegido
+    los campos se deshabilitaran solo si es eliminacion usando el atributo deshabilitar dentro de la propiedad disabled
+    se agrego al inputText un keyfilter
+-->
+                    <p:dialog id="capdlg" header="#{grupoBeanUI.header}" widgetVar="dlg" 
+                              resizable="false" showEffect="fade" 
+                              hideEffect="explode" modal="true" draggable="false">
+                        <p:ajax event="close" update=":frmGrupo:grup, :frmGrupo:showEliminarButton, :frmGrupo:showModificarButton, :frmGrupo:cap" listener="#{grupoBeanUI.limpiarSeleccion()}"/>
+                        <div id="selecs" align="center">
+                            <p:outputLabel rendered="#{grupoBeanUI.mostrarSeleccionGrupo()}" value="Seleccione un grupo para desplegar datos" 
+                                           style="margin-right: 2%; margin-top: 20%;"/>                                                                     
+                                    <p:selectOneMenu id="seleccionados" 
+                                                     value="#{grupoBeanUI.grupoBeanHelper.selecGrupo.gpoid}"
+                                                     rendered="#{grupoBeanUI.mostrarSeleccionGrupo()}" style="width: 100px"> 
+                                         <p:ajax event="valueChange" update="cap" listener="#{grupoBeanUI.grupoBeanHelper.seleccionarRegistro()}"></p:ajax>
+
+                                         <f:selectItems value="#{grupoBeanUI.grupoBeanHelper.listaGpoSeleccionada}"                                          
+                                                       var="gpo"
+                                                       itemLabel="#{gpo.gponumero}"
+                                                       itemValue="#{gpo.gpoid}"/>   
+                                    </p:selectOneMenu>
+                        </div>
+                        
+                        <p:panelGrid id="cap" style="margin-top:20px; position: relative">
+                            
+                            <p:row>
+                                
+                                <p:column><p:outputLabel value="Grupo" /></p:column>
+                                <p:column>
+                                    <p:inputText id="numGrupo"
+                                                 value="#{grupoBeanUI.grupoBeanHelper.grupo.gponumero}"
+                                                 disabled="#{grupoBeanUI.deshabilitar}" />
+                                    <pe:keyFilter for="numGrupo" regEx="/[0-9]/"/>
+                                </p:column>
+                                <p:column><p:outputLabel value="Plan de Estudios"/></p:column> 
+                                <p:column>
+                                    <p:selectOneMenu id="planEstudio"
+                                                     filter="true"
+                                                     filterFunction="startsWith"
+                                                     value="#{grupoBeanUI.grupoBeanHelper.planestudio.pesid}"
+                                                     disabled="#{grupoBeanUI.deshabilitar}">  
+                                        <f:selectItem itemLabel="Seleccione el Plan de Estudios" itemValue="#{0}" />  
+                                        <f:selectItems value="#{planEstudioBeanUI.planEstudioBeanHelper.planEstudioDelegate.listaPlanEstudio}" 
+                                                       var="planE"
+                                                       itemLabel="#{planE.pesvigenciaPlan}"
+                                                       itemValue="#{planE.pesid}"/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                                
+                             
+
+                            </p:row>
+                        </p:panelGrid>
+                        <div style="padding-left: 35%">
+                            <p:commandButton value="Aceptar" image="btnGuardar" action="#{grupoBeanUI.onClickSubmit()}" update=":frmGrupo:growl,cap,:frmGrupo:grup, :frmGrupo:seleccionados" disabled="#{grupoBeanUI.deshabilitarAceptar}">
+                            </p:commandButton>
+
+                            <p:commandButton value="Cancelar" image="btnCancelar" oncomplete="dlg.hide()" update=":frmGrupo:grup, :frmGrupo:seleccionados, :frmGrupo:capdlg">
+                                <p:ajax event="click" update=":frmGrupo:grup, :frmGrupo:showEliminarButton, :frmGrupo:showModificarButton, :frmGrupo:cap, :frmGrupo:seleccionados" listener="#{grupoBeanUI.limpiarSeleccion()}"></p:ajax>
+                            </p:commandButton> 
+                        </div>
+                    </p:dialog>
+                    </p:fieldset>
+                </h:form>
+                
+<!-- mensaje de confirmacion para eliminacion-->                
+                <p:confirmDialog showEffect="fade" hideEffect="explode" 
+                                widgetVar="confdlgElim" header="Confirmación"
+                                message="¿Está seguro de eliminar el registro?"
+                                severity="alert" appendToBody="true">
+                   <h:form>
+                        <p:commandButton value="Aceptar" action="#{grupoBeanUI.eliminacionConfirmada()}"                                             
+                                            icon="ui-icon-check"
+                                            update=":frmGrupo:growl,:frmGrupo:grup, :frmGrupo:seleccionados"
+                                            >
+                            <p:ajax event="click" 
+                                    update=":frmGrupo:showEliminarButton, :frmGrupo:showModificarButton, :frmGrupo:seleccionados, :frmGrupo:grup" listener="#{grupoBeanUI.esconderBotones()}"/>
+                            
+                        </p:commandButton>
+                        <p:commandButton value="Cancelar" oncomplete="confdlgElim.hide()"
+                                         icon="ui-icon-close"/>
+                   </h:form>  
+                </p:confirmDialog>  
+                
+<!-- mensaje de confirmacion para modificacion-->                
+                <p:confirmDialog id="confirm" showEffect="fade" hideEffect="explode" 
+                                widgetVar="confirmdlg" header="Confirmación"
+                                message="#{grupoBeanUI.mensajeConfirm}"
+                                severity="alert" appendToBody="true">
+                   <h:form>
+                       <p:commandButton value="Aceptar" action="#{grupoBeanUI.confirmacionAceptada()}"                          
+                                            icon="ui-icon-check"
+                                            update=":frmGrupo:growl,:frmGrupo:grup, :frmGrupo:cap, :frmGrupo:seleccionados, :frmGrupo:capdlg"
+                                            >
+                            <p:ajax event="click" update=":frmGrupo:showEliminarButton, :frmGrupo:showModificarButton, :frmGrupo:seleccionados, :frmGrupo:cap, :frmGrupo:grup" listener="#{grupoBeanUI.esconderBotones()}"/>
+                           
+                       </p:commandButton>
+                        <p:commandButton value="Cancelar" oncomplete="confirmdlg.hide()"
+                                            icon="ui-icon-close"/>
+                   </h:form>  
+                </p:confirmDialog>                  
+                              
+            </h:body>
+        </f:view>
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<!-- Generated 17-ago-2015 14:50:32 by Hibernate Tools 3.6.0 -->
+<hibernate-mapping>
+    <class name="mx.avanti.siract.business.entity.Calendarioreporte" table="calendarioreporte" catalog="siract">
+        <id name="creid" type="java.lang.Integer">
+            <column name="CREid" />
+            <generator class="identity" />
+        </id>
+        <property name="crefechaCorte" type="date">
+            <column name="CREfechaCorte" length="10" not-null="true" />
+        </property>
+        <property name="crefechaLimite" type="date">
+            <column name="CREfechaLimite" length="10" not-null="true" />
+        </property>
+        <set name="calendarioreporteTieneAlertas" table="calendarioreporte_tiene_alerta" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="CalendarioReporte_CREid" not-null="true" />
+            </key>
+            <one-to-many class="mx.avanti.siract.business.entity.CalendarioreporteTieneAlerta" />
+        </set>
+        <set name="configuracions" table="configuracion_tiene_calendarioreporte" inverse="false" lazy="true" fetch="select">
+            <key>
+                <column name="CalendarioReporte_CREid" not-null="true" />
+            </key>
+            <many-to-many entity-name="mx.avanti.siract.business.entity.Configuracion">
+                <column name="Configuracion_CONid" not-null="true" />
+            </many-to-many>
+        </set>
+    </class>
+</hibernate-mapping>

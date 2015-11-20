@@ -1,0 +1,96 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 9/04/2014, 02:59:21 PM
+    Author     : jocelyn
+*/
+
+.btnAU{ 
+    width: 38px !important;
+    height: 38px !important;
+    //background-image: url(#{resource['imagenes:AddFile.png']})  !important;
+    background-image: url(#{resource['imagenes:AddFile.png']})  !important;
+margin-top: -11px !important;
+margin-left: -11px !important;
+}
+.btnMU{
+    width: 32px !important;
+    height: 32px !important;
+    background-image: url(#{resource['imagenes:pencil.png']})  !important;
+margin-top: -15px !important;
+margin-left: -15px !important;
+}
+.btnEU{
+    width: 32px !important;
+    height: 32px !important;
+    background-image: url(#{resource['imagenes:trash.png']})  !important;
+margin-top: -12px !important;
+margin-left: -12px !important;
+}
+.btnGuardar{
+    width: 35px !important;
+    height: 35px !important;
+    background-image: url(#{resource['imagenes:save.png']})  !important;
+margin-top: -15px !important;
+margin-left: -7px !important;
+}
+.btnCancelar{
+    width: 35px !important;
+    height: 35px !important;
+    background-image: url(#{resource['imagenes:delete.png']})  !important;
+margin-top: -10px !important;
+margin-left: -6px !important;
+}
+.btnAceptar{
+    width: 35px !important;
+    height: 35px !important;
+    background-image: url(#{resource['imagenes:check.png']})  !important;
+margin-top: -10px !important;
+margin-left: -6px !important;
+}
+.btnUserconfig{
+    width: 30px !important;
+    height: 30px !important;
+    background-image: url(#{resource['imagenes:userconfig.png']})  !important;
+margin-top: -7px;
+}
+.btnMantenimiento{
+    width: 30px !important;
+    height: 30px !important;
+    background-image: url(#{resource['imagenes:mantenimiento.png']})  !important;
+margin-top: -7px;
+}
+.btnAvance{
+    width: 30px !important;
+    height: 30px !important;
+    background-image: url(#{resource['imagenes:avanceConTematico.png']})  !important; 
+margin-top: -7px;
+}
+.btnReportes{
+    width: 30px !important;
+    height: 30px !important;
+    background-image: url(#{resource['imagenes:reportes.png']})  !important; 
+margin-top: -7px;
+}
+.btnConfiguracion{
+    width: 30px !important;
+    height: 30px !important;
+    background-image: url(#{resource['imagenes:configuracion.png']})  !important;  
+margin-top: -7px;
+}
+.dlgConf{
+    width: 30px !important;
+    height: 30px !important;
+    background-image: url(#{resource['imagenes:warning.png']})  !important;
+}
+
+.overlay{
+    width: 30px !important;
+    height: 30px !important;
+}
+ui-multiselectlistbox .ui-multiselectlistbox-listcontainer {
+    height: 800px;
+}

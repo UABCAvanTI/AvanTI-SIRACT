@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/Template/MasterTemplate.xhtml"
+                    xmlns:pe="http://primefaces.org/ui/extensions">
+    <ui:define name="contenido">
+        <f:view contentType="text/html">
+            <h:head>
+
+                <h:outputStylesheet name="Style_botones.css" library="css"/>
+                <f:facet name="first">
+                    <meta content='text/html; charset=UTF-8' http-equiv="Content-Type"/>
+                    <title>Ciclo escolar</title>
+                </f:facet>
+            </h:head>
+
+            <!--            <h:body>-->
+            <h:body onload="#{capturaCicloEscolarBeanUI.filtrado()}" onkeydown="if (event.keyCode == 13) {
+                                event.preventDefault();
+                                return false;
+                            }"> 
+
+                <h:form id="frmCicloEscolar" rendered="#{loginBean.tienePermiso}"> 
+                    <p:panel>
+                        <p:fieldset legend="Administración de ciclo escolar" style="text-align: left; font-size: 18px; font-weight: bold;">
+                            <p:growl id="growl" showDetail="true" life="10000"/>    
+
+                            <p:commandButton  title="Agregar" 
+                                              id="showAltaButton"  
+                                              image="btnAU"
+                                              oncomplete="dlg.show();" 
+                                              iconPos="center" 
+                                              rendered="#{loginBean.permisoAlta}"
+                                              actionListener="#{capturaCicloEscolarBeanUI.nuevo}" 
+                                              update="capdlg" style="font-weight: bold;"/>
+                            <p:commandButton disabled="#{capturaCicloEscolarBeanUI.botonesModElim()}" 
+                                             title="#{capturaCicloEscolarBeanUI.toolTip(1)}" 
+                                             id="showEliminarButton" image="btnEU" oncomplete="dlg.show();" 
+                                             iconPos="center"
+                                             rendered="#{loginBean.permisoBaja}"
+                                             actionListener="#{capturaCicloEscolarBeanUI.eliminar()}"
+                                             update="capdlg" style="font-weight: bold;"/>
+
+
+                            <p:commandButton  disabled="#{capturaCicloEscolarBeanUI.botonesModElim()}" 
+                                              title="#{capturaCicloEscolarBeanUI.toolTip(2)}"
+                                              id="showMostrarButton"  image="btnMU"  oncomplete="dlg.show();"
+                                              rendered="#{loginBean.permisoModificar}" 
+                                              iconPos="center" actionListener="#{capturaCicloEscolarBeanUI.modificar}"
+                                              update="capdlg" style="font-weight: bold;"/> 
+                            
+                            <script type="text/javascript">
+                                function test(xhr, status, args) {
+                                    if (args.unselecttest % 2 == 1) {
+                                        stest.unselectAllRows();
+                                    }
+                                }
+                            </script>
+
+
+                            <div style="text-align: right; margin-top: -30px; font-weight: bold;">       
+                                <p:outputLabel style="font-size: 19px; font-weight: bold;" value="Búsqueda específica de ciclo escolar: "/>
+                                <p:inputText id="filtroCE" maxlength="6" 
+                                             value="#{capturaCicloEscolarBeanUI.busqueda}" 
+                                             autocomplete="off"
+                                             label="filtrado" size="5" >
+                                    <p:ajax event="keyup" listener="#{capturaCicloEscolarBeanUI.filtrado()}" 
+                                            update="cicloE1"/>
+<pe:keyFilter for="filtroCE" mask="num"/> 
+                                </p:inputText>
+
+                            </div>
+
+                            
+                            <p:dataTable id="cicloE1" var="cicloE" 
+                                         value="#{capturaCicloEscolarBeanUI.listaFiltrada}"  
+                                         style="font-weight: bold;"
+                                         rowKey="#{cicloE.cesid}"
+                                         selection="#{capturaCicloEscolarBeanUI.cicloEscolarBeanHelper.listaCicloSeleccionada}"
+                                         rows="10" 
+                                         widgetVar="TablaCiclo"
+                                         rowSelectMode="add"
+                                         paginator="true"                                         
+                                         rowsPerPageTemplate="5,10,15,20"
+                                         paginatorTemplate="{CurrentPageReport}
+                                         {FirstPageLink} {PreviousPageLink} {PageLinks} 
+                                         {NextPageLink} {LastPageLink} 
+                                         {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="({currentPage} de {totalPages})"
+                                         emptyMessage="No se han encontrado registros">  
+                                <p:ajax event="rowSelect" update=":frmCicloEscolar:showEliminarButton,:frmCicloEscolar:showMostrarButton" />
+                                <p:ajax event="rowUnselect" listener="#{capturaCicloEscolarBeanUI.onRowUnselect}" update=":frmCicloEscolar:showEliminarButton,:frmCicloEscolar:showMostrarButton"/>
+                                <p:ajax event="toggleSelect" update=":frmCicloEscolar:showEliminarButton,:frmCicloEscolar:showMostrarButton"></p:ajax>
+                                <p:ajax event="rowUnselectCheckbox" update=":frmCicloEscolar:showEliminarButton,:frmCicloEscolar:showMostrarButton"/>
+                                <p:ajax event="rowSelectCheckbox" update=":frmCicloEscolar:showEliminarButton,:frmCicloEscolar:showMostrarButton"></p:ajax>
+                                
+
+                                <p:column selectionMode="multiple"
+                                          style="width:2%; text-align:center">       
+                                </p:column>
+
+                                <p:column headerText="Lista de ciclos escolares" style="width:24%; font-weight: bold;">  
+                                    <h:outputText value="#{cicloE.cescicloEscolar}" >
+                                    </h:outputText>
+
+                                </p:column>  
+                            </p:dataTable> 
+                           
+
+                            <p:dialog id="capdlg"
+                                      style="font-weight: bold;"
+                                      header="#{capturaCicloEscolarBeanUI.header}" 
+                                      widgetVar="dlg" draggable="false" 
+                                      resizable="false" showEffect="fade" 
+                                      hideEffect="explode" modal="true">  
+                                <p:ajax event="close" update=":frmCicloEscolar:cicloE1, :frmCicloEscolar:showEliminarButton, :frmCicloEscolar:showMostrarButton" listener="#{capturaCicloEscolarBeanUI.limpiarSeleccion()}"/>
+                            <div id="selecs" >
+                                <p:outputLabel rendered="#{capturaCicloEscolarBeanUI.mostrarSeleccionCiclo()}" value="seleccione un ciclo escolar"/>
+                                <p:selectOneMenu id="seleccionados" 
+                                                
+                                                 value="#{capturaCicloEscolarBeanUI.cicloEscolarBeanHelper.selecCiclo.cesid}"
+                                                 rendered="#{capturaCicloEscolarBeanUI.mostrarSeleccionCiclo()}">                                       
+<!--                                    <f:selectItem itemLabel="Seleccione un Ciclo " itemValue="#{0}"/>-->
+                                    <p:ajax event="valueChange" update="cap,seleccionados" listener="#{capturaCicloEscolarBeanUI.cicloEscolarBeanHelper.seleccionarRegistro()}"></p:ajax>
+                                    <f:selectItems value="#{capturaCicloEscolarBeanUI.cicloEscolarBeanHelper.listaCicloSeleccionada}"                                             
+                                                   var="ciclo"                                                        
+                                                   itemLabel="#{ciclo.cescicloEscolar}"
+                                                   itemValue="#{ciclo.cesid}"/>                                             
+                                </p:selectOneMenu>
+                            </div>
+                                <p:panelGrid style="margin-top:20px; position: relative" id="cap">
+                                    <p:row>
+                                        <p:column style="font-weight: bold;">
+                                            <p:outputLabel value="Ciclo escolar" />
+                                        </p:column>
+                                        <p:column style="font-weight: bold;">
+                                            <p:inputMask value="#{capturaCicloEscolarBeanUI.cicloEscolarBeanHelper.cicloescolar.cescicloEscolar}" 
+                                                         maxlength="6" 
+                                                         disabled="#{capturaCicloEscolarBeanUI.deshabilitar}"
+                                                         mask="9999-9" >
+                                                <pe:keyFilter regEx="/[0-9]/"/>
+                                            </p:inputMask>
+                                        </p:column>
+                                   
+                                    </p:row>
+                                </p:panelGrid>
+                                <p:commandButton value="Aceptar" image="btnGuardar" 
+                                                 action="#{capturaCicloEscolarBeanUI.onClickSubmit()}" 
+                                                 update=":frmCicloEscolar:growl,cap,:frmCicloEscolar:cicloE1,:frmCicloEscolar:seleccionados" 
+                                                 style="margin-left: 70px; margin-top: 10px; font-weight: bold;"
+                                                 >
+                                    <p:ajax event="click" 
+                                            update=":frmCicloEscolar:cicloE1,:frmCicloEscolar:seleccionados" oncomplete="dlg.show();">
+                                                
+                                    </p:ajax>
+                                </p:commandButton>
+                                <p:commandButton value="Cancelar" image="btnCancelar" 
+                                                 oncomplete="dlg.hide()" 
+                                                 update=":frmCicloEscolar:cicloE1,:frmCicloEscolar:seleccionados,:frmCicloEscolar:capdlg" style="font-weight: bold;">
+                
+                                <p:ajax event="click" 
+                                        update=":frmCicloEscolar:cicloE1,:frmCicloEscolar:showEliminarButton,:frmCicloEscolar:showMostrarButton,:frmCicloEscolar:cap,:frmCicloEscolar:seleccionados"
+                                        listener="#{capturaCicloEscolarBeanUI.limpiarSeleccion()}" ></p:ajax>
+
+                                </p:commandButton>
+
+
+                            </p:dialog>
+                        </p:fieldset>
+
+                    </p:panel>
+                </h:form>
+                <p:confirmDialog id="confirmdlgId" 
+                                 showEffect="fade"
+                                 hideEffect="explode" 
+                                 widgetVar="confirmdlg" 
+                                 header="Confirmación"
+                                 message="¿Está seguro de eliminar el registro?"
+                                 severity="alert"
+                                 appendToBody="true" 
+                                 style="font-weight: bold;">
+                    <h:form>
+                        
+                        <p:commandButton value="Aceptar"
+                                         action="#{capturaCicloEscolarBeanUI.confirmacionAceptada()}"                                             
+                                         icon="ui-icon-check"
+                                         style="font-weight: bold;  margin-left: 50px;"
+                                         update=":frmCicloEscolar:growl,:frmCicloEscolar:cicloE1,:frmCicloEscolar:capdlg,:frmCicloEscolar:seleccionados"
+                                         oncomplete="dlg.show();">
+                            
+                         <p:ajax event="click" 
+                                 update=":frmCicloEscolar:showEliminarButton,:frmCicloEscolar:showMostrarButton,:frmCicloEscolar:seleccionados,:frmCicloEscolar:cap,:frmCicloEscolar:cicloE1"
+                                 listener="#{capturaCicloEscolarBeanUI.esconderBotones()}"></p:ajax>
+                        </p:commandButton>
+                        <p:commandButton value="Cancelar"
+                                         oncomplete="confirmdlg.hide()"
+                                         icon="ui-icon-close" 
+                                         update=":frmCicloEscolar:growl,:frmCicloEscolar:cicloE1,:frmCicloEscolar:cap,:frmCicloEscolar:seleccionados"
+                                         style="font-weight: bold;">      
+
+                        </p:commandButton>
+                    </h:form>  
+                </p:confirmDialog>  
+                                            <h:form rendered="#{loginBean.formano}">
+                    <center><h1>No tienes permisos para ver esto</h1></center>
+
+                </h:form>
+            </h:body>
+        </f:view>
+    </ui:define>
+</ui:composition>

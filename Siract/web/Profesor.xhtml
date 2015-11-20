@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+--> 
+<!DOCTYPE html>
+<ui:composition  xmlns="http://www.w3.org/1999/xhtml"
+                 xmlns:h="http://java.sun.com/jsf/html"
+                 xmlns:f="http://java.sun.com/jsf/core"
+                 xmlns:ui="http://java.sun.com/jsf/facelets"
+                 xmlns:p="http://primefaces.org/ui"
+                 xmlns:pe="http://primefaces.org/ui/extensions"
+                 template="/Template/MasterTemplate.xhtml">
+    <ui:define name="contenido">
+        <f:view contentType="text/html">     
+            <h:head>
+                <h:outputStylesheet name="Style_botones.css" library="css"/>
+                <f:facet name="first">
+                    <meta content='text/html; charset=UTF-8' http-equiv="Content-Type"/>
+                    <title>Profesor</title> 
+                </f:facet>
+
+            </h:head>
+            <h:body onload="#{profesorBeanUI.filtrado()}" 
+                    onkeydown="if (event.keyCode == 13) {
+                                event.preventDefault();
+                                return false;
+                            }"> 
+                <h:form id="frmProfesor" rendered="#{loginBean.tienePermiso}">
+                    <p:fieldset legend="Administraci&#243;n de Profesor">
+                        <p:growl id="growl" showDetail="true" life="10000"/>    
+
+                        <p:commandButton id="showAltaButton" 
+                                         image="btnAU" oncomplete="dlg.show();"
+                                         title="Agregar"
+                                         iconPos="center" 
+                                         actionListener="#{profesorBeanUI.nuevo}"
+                                         rendered="#{loginBean.permisoAlta}"
+                                         update="capdlg"/>
+                        <p:commandButton id="showEliminarButton"  image="btnEU"                                         
+                                         title="#{profesorBeanUI.tooltip(2)}"                                         
+                                         oncomplete="dlg.show();" 
+                                         iconPos="center" 
+                                         disabled="#{profesorBeanUI.deshabilitarMenu()}"
+                                         actionListener="#{profesorBeanUI.eliminar}"
+                                         rendered="#{loginBean.permisoBaja}"
+                                         update="capdlg"/>
+                        <p:commandButton id="showModificarButton"  image="btnMU"                                                                           
+                                         title="#{profesorBeanUI.tooltip(3)}"
+                                         oncomplete="dlg.show();" 
+                                         iconPos="center" 
+                                         disabled="#{profesorBeanUI.deshabilitarMenu()}"
+                                         actionListener="#{profesorBeanUI.modificar}"
+                                         rendered="#{loginBean.permisoModificar}"
+                                         update="capdlg"/> 
+                        <br/><br/>
+                        <div id="selecPE" style="display: inline-block">
+                            <p:outputLabel value="Seleccione un programa educativo " 
+                                           style="margin-top: 40%;"
+                                           rendered="#{profesorBeanUI.profesorBeanHelper.ocultarLista}"/><br/>                                                       
+                            <p:selectOneMenu value="#{profesorBeanUI.profesorBeanHelper.programaEducativo.pedid}"
+                                             style="width: 100%"
+                                             rendered="#{profesorBeanUI.profesorBeanHelper.ocultarLista}"> 
+                                <p:ajax event="valueChange" update="prof" listener="#{profesorBeanUI.filtrado()}"></p:ajax>
+                                
+                                <f:selectItem itemLabel="--Seleccionar todos--" itemValue="#{0}"/>
+                                <f:selectItems value="#{profesorBeanUI.profesorBeanHelper.listaProgramaEducativo}"                                          
+                                               var="pe"
+                                               itemLabel="#{pe.pednombre}"
+                                               itemValue="#{pe.pedid}"/>   
+                            </p:selectOneMenu>
+                        </div>                                                                         
+                          
+                        
+                        <div id="divFiltro" style="text-align: right;">       
+                            <p:outputLabel style="font-size: 19px" value="B&#250;squeda específica de profesor: "/>
+
+                            <p:inputText id="filtro" 
+                                         value="#{profesorBeanUI.busqueda}" 
+                                         autocomplete="off"
+                                         label="filtrado">
+                                <p:ajax event="keyup"  listener="#{profesorBeanUI.filtrado()}" 
+                                        update="prof" />
+                            </p:inputText>
+                        </div>
+
+                        
+                        
+                        <p:dataTable id="prof" var="profesor" 
+                                     value="#{profesorBeanUI.listaFiltrada}"
+                                     rowKey="#{profesor.proid}"
+                                     selection="#{profesorBeanUI.profesorBeanHelper.listaSeleccionProfesores}"
+                                     emptyMessage="No se encontraron registros a mostrar"
+                                     rows="10" 
+                                     rowSelectMode="add"
+                                     rowsPerPageTemplate="5,10,15,20"
+                                     paginator="true" 
+                                     paginatorTemplate="{CurrentPageReport}  
+                                     {FirstPageLink} {PreviousPageLink} {PageLinks} 
+                                     {NextPageLink} {LastPageLink} 
+                                     {RowsPerPageDropdown}"
+                                     widgetVar="tablaprof"> 
+
+                            <p:ajax event="rowSelect" update="prof,:frmProfesor:showEliminarButton,:frmProfesor:showModificarButton">
+                            </p:ajax>                        
+                            <p:ajax event="rowUnselect"  update=":frmProfesor:showEliminarButton,:frmProfesor:showModificarButton">
+
+                            </p:ajax>                        
+                            <p:ajax event="rowUnselectCheckbox" update=":frmProfesor:showEliminarButton,:frmProfesor:showModificarButton"></p:ajax>
+                            <p:ajax event="rowSelectCheckbox" update=":frmProfesor:showEliminarButton,:frmProfesor:showModificarButton"></p:ajax>
+                            <p:ajax event="toggleSelect" update=":frmProfesor:showEliminarButton,:frmProfesor:showModificarButton"></p:ajax>
+
+                            <p:column  selectionMode="multiple" 
+                                       style="width:16px;text-align:center">                               
+
+                            </p:column>
+
+                            <p:column headerText="No. empleado">         
+                                <h:outputText value="#{profesor.pronumeroEmpleado}" /> 
+                            </p:column>
+                            <p:column headerText="Nombre">  
+                                <h:outputText value="#{profesor.pronombre}" />  
+                            </p:column>
+                            <p:column headerText="Apellido Paterno">  
+                                <h:outputText value="#{profesor.proapellidoPaterno}" />  
+                            </p:column>
+                            <p:column headerText="Apellido Materno">  
+                                <h:outputText value="#{profesor.proapellidoMaterno}" />  
+                            </p:column>
+                            <p:column headerText="RFC">  
+                                <h:outputText value="#{profesor.prorfc}" />  
+                            </p:column> 
+                            <p:column headerText="Usuario">  
+                                <h:outputText value="#{profesor.usuario.usuusuario}" />  
+                            </p:column>                                
+                            <p:column headerText="Programa Educativo">
+                                <h:outputText value="#{profesorBeanUI.listaPEDeProf(profesor)}"/>                                
+                            </p:column>
+                        </p:dataTable> 
+
+                        <p:dialog id="capdlg" header="#{profesorBeanUI.cabecera}" widgetVar="dlg" draggable="false" resizable="false" showEffect="fade" hideEffect="explode" modal="true">
+                            <!--<div id="selecciones" align="center">-->
+
+                            <!--<h:form id="frmSeleccionados">-->
+                            <p:outputLabel id="lblSeleccionados" rendered="#{profesorBeanUI.mostrarSeleccionProfesores()}" value="Seleccione el registro a visualizar "></p:outputLabel>
+                            <p:selectOneMenu id="seleccionados" 
+                                             value="#{profesorBeanUI.profesorBeanHelper.selecProfesor.proid}"                                                    
+                                             rendered="#{profesorBeanUI.mostrarSeleccionProfesores()}"> 
+                                <p:ajax event="valueChange" update="cap, checkPE" listener="#{profesorBeanUI.profesorBeanHelper.seleccionarRegistro()}"></p:ajax>
+                                <p:ajax event="valueChange" update="checkPE" listener="#{profesorBeanUI.actualizarListaPE()}"/>                                
+
+                                <f:selectItems value="#{profesorBeanUI.profesorBeanHelper.listaSeleccionProfesores}"                                             
+                                               var="prof" 
+                                               itemLabel="#{prof.pronombre}"
+                                               itemValue="#{prof.proid}"/>                                             
+
+                            </p:selectOneMenu>
+                            <!--                            </h:form>-->
+                            <!--</div>-->
+                            <p:panelGrid id="cap" style="margin-top: 20px; position: relative"> 
+                                <p:row>  
+                                    <p:column style="font-weight: bold;">No. empleado:</p:column>  
+                                    <p:column style="font-weight: bold;">
+                                        <p:inputText id="numempleado" 
+                                                     disabled="#{profesorBeanUI.deshabilitar}"
+                                                     value="#{profesorBeanUI.profesorBeanHelper.profesor.pronumeroEmpleado}" >
+
+                                        </p:inputText>
+                                        <pe:keyFilter for="numempleado" regEx="/[0-9]/" />                                    
+                                    </p:column>
+
+                                    <p:column colspan="2"></p:column>
+                                    <p:column style="font-weight: bold;">RFC:</p:column>  
+                                    <p:column style="font-weight: bold;">
+                                        <p:inputText id="profrfc" onkeyup="value = value.toUpperCase()"
+                                                     disabled="#{profesorBeanUI.deshabilitar}"
+                                                     value="#{profesorBeanUI.profesorBeanHelper.profesor.prorfc}" 
+                                                     maxlength="12"></p:inputText>                                    
+                                        <pe:keyFilter for="profrfc" mask="alphanum"/>
+                                    </p:column>
+                                </p:row>
+
+                                <p:row>  
+                                    <p:column style="font-weight: bold;">Nombre:</p:column>  
+                                    <p:column style="font-weight: bold;">
+                                        <p:inputText id="profnom" onkeyup="value = value.toUpperCase()"
+                                                     disabled="#{profesorBeanUI.deshabilitar}"
+                                                     value="#{profesorBeanUI.profesorBeanHelper.profesor.pronombre}" >
+
+                                        </p:inputText>
+                                        <pe:keyFilter for="profnom" regEx="/[A-Za-z ]/"/>                                  
+                                    </p:column>
+
+                                    <p:column style="font-weight: bold;">Apellido Paterno:</p:column>  
+                                    <p:column style="font-weight: bold;">
+                                        <p:inputText id="profap" onkeyup="value = value.toUpperCase()"
+                                                     disabled="#{profesorBeanUI.deshabilitar}"
+                                                     value="#{profesorBeanUI.profesorBeanHelper.profesor.proapellidoPaterno}" >
+                                        </p:inputText>
+                                        <pe:keyFilter for="profap" regEx="/[A-Za-z ]/"/>
+                                    </p:column>
+
+                                    <p:column style="font-weight: bold;">Apellido Materno:</p:column>  
+                                    <p:column style="font-weight: bold;">
+                                        <p:inputText id="profam" onkeyup="value = value.toUpperCase()"
+                                                     disabled="#{profesorBeanUI.deshabilitar}"
+                                                     value="#{profesorBeanUI.profesorBeanHelper.profesor.proapellidoMaterno}" />
+                                        <pe:keyFilter for="profam" regEx="/[A-Za-z ]/"/>
+                                    </p:column>
+                                </p:row>
+
+                                <p:row>
+                                    <p:column style="font-weight: bold;">Usuario:</p:column>  
+                                    <p:column colspan="2" style="font-weight: bold;">
+                                        <p:selectOneMenu id="profe" filter="true"
+                                                         filterFunction="startsWith"
+                                                         value="#{profesorBeanUI.profesorBeanHelper.usuario2.usuid}"
+                                                         disabled="#{profesorBeanUI.deshabilitar}">                                       
+                                            <f:selectItem itemLabel="Seleccione Usuario" itemValue="#{0}"/>
+                                            <f:selectItems value="#{profesorBeanUI.listaUsuarios}"                                             
+                                                           var="usuario"
+                                                           itemLabel="#{usuario.usuusuario}"
+                                                           itemValue="#{usuario.usuid}"/>                                        
+
+                                        </p:selectOneMenu>
+                                    </p:column>
+
+                                    <p:column style="font-weight: bold;">Programa educativo</p:column>
+                                    <p:column colspan="2" style="font-weight: bold;">
+                                        <h:outputText rendered="#{profesorBeanUI.deshabilitar}"
+                                                      value="#{profesorBeanUI.listaPEDeProf(profesorBeanUI.profesorBeanHelper.profesor)}"/>                                
+                                        <p:selectCheckboxMenu id="checkPE"
+                                                         filter="true" 
+                                                         rendered="#{profesorBeanUI.mostrarListaPE()}"
+                                                         filterFunction="startsWith"
+                                                         value="#{profesorBeanUI.obtenerListaPE}"
+                                                         disabled="#{profesorBeanUI.deshabilitar}"
+                                                         label="Seleccione los Programas Educativos"
+                                                         style="margin-top: 20px">
+                                            
+                                            <f:selectItems value="#{profesorBeanUI.profesorBeanHelper.listaProgramaEducativo}"
+                                                           var="PE"
+                                                           itemLabel="#{PE.pednombre}"
+                                                           itemValue="#{PE.pednombre}"/>
+                                        </p:selectCheckboxMenu>
+                                    </p:column>                                    
+                                </p:row>
+                                
+                                <p:row>
+
+                                </p:row>
+                            </p:panelGrid>
+                            <br/>
+                            <div align="center">
+                                <p:commandButton value="Aceptar" image="btnGuardar" 
+                                                 action="#{profesorBeanUI.onClickSubmit()}"
+                                                 update="cap,:frmProfesor:prof,:frmProfesor:growl">
+                                </p:commandButton>
+
+                                <p:commandButton value="Cancelar" image="btnCancelar"                                             
+                                                 oncomplete="dlg.hide()" 
+                                                 update="cap">
+                                    <p:ajax event="click" update=":frmProfesor:prof,:frmProfesor:showEliminarButton,:frmProfesor:showModificarButton" listener="#{profesorBeanUI.limpiarSeleccion()}"></p:ajax>
+                                </p:commandButton>
+                            </div>
+                        </p:dialog>
+
+                    </p:fieldset>
+                </h:form>
+                
+                <!--<h:form id="frmConfirmacion">-->
+                <p:confirmDialog id="confirmacionId" showEffect="fade" hideEffect="explode" 
+                                 widgetVar="confirmacion" header="Confirmaci&#243;n"
+                                 message="#{profesorBeanUI.mensajeConfirmacion}"
+                                 severity="alert" appendToBody="true">
+                    <h:form>
+                        <div align="center">
+                        <p:commandButton value="Aceptar" action="#{profesorBeanUI.Confirmacion()}"                                             
+                                         icon="ui-icon-check"                                         
+                                         update=":frmProfesor:growl,:frmProfesor:prof,:frmProfesor:capdlg,:frmProfesor:cap, :frmProfesor:showEliminarButton,:frmProfesor:showModificarButton">
+                            <p:ajax event="click" update=":frmProfesor:lblSeleccionados"/>
+
+                        </p:commandButton>
+                        <p:commandButton value="Cancelar" oncomplete="confirmacion.hide()"
+                                         icon="ui-icon-close" update=":frmProfesor:prof"
+                                         rendered="#{profesorBeanUI.renderCancelar}"/>
+                        </div>
+                    </h:form>  
+                </p:confirmDialog>  
+
+                <h:form rendered="#{loginBean.formano}">
+                    <center><h1>No tienes permisos para ver esto</h1></center>
+
+                </h:form>
+
+            </h:body>
+        </f:view>
+    </ui:define>
+</ui:composition> 

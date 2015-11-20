@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+--> 
+<!DOCTYPE html>
+<ui:composition  xmlns="http://www.w3.org/1999/xhtml"
+                 xmlns:h="http://java.sun.com/jsf/html"
+                 xmlns:f="http://java.sun.com/jsf/core"
+                 xmlns:ui="http://java.sun.com/jsf/facelets"
+                 xmlns:p="http://primefaces.org/ui"
+                 xmlns:pe="http://primefaces.org/ui/extensions"
+                 template="/Template/MasterTemplate.xhtml">
+    <ui:define name="contenido">
+        <f:view contentType="text/html">     
+            <h:head>
+                <h:outputStylesheet name="Style_botones.css" library="css"/>
+                <f:facet name="first">
+                    <meta content='text/html; charset=UTF-8' http-equiv="Content-Type"/>
+                    <title>Plan de Estudios</title> 
+                </f:facet>
+
+            </h:head>
+            <h:body onload="#{planEstudioBeanUI.filtrado()}" 
+                    onkeydown="if (event.keyCode == 13) {
+                                event.preventDefault();
+                                return false;
+                            }"> 
+                <h:form id="frmProfesor" rendered="#{loginBean.tienePermiso}">
+                    <p:fieldset legend="Administración de Plan de Estudio">
+                        <p:growl id="growl" showDetail="true" life="10000"/>    
+
+                        <p:commandButton id="showAltaButton" 
+                                         image="btnAU" oncomplete="dlg.show();"
+                                         title="Agregar"
+                                         iconPos="center" 
+                                         actionListener="#{planEstudioBeanUI.nuevo}"
+                                     rendered="#{loginBean.permisoAlta}"
+                                         update="capdlg"/>
+                        <p:commandButton id="showEliminarButton"  image="btnEU"                                         
+                                         title="#{planEstudioBeanUI.tooltip(2)}"                                         
+                                         oncomplete="dlg.show();" 
+                                         iconPos="center" 
+                                         disabled="#{planEstudioBeanUI.deshabilitarMenu()}"
+                                         actionListener="#{planEstudioBeanUI.eliminar}"
+                                         rendered="#{loginBean.permisoBaja}"
+                                         update="capdlg"/>
+                        <p:commandButton id="showModificarButton"  image="btnMU"                                                                           
+                                         title="#{planEstudioBeanUI.tooltip(3)}"
+                                         oncomplete="dlg.show();" 
+                                         iconPos="center" 
+                                         disabled="#{planEstudioBeanUI.deshabilitarMenu()}"
+                                         actionListener="#{planEstudioBeanUI.modificar}"
+                                         rendered="#{loginBean.permisoModificar}"
+                                         update="capdlg"/> 
+                        <br/><br/>
+                        <div id="selecPE" style="display: inline-block; width: 23%">
+                        <p:outputLabel value="Seleccione un programa educativo"/>
+                        <br/>
+                                <p:selectOneMenu value="#{planEstudioBeanUI.planEstudioBeanHelper.programaeducativo2.pedid}"
+                                             style="width: 100%"
+                                             rendered="#{planEstudioBeanUI.planEstudioBeanHelper.ocultarLista}"> 
+                                <p:ajax event="valueChange" update="prof" listener="#{planEstudioBeanUI.filtrado()}"></p:ajax>
+                                
+                                <f:selectItem itemLabel="Seleccionar todos" itemValue="#{0}"/>
+                                <f:selectItems value="#{planEstudioBeanUI.planEstudioBeanHelper.listaProgramaEducativo}"                                          
+                                               var="pe"
+                                               itemLabel="#{pe.pednombre}"
+                                               itemValue="#{pe.pedid}"/>   
+                            </p:selectOneMenu>
+                        </div>                                                                         
+                          
+                        
+                        <div id="divFiltro" style="text-align: right;">       
+                            <p:outputLabel style="font-size: 19px" value="Búsqueda especifica de Plan de Estudio: "/>
+
+                            <p:inputText id="filtro" 
+                                         value="#{planEstudioBeanUI.busqueda}" 
+                                         autocomplete="off"
+                                         label="filtrado"
+                                         maxlength="6"
+                                         >
+                                <pe:keyFilter for="filtro" regEx="/[0-9_\-]/i"/> 
+                                <p:ajax event="keyup"  listener="#{planEstudioBeanUI.filtrado()}" 
+                                        update="prof" />
+                                
+                            </p:inputText>
+                           
+                        </div>
+
+                        
+                        
+                        <p:dataTable id="prof" var="planEstudio" 
+                                     value="#{planEstudioBeanUI.listaFiltrada}"
+                                     rowKey="#{planEstudio.pesid}"
+                                     selection="#{planEstudioBeanUI.planEstudioBeanHelper.listaSeleccionPlanEstudio}"
+                                     emptyMessage="No se encontraron registros a mostrar"
+                                     rows="10" 
+                                     rowsPerPageTemplate="5,10,15,20"
+                                     paginator="true" 
+                                     paginatorTemplate="{CurrentPageReport}  
+                                     {FirstPageLink} {PreviousPageLink} {PageLinks} 
+                                     {NextPageLink} {LastPageLink} 
+                                     {RowsPerPageDropdown}"
+                                     widgetVar="tablaprof"> 
+
+                            <p:ajax event="rowSelect" update="prof,:frmProfesor:showEliminarButton,:frmProfesor:showModificarButton">
+                            </p:ajax>                        
+                            <p:ajax event="rowUnselect"  update=":frmProfesor:showEliminarButton,:frmProfesor:showModificarButton">
+
+                            </p:ajax>                        
+                            <p:ajax event="rowUnselectCheckbox" update=":frmProfesor:showEliminarButton,:frmProfesor:showModificarButton"></p:ajax>
+                            <p:ajax event="rowSelectCheckbox" update=":frmProfesor:showEliminarButton,:frmProfesor:showModificarButton"></p:ajax>
+                            <p:ajax event="toggleSelect" update=":frmProfesor:showEliminarButton,:frmProfesor:showModificarButton"></p:ajax>
+
+                            <p:column  selectionMode="multiple" 
+                                       style="width:16px;text-align:center">                               
+
+                            </p:column>
+
+                             <p:column headerText="Programa educativo">  
+                                <h:outputText value="#{planEstudio.programaeducativo.pednombre}" />  
+                            </p:column>  
+                            <p:column headerText="Plan de estudios">  
+                                <h:outputText value="#{planEstudio.pesvigenciaPlan}" />  
+                            </p:column>  
+                            <p:column headerText="Créditos obligatorios">  
+                                <h:outputText value="#{planEstudio.pescreditosObligatorios}" />  
+                            </p:column>
+                            <p:column headerText="Créditos optativos">  
+                                <h:outputText value="#{planEstudio.pescreditosOptativos}" />  
+                            </p:column>
+                            <p:column headerText="Total de créditos">  
+                                <h:outputText value="#{planEstudio.pestotalCreditos}" />  
+                            </p:column>
+                        </p:dataTable> 
+
+                        <p:dialog id="capdlg" header="#{planEstudioBeanUI.cabecera}" widgetVar="dlg" draggable="false" resizable="false" showEffect="fade" hideEffect="explode" modal="true">
+                            <!--<div id="selecciones" align="center">-->
+
+                            <!--<h:form id="frmSeleccionados">-->
+                            <p:outputLabel id="lblSeleccionados" rendered="#{planEstudioBeanUI.mostrarSeleccionPlanEstudio()}" value="Seleccione el registro a visualizar "></p:outputLabel>
+                            <p:selectOneMenu id="seleccionados" 
+                                             value="#{planEstudioBeanUI.planEstudioBeanHelper.selecPlanEstudio.pesid}"                                                    
+                                             rendered="#{planEstudioBeanUI.mostrarSeleccionPlanEstudio()}"> 
+                                <p:ajax event="valueChange" update="cap" listener="#{planEstudioBeanUI.planEstudioBeanHelper.seleccionarRegistro}"></p:ajax>
+
+                                <f:selectItems value="#{planEstudioBeanUI.planEstudioBeanHelper.listaSeleccionPlanEstudio}"                                             
+                                               var="prof" 
+                                               itemLabel="#{prof.pesvigenciaPlan}"
+                                               itemValue="#{prof.pesid}"/>                                             
+
+                            </p:selectOneMenu>
+                            <!--                            </h:form>-->
+                            <!--</div>-->
+                            <p:panelGrid id="cap" style="margin-top: 20px; position: relative"> 
+                                <p:row>  
+                                    <p:column style="font-weight: bold;">Programa Educativo:</p:column>  
+                                    <p:column  style="font-weight: bold;">
+                                        <p:selectOneMenu id="programaeducativo" disabled="#{planEstudioBeanUI.deshabilitar}" value="#{planEstudioBeanUI.planEstudioBeanHelper.programaeducativo.pedid}">  
+                                            <f:selectItem itemLabel="--Seleccione el programa educativo--" itemValue="#{0}" />  
+                                            <f:selectItems value="#{programaEducativoBeanUI.programaEducativoBeanHelper.programaEducativoDelegate.listaProgramaEducativo}" 
+                                                           var="prog"
+                                                           itemLabel="#{prog.pednombre}"
+                                                           itemValue="#{prog.pedid}"/>  
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    
+                                    <script>
+                                            function validacion(){
+                                            
+                                            if(event.keyCode!==49 || event.keyCode!==50){
+                                            event.preventDefault();
+                                            return false;
+                                            }         
+                                        
+                                    }
+                                    </script>
+
+                                    <p:column colspan="2"></p:column>
+                                    <p:column style="font-weight: bold;">Plan de Estudios:</p:column>  
+                                    <p:column style="font-weight: bold;">
+                                        <p:inputMask id="profrfc" 
+                                                     disabled="#{planEstudioBeanUI.deshabilitar}"
+                                                     value="#{planEstudioBeanUI.planEstudioBeanHelper.planEstudio.pesvigenciaPlan}"
+                                                     mask="9999-9">   
+                                            <p:ajax event="keydown" listener="#{planEstudioBeanUI.validacionVigenciaPlan()}" />
+                                         
+                                         </p:inputMask>                                    
+                                        
+                                    </p:column>
+                                </p:row>
+
+                                <p:row>  
+                                    <p:column style="font-weight: bold;">Créditos Obligatorios:</p:column>  
+                                    <p:column style="font-weight: bold;">
+                                        <p:inputText id="profnom" maxlength="3"
+                                                     disabled="#{planEstudioBeanUI.deshabilitar}"
+                                                     value="#{planEstudioBeanUI.planEstudioBeanHelper.planEstudio.pescreditosObligatorios}" >
+                                        <p:ajax event="keydown"  listener="#{planEstudioBeanUI.horasCompletas()}" update="profam"/>
+                                        <p:ajax event="keydown"  update="profam"/>
+                                        </p:inputText>
+                                        <pe:keyFilter for="profnom" regEx="/[0-9 ]/"/>                                  
+                                    </p:column>
+
+                                    <p:column style="font-weight: bold;">Créditos Optativos:</p:column>  
+                                    <p:column style="font-weight: bold;">
+                                        <p:inputText id="profap" maxlength="3"
+                                                     disabled="#{planEstudioBeanUI.deshabilitar}"
+                                                     value="#{planEstudioBeanUI.planEstudioBeanHelper.planEstudio.pescreditosOptativos}">
+                                            <p:ajax event="keydown"  listener="#{planEstudioBeanUI.horasCompletas()}" update="profam"/>
+                                            <p:ajax event="keydown"  update="profam"/>
+                                        </p:inputText>
+                                        <pe:keyFilter for="profap" regEx="/[0-9 ]/"/>
+                                    </p:column>
+
+                                    <p:column style="font-weight: bold;">Total Créditos:</p:column>  
+                                    <p:column style="font-weight: bold;">
+                                        <p:inputText id="profam" 
+                                                     disabled="#{true}"
+                                                     value="#{planEstudioBeanUI.planEstudioBeanHelper.planEstudio.pestotalCreditos}" />
+                                        <pe:keyFilter for="profam" regEx="/[0-9 ]/"/>
+                                    </p:column>
+                                </p:row>
+
+                               
+                                
+                                <p:row>
+
+                                </p:row>
+                            </p:panelGrid>
+                            <br/>
+                            <div align="center">
+                                <p:commandButton value="Aceptar" image="btnGuardar" 
+                                                 action="#{planEstudioBeanUI.onClickSubmit()}"
+                                                 update="cap,:frmProfesor:prof,:frmProfesor:growl">
+                                </p:commandButton>
+
+                                <p:commandButton value="Cancelar" image="btnCancelar"                                             
+                                                 oncomplete="dlg.hide()" 
+                                                 update="cap">
+                                    <p:ajax event="click" update=":frmProfesor:prof,:frmProfesor:showEliminarButton,:frmProfesor:showModificarButton" listener="#{planEstudioBeanUI.limpiarSeleccion()}"></p:ajax>
+                                </p:commandButton>
+                            </div>
+                        </p:dialog>
+
+                    </p:fieldset>
+                </h:form>
+                <!--<h:form id="frmConfirmacion">-->
+                <p:confirmDialog id="confirmacionId" showEffect="fade" hideEffect="explode" 
+                                 widgetVar="confirmacion" header="Confirmación"
+                                 message="#{planEstudioBeanUI.mensajeConfirmacion}"
+                                 severity="alert" appendToBody="true">
+                    <h:form>
+                        <div align="center">
+                            <p:commandButton value="Aceptar" action="#{planEstudioBeanUI.Confirmacion()}"                                             
+                                         icon="ui-icon-check"
+                                         oncomplete="dlg.show()"
+                                         rendered="#{planEstudioBeanUI.renderAceptar}"
+                                         update=":frmProfesor:growl,:frmProfesor:prof,:frmProfesor:capdlg,:frmProfesor:cap">
+                            <p:ajax event="click" update=":frmProfesor:lblSeleccionados"
+                                    />
+
+                        </p:commandButton>
+                            <p:commandButton value="#{planEstudioBeanUI.nomBotonConfirmDlg}" oncomplete="confirmacion.hide()"
+                                             icon="#{planEstudioBeanUI.iconoConfirmDlg}" update=":frmProfesor:growl,:frmProfesor:prof,:frmProfesor:capdlg,:frmProfesor:cap"
+                                         />
+                        </div>
+                    </h:form>  
+                </p:confirmDialog>  
+
+                <h:form rendered="#{loginBean.formano}">
+                    <center><h1>No tienes permisos para ver esto</h1></center>
+
+                </h:form>
+
+            </h:body>
+        </f:view>
+    </ui:define>
+</ui:composition> 

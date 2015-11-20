@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+                template="/Template/MasterTemplate.xhtml">
+    <ui:define name="contenido">
+        <f:view contentType="text/html">   
+            <h:head>
+                <h:outputStylesheet name="Style_botones.css" library="css"/>
+                <f:facet name="first">
+                    <meta content='text/html; charset=UTF-8' http-equiv="Content-Type"/>
+                    <title>Asignar Área de Conocimiento Administrativa</title> 
+                </f:facet>
+            </h:head>
+            <h:body onload="#{asignarAreaAdministrativaBeanUI.AAAHelper.cargarTodo()}"> 
+                <h:form id="frmAGUAP" rendered="#{loginBean.tienePermiso}">
+                    <p:fieldset legend="Asignación de Coordinadores Área Administrativa">
+                        <p:growl id="growl" showDetail="true" life="10000"/>
+                        <p:commandButton id="showAltaButton" title="Agregar" 
+                                         image="btnAU"  oncomplete="dlg.show();" 
+                                         iconPos="center" update="capdlg"
+                                         actionListener="#{asignarAreaAdministrativaBeanUI.nuevo}"/>
+                        <p:commandButton id="showEliminarButton"
+                                         title="#{asignarAreaAdministrativaBeanUI.toolTip(1)}" 
+                                         image="btnEU"  oncomplete="wconfEli.show();" 
+                                         iconPos="center" update="confEli"
+                                         actionListener="#{asignarAreaAdministrativaBeanUI.eliminar()}"
+                                         disabled="#{asignarAreaAdministrativaBeanUI.botones}">
+                            <p:ajax event="click" update="confEli"/>
+                        </p:commandButton>
+                        <p:commandButton id="showModificarButton" 
+                                         title="#{asignarAreaAdministrativaBeanUI.toolTip(2)}"   
+                                         image="btnMU"  oncomplete="dlg.show();" 
+                                         iconPos="center" update="capdlg, cap"
+                                         actionListener="#{asignarAreaAdministrativaBeanUI.modificar()}"
+                                         disabled="#{asignarAreaAdministrativaBeanUI.botones}">
+                            <p:ajax event="click" update="capdlg, cap"/>
+                        </p:commandButton>
+
+                        <p:dataTable id="asignar" var="aa"
+                                     value="#{asignarAreaAdministrativaBeanUI.AAAHelper.cs}"
+                                     rowKey="#{aa.areaadministrativa}"
+                                     widgetVar="rolSelected"
+                                     rowIndexVar="rolIdTable"
+                                     selectionMode="single"
+                                     rows="10" 
+                                     rowsPerPageTemplate="5,10,15,20"
+                                     paginator="true"                                      
+                                     paginatorTemplate="{CurrentPageReport}  
+                                     {FirstPageLink} {PreviousPageLink} {PageLinks} 
+                                     {NextPageLink} {LastPageLink} 
+                                     {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="({currentPage} de {totalPages})"
+                                     emptyMessage="No hay registros para mostrar">
+                            <p:column headerText="Área Administrativa">
+                                <h:outputText value="#{aa.areaadministrativa.aadnombre}" />
+                            </p:column>
+                            <p:column headerText="Programa Educativo">
+                                <h:outputText value="#{aa.areaadministrativa.programaeducativo.pednombre}" />
+                            </p:column>
+                            <p:column headerText="Coordinador de Área ">
+                                <h:outputText value="#{aa.profesor.pronombre} #{aa.profesor.proapellidoPaterno} #{aa.profesor.proapellidoMaterno}" />
+                            </p:column>
+                            <p:column headerText="Unidad de Aprendizaje ">
+                                <h:outputText value="#{aa.unidadaprendizaje.uapnombre}" />
+                            </p:column>
+                            <p:ajax event="rowSelect" listener="#{asignarAreaAdministrativaBeanUI.seleccion}" update=":frmAGUAP:showEliminarButton, :frmAGUAP:showModificarButton"/>
+                        </p:dataTable>
+                        
+                        <!--Dialogo de captura-->                        
+                        <p:dialog id="capdlg" header="#{asignarAreaAdministrativaBeanUI.header}" widgetVar="dlg" 
+                                  resizable="false" showEffect="fade" 
+                                  hideEffect="explode" modal="true"
+                                  draggable="false">
+                            <p:ajax event="close" update=":frmAGUAP:asignar, :frmAGUAP:showEliminarButton, :frmAGUAP:showModificarButton, :frmAGUAP:cap" listener="#{asignarAreaAdministrativaBeanUI.limpiarSeleccion()}"/>
+                                    
+                            <p:panelGrid id="cap" style="margin-top:20px; position: relative">
+                                
+                                <p:row>
+                                    <p:column><p:outputLabel value="Programa Educativo"/></p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="PE"
+                                                         value="#{asignarAreaAdministrativaBeanUI.AAAHelper.programaEducativo.pedid}"
+                                                         filter="true"
+                                                         filterMatchMode="contains" disabled="#{asignarAreaAdministrativaBeanUI.mostrarPE}">
+                                        <f:selectItem itemLabel="Seleccione el Programa Educativo" itemValue="#{asignarAreaAdministrativaBeanUI.AAAHelper.programaEducativo.pedid}"/>
+                                        <f:selectItems value="#{asignarAreaAdministrativaBeanUI.listaPE}"
+                                                       var="pe"
+                                                       itemLabel="#{pe.pedclave} - #{pe.pednombre}" 
+                                                       itemValue="#{pe.pedid}"/>
+                                        <p:ajax event="valueChange" update="cap" listener="#{asignarAreaAdministrativaBeanUI.filtrarPlanYProfPorPE()}"/>
+                                        </p:selectOneMenu>                                        
+                                    </p:column>
+                                </p:row>
+                                
+                                <p:row>
+                                    <p:column><p:outputLabel value="Plan de Estudios"/></p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="Plan"
+                                                         value="#{asignarAreaAdministrativaBeanUI.AAAHelper.planEstudio.pesid}"
+                                                         filter="true"
+                                                         filterMatchMode="contains" disabled="false">
+                                            <f:selectItem itemLabel="Seleccione el Plan de Estudios" itemValue="#{0}"/>
+                                            <f:selectItems value="#{asignarAreaAdministrativaBeanUI.listaPlan}"
+                                                           var="plan"
+                                                           itemLabel="#{plan.pesvigenciaPlan}"
+                                                           itemValue="#{plan.pesid}" />
+                                            <p:ajax event="valueChange" update="cap" listener="#{asignarAreaAdministrativaBeanUI.filtrarAreaYGpoPorPlan()}"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>                                  
+                                <p:row>
+                                    <p:column><p:outputLabel value="Área de Conocimiento"/></p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="Area"
+                                                         value="#{asignarAreaAdministrativaBeanUI.AAAHelper.areaConocimiento.acoid}"
+                                                         filter="true"
+                                                         filterMatchMode="contains"
+                                                         disabled="#{asignarAreaAdministrativaBeanUI.deshabilitar}">
+                                            <f:selectItem itemLabel="Seleccione un Área de Conocimiento" itemValue="#{0}"/>
+                                            <f:selectItems value="#{asignarAreaAdministrativaBeanUI.listaAC}"
+                                                           var="ac"
+                                                           itemLabel="#{ac.aconombre}"
+                                                           itemValue="#{ac.acoid}" />
+                                            <p:ajax event="valueChange" update="cap" listener="#{asignarAreaAdministrativaBeanUI.filtrarUAPorArea()}" />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                
+                                <p:row>
+                                    <p:column><p:outputLabel value="Área Administrativa"/></p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="AreaAd"
+                                                         value="#{asignarAreaAdministrativaBeanUI.AAAHelper.area.aadid}">
+                                            <f:selectItem itemLabel="Seleccione un Área Administrativa" itemValue="#{0}"/>
+                                            <f:selectItems value="#{asignarAreaAdministrativaBeanUI.AAAHelper.areaadministrativas}"
+                                                           var="area"
+                                                           itemLabel="#{area.aadnombre}"
+                                                           itemValue="#{area.aadid}"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                                              
+                                <p:row>
+                                    <p:column><p:outputLabel value="Unidad de Aprendizaje"/></p:column>
+                                    <p:column>
+                                        <p:selectCheckboxMenu filter="true"
+                                                              filterMatchMode="contains"
+                                                              value="#{asignarAreaAdministrativaBeanUI.AAAHelper.unidadesAp}"
+                                                              label="Seleccione la Unidad de Aprendizaje">
+                                            <f:selectItems value="#{asignarAreaAdministrativaBeanUI.listaUA}" 
+                                                           var="uniAprendizaje"
+                                                           itemLabel="#{uniAprendizaje.uapclave} - #{uniAprendizaje.uapnombre}"
+                                                           itemValue="#{uniAprendizaje.uapid}"/>
+                                        </p:selectCheckboxMenu>
+                                    </p:column>
+                                </p:row>
+                                
+                                <p:row>
+                                    <p:column><p:outputLabel value="Profesor"/></p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="prof" 
+                                                         value="#{asignarAreaAdministrativaBeanUI.AAAHelper.profesor.proid}"
+                                                         filter="true"
+                                                         filterMatchMode="contains"
+                                                         disabled="#{asignarAreaAdministrativaBeanUI.deshabilitar}">
+                                            <f:selectItem itemLabel="Seleccione Profesor" itemValue="#{0}" />
+                                            <f:selectItems value="#{asignarAreaAdministrativaBeanUI.listaProfesor}" 
+                                                           var="profe"
+                                                           itemLabel="#{profe.pronumeroEmpleado} - #{profe.pronombre} #{profe.proapellidoPaterno} #{profe.proapellidoMaterno}"
+                                                           itemValue="#{profe.proid}"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
+                            <center>
+                            <p:commandButton value="Aceptar" image="btnGuardar"  
+                                             actionListener="#{asignarAreaAdministrativaBeanUI.onClickSubmit()}" 
+                                             update=":frmAGUAP:growl, cap, :frmAGUAP:asignar">
+                            </p:commandButton>     
+                                    
+                            <p:commandButton value="Cancelar" image="btnCancelar" 
+                                             oncomplete="dlg.hide()" 
+                                             update=":frmAGUAP:asignar, :frmAGUAP:capdlg">
+                                <p:ajax event="click" 
+                                        update=":frmAGUAP:asignar, :frmAGUAP:showEliminarButton, :frmAGUAP:showModificarButton, :frmAGUAP:cap" 
+                                        listener="#{asignarAreaAdministrativaBeanUI.limpiarSeleccion()}" />
+                            </p:commandButton>
+                            </center>
+                        </p:dialog>                                                                                             
+                    </p:fieldset>                                                                                           
+                    
+                    <!--kjhgfdsasdfg- - -Eliminaciones - - hjkjhgfdsdfghjkjhgfds-->
+                    <p:dialog id="confEli" widgetVar="wconfEli" showEffect="fade" hideEffect="explode" header="Eliminar Coordinación de Unidad de Aprendizaje">
+                    <p:ajax event="close" update=":frmAGUAP:asignar, :frmAGUAP:showEliminarButton, :frmAGUAP:showModificarButton, :frmAGUAP:cap" listener="#{asignarGrupoUnidadAprendizajeProfesorBeanUI.limpiarSeleccion()}"/>      
+                            <p:panelGrid id="cape" style="margin-top:20px; position: relative">
+                                <p:row>
+                                    <p:column><p:outputLabel value="Programa Educativo"/></p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="PEe"
+                                                         value="#{asignarAreaAdministrativaBeanUI.AAAHelper.programaEducativo.pedid}"
+                                                         disabled="true"
+                                                         filter="true"
+                                                         filterMatchMode="contains">
+                                        <f:selectItem itemLabel="Seleccione el Programa Educativo" itemValue="#{0}"/>
+                                        <f:selectItems value="#{asignarAreaAdministrativaBeanUI.listaPE}"
+                                                       var="pe"
+                                                       itemLabel="#{pe.pedclave} - #{pe.pednombre}" 
+                                                       itemValue="#{pe.pedid}"/>
+                                        <p:ajax event="valueChange" update="cap" listener="#{asignarAreaAdministrativaBeanUI.filtrarPlanYProfPorPE()}"/>
+                                        </p:selectOneMenu>                                        
+                                    </p:column>
+                                </p:row>
+                                
+                                <p:row>
+                                    <p:column><p:outputLabel value="Plan de Estudios"/></p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="Plane"
+                                                         value="#{asignarAreaAdministrativaBeanUI.AAAHelper.planEstudio.pesid}"
+                                                         disabled="true"
+                                                         filter="true"
+                                                         filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Seleccione el Plan de Estudios" itemValue="#{0}"/>
+                                            <f:selectItems value="#{asignarAreaAdministrativaBeanUI.listaPlan}"
+                                                           var="plan"
+                                                           itemLabel="#{plan.pesvigenciaPlan}"
+                                                           itemValue="#{plan.pesid}" />
+                                            <p:ajax event="valueChange" update="cap" listener="#{asignarAreaAdministrativaBeanUI.filtrarAreaYGpoPorPlan()}"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>                                  
+                                <p:row>
+                                    <p:column><p:outputLabel value="Área de Conocimiento"/></p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="Areae"
+                                                         value="#{asignarAreaAdministrativaBeanUI.AAAHelper.areaConocimiento.acoid}"
+                                                         disabled="true"
+                                                         filter="true"
+                                                         filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Seleccione un Área de Conocimiento" itemValue="#{0}"/>
+                                            <f:selectItems value="#{asignarAreaAdministrativaBeanUI.listaAC}"
+                                                           var="ac"
+                                                           itemLabel="#{ac.aconombre}"
+                                                           itemValue="#{ac.acoid}" />
+                                            <p:ajax event="valueChange" update="cap" listener="#{asignarAreaAdministrativaBeanUI.filtrarUAPorArea()}" />
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                
+                                <p:row>
+                                    <p:column><p:outputLabel value="Área Administrativa"/></p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="AreaAde"
+                                                         disabled="true"
+                                                         value="#{asignarAreaAdministrativaBeanUI.AAAHelper.area.aadid}">
+                                            <f:selectItem itemLabel="Seleccione un Área Administrativa" itemValue="#{0}"/>
+                                            <f:selectItems value="#{asignarAreaAdministrativaBeanUI.AAAHelper.areaadministrativas}"
+                                                           var="area"
+                                                           itemLabel="#{area.aadnombre}"
+                                                           itemValue="#{area.aadid}"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                                                              
+                                <p:row>
+                                    <p:column><p:outputLabel value="Unidad de Aprendizaje"/></p:column>
+                                    <p:column>
+                                        <p:inputText
+                                            value="#{asignarAreaAdministrativaBeanUI.u.uapnombre}"
+                                            disabled="true"
+                                            label="Seleccione la Unidad de Aprendizaje"/>
+                                    </p:column>
+                                </p:row>
+                                
+                                <p:row>
+                                    <p:column><p:outputLabel value="Profesor"/></p:column>
+                                    <p:column>
+                                        <p:selectOneMenu id="profe" 
+                                                         value="#{asignarAreaAdministrativaBeanUI.AAAHelper.profesor.proid}"
+                                                         disabled="true"
+                                                         filter="true"
+                                                         filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Seleccione Profesor" itemValue="#{0}" />
+                                            <f:selectItems value="#{asignarAreaAdministrativaBeanUI.listaProfesor}" 
+                                                           var="profe"
+                                                           itemLabel="#{profe.pronumeroEmpleado} - #{profe.pronombre} #{profe.proapellidoPaterno} #{profe.proapellidoMaterno}"
+                                                           itemValue="#{profe.proid}"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
+                            <center>
+                            <p:commandButton value="Aceptar" image="btnGuardar"  
+                                             actionListener="#{asignarAreaAdministrativaBeanUI.confirmacion()}" 
+                                             update=":frmAGUAP:growl, cap, :frmAGUAP:asignar">
+                            </p:commandButton>     
+                                    
+                            <p:commandButton value="Cancelar" image="btnCancelar" 
+                                             oncomplete="wconfEli.hide()" 
+                                             update=":frmAGUAP:asignar, :frmAGUAP:capdlg">
+                                <p:ajax event="click" 
+                                        update=":frmAGUAP:asignar, :frmAGUAP:showEliminarButton, :frmAGUAP:showModificarButton, :frmAGUAP:cap" 
+                                        listener="#{asignarAreaAdministrativaBeanUI.limpiarSeleccion()}" />
+                            </p:commandButton>
+                            </center>
+                </p:dialog>
+                <!--asdfgfdsasdfghjhgfdsasdfghjkjhgfdsdfghj-->
+                    
+                    
+                </h:form>
+                
+                
+                <p:confirmDialog id="confirmdlgId" showEffect="fade" hideEffect="explode" 
+                                widgetVar="confirmdlg" header="Confirmación"
+                                message="¿Está seguro de eliminar el registro?"
+                                severity="alert" appendTo="@(body)">
+                   <h:form><center>
+                       <p:commandButton value="Aceptar" action="#{asignarAreaAdministrativaBeanUI.eliminarCAA()}"                          
+                                        icon="ui-icon-check" oncomplete="wconfEli.hide(), confirmdlg.hide()"
+                                            update=":frmAGUAP:growl,:frmAGUAP:asignar, :frmAGUAP:cap, :frmAGUAP:capdlg">
+                           <p:ajax event="click" update=":frmAGUAP:showEliminarButton, :frmAGUAP:showModificarButton, :frmAGUAP:cap, :frmAGUAP:asignar"/>
+                           
+                       </p:commandButton>
+                        <p:commandButton value="Cancelar" oncomplete="confirmdlg.hide()"
+                                            icon="ui-icon-close"/>
+                        </center>
+                   </h:form>  
+                </p:confirmDialog>   
+                
+                
+                <h:form rendered="#{loginBean.formano}">
+                    <center><h1>No tienes permisos para ver esto</h1></center>
+
+                </h:form>
+            </h:body>
+        </f:view>
+    </ui:define>
+</ui:composition>
