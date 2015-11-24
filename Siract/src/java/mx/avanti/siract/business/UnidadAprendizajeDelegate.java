@@ -7,6 +7,9 @@ package mx.avanti.siract.business;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import mx.avanti.siract.business.entity.Areaconocimiento;
+import mx.avanti.siract.business.entity.Planestudio;
+import mx.avanti.siract.business.entity.Programaeducativo;
 import mx.avanti.siract.business.entity.Unidadaprendizaje;
 import mx.avanti.siract.business.services.ServiceFacadeLocator;
 
@@ -72,4 +75,35 @@ public class UnidadAprendizajeDelegate implements Serializable{
         return ServiceFacadeLocator.getInstanceFacadeUnidadAprendizaje().getUAMismaArea(idArea);
     }
       
+        /////////////////
+    private List<Programaeducativo> listaProgramaEducativo;
+    private List<Planestudio> listaPlanEstudio;
+    private List<Areaconocimiento> listaAreaConocimiento;
+
+  public List<Programaeducativo> getListaProgramaEducativo() {
+        listaProgramaEducativo = ServiceFacadeLocator.getInstanceFacadeProgramaEducativo().consultaProgramaEducativo();
+        return listaProgramaEducativo;
+    }
+    public void setListaProgramaEducativo(List<Programaeducativo> listaProgramaEducativo) {
+        this.listaProgramaEducativo = listaProgramaEducativo;
+    }
+
+    public List<Planestudio> getListaPlanEstudio() {
+        listaPlanEstudio = ServiceFacadeLocator.getInstanceFacadePlanEstudio().consultaPlanestudio();
+        return listaPlanEstudio;
+    }
+
+    public void setListaPlanEstudio(List<Planestudio> listaPlanEstudio) {
+        this.listaPlanEstudio = listaPlanEstudio;
+    }
+
+    public List<Areaconocimiento> getListaAreaConocimiento() {
+        listaAreaConocimiento = ServiceFacadeLocator.getInstanceFacadeAreaConocimiento().consultaAreaConocimiento();
+        return listaAreaConocimiento;
+    }
+
+    public void setListaAreaConocimiento(List<Areaconocimiento> listaAreaConocimiento) {
+        this.listaAreaConocimiento = listaAreaConocimiento;
+    }
+    
 }

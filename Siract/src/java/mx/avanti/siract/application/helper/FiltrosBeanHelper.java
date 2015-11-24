@@ -104,6 +104,12 @@ public class FiltrosBeanHelper implements Serializable{
        creid=0;
     }  
 
+//    public Usuario mostrarUsuario(Usuario usuario,Rol rolSeleccionado){
+//        Usuario usuarioSelec=usuarioDelegate.getUsuario(usuario.getUsuid());
+//        
+//        return usuarioSelec;
+//    }
+    
     public ReporteAux fijarAtributosReporte(ReporteAux reporteUI,String tipoReporte){
         ReporteAux reporteSet = new ReporteAux();
         
@@ -11972,6 +11978,83 @@ public class FiltrosBeanHelper implements Serializable{
        } 
         
        return listaAux;
+    }
+    
+    public ReporteAvanceAux TiempoLimiteYCorte(ReporteAux reporteUI){
+        
+        init();
+        
+        //objeto que se pasa al delegate y este por las capas al dao
+        //que contiene los atributos necesarios para la consulta de Entregados 
+        //A Tiempo
+        //con el criteri(restricciones), necesita inicializarse asi los ceros y
+        //nulos de los atributos que no van a necesitar
+        ReporteAux reporte=new ReporteAux();
+        
+        int cont=0;        
+        
+        //toma esta clase solo los atributos que necesita que son
+        //los que posteriormente le pasa al objeto reporte que necesita
+        //inicializarse para que los atributos que no necesita sean ceros
+        //o nulos y los ignore el metodo del dao
+        setNumRact(reporteUI.getNumRact());                  
+        setCescicloEscolar(reporteUI.getCescicloEscolar());          
+                
+        reporte=new ReporteAux();        
+        
+        reporte.setOp("ConfigSet");
+        
+        //tipo de consulta del delegate al dao obtiene las tablas desde configuración
+        List<Configuracion> lista6=reporteAvanceContenidoTematicoDelegate.getConfiguracion(reporte);
+        
+         //lista para unir id de configuracion con el id correspondiente de calendario reporte
+        List<Calendarioreporte> listaCalendario;                        
+        
+        Date fechaCorte=null;
+        Date fechaLimite=null;
+        
+        //lista para unir id de calendarioreporte con el id correspondiente de calendarioreportetienealerta
+        List<CalendarioreporteTieneAlerta> lista7;        
+         
+        //recorre la lista de configuracion y compara el ciclo escolar del objeto reporteUI que viene del
+        //beanUI con el ciclo escolar que le corresponde a la consulta o criteria de configuración
+        for(Configuracion con: lista6){
+            if (con.getCicloescolar().getCescicloEscolar().equalsIgnoreCase(cescicloEscolar) ) {
+               //busca el id de configuración en una lista con criteria o consulta de calendarioreporte
+               listaCalendario=reporteAvanceContenidoTematicoDelegate.getCalendarioreporte(con.getConfechaInicioSemestre());       
+                      
+                 for (Calendarioreporte cr : listaCalendario) {
+                    
+                    reporte=new ReporteAux();
+                    
+                    reporte.setOp("CalendReportTieneAlerta");
+                    
+                    reporte.setCreid(cr.getCreid());
+                    reporte.setCalnumeroReporte(numRact);
+                    
+                    //busca por numero de ract en calendarioreportetienealerta el numero correspondiente
+                    //de id de la lista o criteria consultada de calendario reporte
+                    //*todas estas uniones son para no usar los set de las tablas por medio de un
+                    //query de join(en estas tres partes coincidan por el mismo id que las une)*
+                    lista7 = reporteAvanceContenidoTematicoDelegate.getCalendarioreporteTieneAlerta(reporte);
+
+                    if(lista7.size()>0){
+                        
+                    //toma la fecha correspondiente de todas las uniones correspondientes al
+                    //numero ract con el ciclo escolar y plan de estudios correcto
+                    fechaCorte = lista7.get(0).getCalendarioreporte().getCrefechaCorte();
+                    fechaLimite = lista7.get(0).getCalendarioreporte().getCrefechaLimite();
+                    
+                    }
+                }   
+            }
+        }
+        ReporteAvanceAux ra = new ReporteAvanceAux();
+        
+        ra.setFechaLimite(fechaLimite);
+        ra.setFechaCorte(fechaCorte);
+        
+        return ra;
     }
     
     //metodo para hacer la consulta o join(criteria del dao por todas las capas) 

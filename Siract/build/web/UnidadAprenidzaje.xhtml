@@ -9,12 +9,14 @@ and open the template in the editor.
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions"
                 template="/Template/MasterTemplate.xhtml">
     <ui:define name="contenido">
 
 
         <f:view contentType="text/html">
             <h:head>
+                <h:outputStylesheet name="Style_botones.css" library="css"/>
                 <f:facet name="first">
                     <meta content='text/html; charset=UTF-8' http-equiv="Content-Type"/>
                     <title>Unidad de Aprendizaje</title>
@@ -24,199 +26,341 @@ and open the template in the editor.
             <h:body onload="#{unidadAprendizajeBeanUI.filtrado()}">
                 <h:form id="frmUnidApren" rendered="#{loginBean.tienePermiso}"> 
                     <p:fieldset legend="Unidad de Aprendizaje">
+                        <p:growl id="growl" showDetail="true" life="10000"/>    
+                        <p:commandButton id="showAltaButton" title="Agregar"
+                                         image="btnAU" oncomplete="dlg.show();"
+                                         iconPos="center" update="capdlg"                                         
+                                         actionListener="#{unidadAprendizajeBeanUI.nuevo()}"/>
+                        
+                        <p:commandButton id="showEliminarButton"  title="Eliminar"
+                                         image="btnEU" oncomplete="dlg.show();"
+                                         iconPos="center" update="capdlg"
+                                         actionListener="#{unidadAprendizajeBeanUI.eliminar()}"
+                                         disabled="#{unidadAprendizajeBeanUI.deshabilitarMenu()}"/>
+                        
+                        <p:commandButton id="showModificarButton" title="Modificar"
+                                         image="btnMU" oncomplete="dlg.show()"
+                                         iconPos="center" update="capdlg"
+                                         actionListener="#{unidadAprendizajeBeanUI.modificar()}" 
+                                         disabled="#{unidadAprendizajeBeanUI.deshabilitarMenu()}"/> 
 
-                        <p:commandButton id="showAltaButton" icon="ui-icon-circle-plus" onclick="dlg.show();" iconPos="center" actionListener="#{capturaUnidadAprendizajeBeanUI.nuevo}" update="cap"/>
-                        <p:commandButton id="showEliminarButton"  icon="ui-icon-circle-minus"  onclick="dlg1.show();" iconPos="center" update="display"/>
-                        <p:commandButton id="showMostrarButton"  icon="ui-icon-pencil"  onclick="dlg.show();" iconPos="center" actionListener="#{capturaUnidadAprendizajeBeanUI.modificar}" update="cap"/> 
+                        
+                        
+                        <div id="divFiltro" style="text-align: right;">       
+                            <p:outputLabel style="font-size: 19px" value="B&#250;squeda específica de Unidad de Aprendizaje "/>
 
-                        <p:dataTable id="unidad" var="aprendizaje" 
+                            <p:inputText id="filtro" 
+                                         value="#{unidadAprendizajeBeanUI.busqueda}" 
+                                         autocomplete="off"
+                                         label="filtrado">
+                                <p:ajax event="keyup"  listener="#{unidadAprendizajeBeanUI.filtrado()}" 
+                                        update="unidad" />
+                            </p:inputText>
+                        </div>                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <p:dataTable id="unidad" var="UA" 
                                      value="#{unidadAprendizajeBeanUI.listaFiltrada}"
-                                     rowKey="#{aprendizaje.uapid}"
-                                     selection="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.selecUnidadaprendizaje}"
-                                     selectionMode="single"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
-                                     paginator="true" rows="4" style="margin-bottom:20px">
+                                     rowKey="#{UA.uapid}"
+                                     selection="#{unidadAprendizajeBeanUI.UABeanHelper.listaUASeleccionada}"
+                                     rows="10" 
+                                     rowsPerPageTemplate="5,10,15,20"
+                                     paginator="true" 
+                                     rowSelectMode="add"
+                                     selectionMode="checkbox"                                                                        
+                                     paginatorTemplate="{CurrentPageReport}  
+                                     {FirstPageLink} {PreviousPageLink} {PageLinks} 
+                                     {NextPageLink} {LastPageLink} 
+                                     {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="({currentPage} de {totalPages})"
+                                     emptyMessage="No se encontraron registros a mostrar">
+                            
+                            <p:ajax event="rowSelect" update=":frmUnidApren:showEliminarButton, :frmUnidApren:showModificarButton"/>
+                            <p:ajax event="rowUnselect" update=":frmUnidApren:showEliminarButton, :frmUnidApren:showModificarButton"/>
+                            <p:ajax event="rowSelectCheckbox" update=":frmUnidApren:showEliminarButton, :frmUnidApren:showModificarButton"/>
+                            <p:ajax event="rowUnselectCheckbox" update=":frmUnidApren:showEliminarButton, :frmUnidApren:showModificarButton"/>
+                            <p:ajax event="toggleSelect" update=":frmUnidApren:showEliminarButton, :frmUnidApren:showModificarButton"/>                            
 
-                            <p:column headerText="Campus">  
-                                <h:outputText value="#{aprendizaje.areaconocimiento.planestudio.programaeducativo.unidadacademica.campus.camnombre}" />  
+                            <p:column selectionMode="multiple" 
+                                      style="width: 1%; text-align: center">                                
+                            </p:column>                         
+                            
+                            <p:column headerText="Clave">  
+                                <h:outputText value="#{UA.uapclave}" />  
                             </p:column>
-                            <p:column headerText="Unidad Academica">  
-                                <h:outputText value="#{aprendizaje.areaconocimiento.planestudio.programaeducativo.unidadacademica.uacnombre}"/>  
+                            
+                            <p:column headerText="Nombre">  
+                                <h:outputText value="#{UA.uapnombre}"/>  
                             </p:column>
-                            <p:column headerText="Programa Educativo">  
-                                <h:outputText value="#{aprendizaje.areaconocimiento.planestudio.programaeducativo.pednombre}"/>  
+                            
+                            <p:column headerText="Tipo caracter">  
+                                <h:outputText value="#{UA.uaptipoCaracter}"/>  
                             </p:column>
-                            <p:column headerText="Plan de Estudios">  
-                                <h:outputText value="#{aprendizaje.areaconocimiento.planestudio.pesvigenciaPlan}"/>  
+                            
+                            <p:column headerText="Horas clase">  
+                                <h:outputText value="#{UA.uaphorasClase}"/>  
                             </p:column>
-                            <p:column headerText="Area de Conocimiento">  
-                                <h:outputText value="#{aprendizaje.areaconocimiento.aconombre}"/>  
+                            
+                            <p:column headerText="Horas taller">  
+                                <h:outputText value="#{UA.uaphorasTaller}"/>  
                             </p:column>
-                            <p:column headerText="Clave Unidad Aprendizaje">  
-                                <h:outputText value="#{aprendizaje.uapclave}" />  
+                            
+                            <p:column headerText="Horas laboratorio">  
+                                <h:outputText value="#{UA.uaphorasLaboratorio}" />  
                             </p:column> 
-                            <p:column headerText="Nombre Unidad Aprendizaje">  
-                                <h:outputText value="#{aprendizaje.uapnombre}"/>  
+                            
+                            <p:column headerText="Horas practicas de campo">  
+                                <h:outputText value="#{UA.uaphorasCampo}"/>  
                             </p:column> 
-                            <p:column headerText="Créditos">  
-                                <h:outputText value="#{aprendizaje.uapcreditos}"/>  
+                            
+                            <p:column headerText="Horas clinicas">  
+                                <h:outputText value="#{UA.uaphorasClinica}"/>  
                             </p:column> 
-                            <p:column headerText="Etapa">  
-                                <h:outputText value="#{aprendizaje.uapetapaFormacion}"/>  
+                            
+                            <p:column headerText="Horas extra clase">  
+                                <h:outputText value="#{UA.uaphorasExtraClase}"/>  
                             </p:column> 
-                            <p:column headerText="Tipo de carácter">  
-                                <h:outputText value="#{aprendizaje.uaptipoCaracter}"/>  
+                            
+                            <p:column headerText="Creditos">  
+                                <h:outputText value="#{UA.uapcreditos}"/>  
                             </p:column> 
-                            <p:column headerText="HC">  
-                                <h:outputText value="#{aprendizaje.uaphorasClase}"/>  
-                            </p:column> 
-                            <p:column headerText="HT">  
-                                <h:outputText value="#{aprendizaje.uaphorasTaller}"/>  
-                            </p:column> 
-                            <p:column headerText="HL">  
-                                <h:outputText value="#{aprendizaje.uaphorasLaboratorio}"/>  
-                            </p:column> 
-                            <p:column headerText="HE">  
-                                <h:outputText value="#{aprendizaje.uaphorasExtraClase}"/>  
-                            </p:column>
-                            <p:column headerText="Ciclo escolar">  
-                                <h:outputText value="#{aprendizaje.cicloescolar.cescicloEscolar}" />  
-                            </p:column>
+                            
+                            <p:column headerText="Area de conocimiento">
+                                <h:outputText value="#{unidadAprendizajeBeanUI.consultaACDeUA(UA)}"/>
+                            </p:column>                            
                         </p:dataTable>
                     </p:fieldset>
 
-                    <p:dialog header="Captura" widgetVar="dlg" resizable="false" showEffect="fade" hideEffect="explode" modal="true">
+                    <p:dialog id="capdlg" header="#{unidadAprendizajeBeanUI.cabecera}" widgetVar="dlg" 
+                              resizable="false" showEffect="fade" 
+                              hideEffect="explode" modal="true"
+                              draggable="false">
+                        <p:ajax event="close" 
+                                update=":frmUnidApren:unidad, :frmUnidApren:showEliminarButton, :frmUnidApren:showModificarButton, :frmUnidApren:cap" listener="#{unidadAprendizajeBeanUI.limpiarSeleccion()}"/>
+                        <div id="selecs">
+
+                        <p:outputLabel id="lblSeleccionados" 
+                                       rendered="#{unidadAprendizajeBeanUI.mostrarSeleccionUA()}"
+                                       value="--Seleccione el registro para desplegar datos--"
+                                       style="margin-right: 2%; margin-top: 20%;"/>
+                        
+                        <p:selectOneMenu id="seleccionados"
+                                         value="#{unidadAprendizajeBeanUI.UABeanHelper.selecUA.uapid}"
+                                         rendered="#{unidadAprendizajeBeanUI.mostrarSeleccionUA()}"
+                                         style="width: 600px">
+                            <p:ajax event="valueChange" update="cap"
+                                    listener="#{unidadAprendizajeBeanUI.UABeanHelper.seleccionarRegistro()}"/>
+                        
+                            <f:selectItems value="#{unidadAprendizajeBeanUI.UABeanHelper.listaUASeleccionada}"
+                                           var="ua"
+                                           itemLabel="#{ua.uapclave} - #{ua.uapnombre}"
+                                           itemValue="#{ua.uapid}"/>
+                        
+                        
+                        </p:selectOneMenu>
+                        </div>
+                        
                         <p:panelGrid style="margin-top:20px; position: relative" id="cap">
-                            <p:row>  
+<!--                            <p:row>  
                                 <p:column colspan="6" styleClass="ui-widget-header">  
                                     Datos Unidad de Aprendizaje<p:spacer height="0"/>  
                                 </p:column>  
+                            </p:row>-->
+                            
+                            <p:row>
+                                <p:column colspan="2"><p:outputLabel value="Programa Educativo"/></p:column>
+                                <p:column colspan="2">
+                                    <p:selectOneMenu id="PE"
+                                                     value="#{unidadAprendizajeBeanUI.UABeanHelper.programaEducativo.pedid}"
+                                                     filter="true"
+                                                     filterMatchMode="contains"                                                     
+                                                     >
+                                    <f:selectItem itemLabel="--Seleccione un Programa Educativo--" itemValue="#{0}"/>
+                                    <f:selectItems value="#{unidadAprendizajeBeanUI.listaPE}"
+                                                   var="pe"
+                                                   itemLabel="#{pe.pedclave} - #{pe.pednombre}" 
+                                                   itemValue="#{pe.pedid}"/>  
+                                    <p:ajax event="valueChange" update="cap" listener="#{unidadAprendizajeBeanUI.fitlrarPlanPorPE()}"/>
+                                    </p:selectOneMenu>
+                                </p:column>
                             </p:row>
+                            
+                            <p:row>
+                                <p:column colspan="2"><p:outputLabel value="Plan de Estudios"/></p:column>
+                                <p:column colspan="2">
+                                    <p:selectOneMenu id="Plan"
+                                                     value="#{unidadAprendizajeBeanUI.UABeanHelper.planEstudio.pesid}"
+                                                     filter="true"
+                                                     filterMatchMode="contains"                                                     
+                                                     >
+                                    <f:selectItem itemLabel="--Seleccione un Plan de Estudio--" itemValue="#{0}"/>
+                                    <f:selectItems value="#{unidadAprendizajeBeanUI.listaPlan}"
+                                                   var="plan"
+                                                   itemLabel="#{plan.pesvigenciaPlan}" 
+                                                   itemValue="#{plan.pesid}"/>      
+                                    <p:ajax event="valueChange" update="cap" listener="#{unidadAprendizajeBeanUI.filtrarAreaPorPlan()}"/>
+                                    </p:selectOneMenu>
+                                </p:column>
+                            </p:row>         
+                            
+                            <p:row>
+                                <p:column colspan="2"><p:outputLabel value="Areas de Conocimiento"/></p:column>
+                                <p:column colspan="2">
+                                    <p:selectOneMenu id="Area"
+                                                     value="#{unidadAprendizajeBeanUI.UABeanHelper.areaConocimiento.acoid}"
+                                                     filter="true"
+                                                     filterMatchMode="contains"                                                     
+                                                     >
+                                    <f:selectItem itemLabel="--Seleccione una Area de Conocimiento--" itemValue="#{0}"/>
+                                    <f:selectItems value="#{unidadAprendizajeBeanUI.listaAC}"
+                                                   var="ac"
+                                                   itemLabel="#{ac.acoclave} - #{ac.aconombre}" 
+                                                   itemValue="#{ac.acoid}"/>                                                
+                                    </p:selectOneMenu>
+                                </p:column>
+                            </p:row>                             
+                            
                             <p:row>  
                                 <p:column style="font-weight: bold;">Clave Unidad Aprendizaje:</p:column>  
-                                <p:column style="font-weight: bold;"><p:inputText value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.unidadaprendizaje.uapclave}" /></p:column>
+                                <p:column style="font-weight: bold;"><p:inputText value="#{unidadAprendizajeBeanUI.UABeanHelper.unidadAprendizaje.uapclave}" /></p:column>
 
                                 <p:column style="font-weight: bold;">Nombre Unidad Aprendizaje:</p:column>  
-                                <p:column style="font-weight: bold;"><p:inputText value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.unidadaprendizaje.uapnombre}" /></p:column>
+                                <p:column style="font-weight: bold;"><p:inputText value="#{unidadAprendizajeBeanUI.UABeanHelper.unidadAprendizaje.uapnombre}" /></p:column>
                             </p:row>
-                            <p:row>  
-                                <p:column style="font-weight: bold;">Créditos:</p:column>  
-                                <p:column style="font-weight: bold;"><p:inputText value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.unidadaprendizaje.uapcreditos}" /></p:column>
-                            </p:row>
+
                             <p:row>
                                 <p:column><p:outputLabel value="Etapa"/></p:column>
                                 <p:column>
-                                    <p:selectOneMenu id="etapa" value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.unidadaprendizaje.uapetapaFormacion}">  
-                                        <f:selectItem itemLabel="Seleccione Etapa" itemValue="#{0}" />
-                                        <f:selectItem itemLabel="Basica" itemValue="Basica"/>
-                                        <f:selectItem itemLabel="Disciplinaria" itemValue="Disciplinaria"/>
-                                        <f:selectItem itemLabel="Terminal" itemValue="Terminal"/>
+                                    <p:selectOneMenu id="etapa" value="#{unidadAprendizajeBeanUI.UABeanHelper.unidadAprendizaje.uapetapaFormacion}">  
+                                        <f:selectItem itemLabel="--Seleccione Etapa--" itemValue="#{0}" />
+                                        <f:selectItem itemLabel="BASICA" itemValue="Basica"/>
+                                        <f:selectItem itemLabel="DISCIPLINARIA" itemValue="Disciplinaria"/>
+                                        <f:selectItem itemLabel="TERMINAL" itemValue="Terminal"/>
                                     </p:selectOneMenu>
                                 </p:column>
 
                                 <p:column><p:outputLabel value="Tipo"/></p:column>
                                 <p:column>
-                                    <p:selectOneMenu id="tip" value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.unidadaprendizaje.uaptipoCaracter}">  
-                                        <f:selectItem itemLabel="Seleccione Tipo" itemValue="#{0}" />
-                                        <f:selectItem itemLabel="Optativa" itemValue="Optativa"/>
-                                        <f:selectItem itemLabel="Obligatoria" itemValue="Obligatoria"/>
+                                    <p:selectOneMenu id="tip" value="#{unidadAprendizajeBeanUI.UABeanHelper.unidadAprendizaje.uaptipoCaracter}">  
+                                        <f:selectItem itemLabel="--Seleccione Tipo--" itemValue="#{0}" />
+                                        <f:selectItem itemLabel="OPTATIVA" itemValue="Optativa"/>
+                                        <f:selectItem itemLabel="OBLIGATORIA" itemValue="Obligatoria"/>
                                     </p:selectOneMenu>
                                 </p:column>
 
                             </p:row>
                             <p:row>  
                                 <p:column style="font-weight: bold;">HC:</p:column>  
-                                <p:column style="font-weight: bold;"><p:inputText value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.unidadaprendizaje.uaphorasClase}" /></p:column>
+                                <p:column style="font-weight: bold;">
+                                    <p:inputText value="#{unidadAprendizajeBeanUI.UABeanHelper.unidadAprendizaje.uaphorasClase}">
+                                        <p:ajax event="keydown" listener="#{unidadAprendizajeBeanUI.horasExtraClase()}" update="HE"></p:ajax>
+                                        <p:ajax event="keydown" update="HE"></p:ajax>
+                                        
+                                        <p:ajax event="keydown" listener="#{unidadAprendizajeBeanUI.creditos()}" update="CR"></p:ajax>
+                                        <p:ajax event="keydown" update="CR"></p:ajax>                                        
+                                        <pe:keyFilter regEx="/[0-9 ]/"/>
+                                    </p:inputText>
+                                </p:column>
 
                                 <p:column style="font-weight: bold;">HT:</p:column>  
-                                <p:column style="font-weight: bold;"><p:inputText value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.unidadaprendizaje.uaphorasTaller}" /></p:column>
+                                <p:column style="font-weight: bold;">
+                                    <p:inputText value="#{unidadAprendizajeBeanUI.UABeanHelper.unidadAprendizaje.uaphorasTaller}">
+                                        <p:ajax event="keydown" listener="#{unidadAprendizajeBeanUI.creditos()}" update="CR"></p:ajax>
+                                        <p:ajax event="keydown" update="CR"></p:ajax>                                        
+                                        <pe:keyFilter regEx="/[0-9 ]/"/>
+                                        
+                                    </p:inputText>
+                                </p:column>
                             </p:row>
                             <p:row>  
                                 <p:column style="font-weight: bold;">HL:</p:column>  
-                                <p:column style="font-weight: bold;"><p:inputText value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.unidadaprendizaje.uaphorasLaboratorio}" /></p:column>
+                                <p:column style="font-weight: bold;">
+                                    <p:inputText value="#{unidadAprendizajeBeanUI.UABeanHelper.unidadAprendizaje.uaphorasLaboratorio}">
+                                        <p:ajax event="keydown" listener="#{unidadAprendizajeBeanUI.creditos()}" update="CR"></p:ajax>
+                                        <p:ajax event="keydown" update="CR"></p:ajax>                                        
+                                        <pe:keyFilter regEx="/[0-9 ]/"/>
+                                        
+                                    </p:inputText>
+                                </p:column>
 
                                 <p:column style="font-weight: bold;">HE:</p:column>  
-                                <p:column style="font-weight: bold;"><p:inputText value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.unidadaprendizaje.uaphorasExtraClase}" /></p:column>
+                                <p:column style="font-weight: bold;">
+                                    <p:inputText id="HE" disabled="true" value="#{unidadAprendizajeBeanUI.UABeanHelper.unidadAprendizaje.uaphorasExtraClase}">
+                                        <p:ajax event="keydown" listener="#{unidadAprendizajeBeanUI.creditos()}" update="CR"></p:ajax>
+                                        <p:ajax event="keydown" update="CR"></p:ajax>                                        
+                                        <pe:keyFilter regEx="/[0-9 ]/"/>
+                                    </p:inputText>
+                                </p:column>
                             </p:row>
                             <p:row>
-                                <p:column style="font-weight: bold;">Área de conocimiento</p:column>
+                                <p:column style="font-weight: bold;">HPC:</p:column>  
                                 <p:column style="font-weight: bold;">
-                                    <p:selectOneMenu id="cono" value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.unidadaprendizaje.areaconocimiento.acoid}">  
-                                        <f:selectItem itemLabel="Seleccione el area de conocimiento" itemValue="0" />  
-                                        <f:selectItems value="#{areaConocimientoBeanUI.areaBeanHelper.areaConocimientoDelegate.listaAreaConocimiento}" 
-                                                       var="areacon" 
-                                                       itemLabel="#{areacon.aconombre}" 
-                                                       itemValue="#{areacon.acoid}"/>  
-                                    </p:selectOneMenu>
+                                    <p:inputText value="#{unidadAprendizajeBeanUI.UABeanHelper.unidadAprendizaje.uaphorasCampo}">
+                                        <p:ajax event="keydown" listener="#{unidadAprendizajeBeanUI.creditos()}" update="CR"></p:ajax>
+                                        <p:ajax event="keydown" update="CR"></p:ajax>                                        
+                                        <pe:keyFilter regEx="/[0-9 ]/"/>
+                                        
+                                    </p:inputText>
                                 </p:column>
-                                <p:column style="font-weight: bold;">Ciclo escolar:</p:column> 
+                                
+                                <p:column style="font-weight: bold;">HCL:</p:column>  
                                 <p:column style="font-weight: bold;">
-                                    <p:selectOneMenu id="cic" value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.unidadaprendizaje.cicloescolar.cesid}">  
-                                        <f:selectItem itemLabel="Seleccione Ciclo Escolar" itemValue="#{0}"/>  
-                                        <f:selectItems value="#{capturaCicloEscolarBeanUI.cicloEscolarBeanHelper.cicloescolarDelegate.listaCicloEscolar}" 
-                                                       var="ciclo" 
-                                                       itemLabel="#{ciclo.cescicloEscolar}" 
-                                                       itemValue="#{ciclo.cesid}"/>  
-                                    </p:selectOneMenu>
+                                    <p:inputText value="#{unidadAprendizajeBeanUI.UABeanHelper.unidadAprendizaje.uaphorasClinica}">
+                                        <p:ajax event="keydown" listener="#{unidadAprendizajeBeanUI.creditos()}" update="CR"></p:ajax>
+                                        <p:ajax event="keydown" update="CR"></p:ajax>                                        
+                                        <pe:keyFilter regEx="/[0-9 ]/"/>
+                                        
+                                    </p:inputText>
                                 </p:column>
                             </p:row>
+                            
+                            <p:row>
+                                <p:column style="font-weight: bold;">CR:</p:column>  
+                                <p:column style="font-weight: bold;"><p:inputText id="CR" disabled="true" value="#{unidadAprendizajeBeanUI.UABeanHelper.unidadAprendizaje.uapcreditos}" /></p:column>                                
+                            </p:row>
+
                         </p:panelGrid>
-                        <p:commandButton value="Guardar" oncomplete="dlg.hide()" action="#{unidadAprendizajeBeanUI.onClickSubmit()}" update=":frmUnidApren:unidad"/>
-                        <p:commandButton value="Cancelar" icon="ui-icon-cancel" oncomplete="dlg.hide()" />
+                        <div align="center">
+                            <p:commandButton value="Aceptar" image="btnGuardar" 
+                                             action="#{unidadAprendizajeBeanUI.onClickSubmit()}"
+                                             update="cap,:frmUnidApren:unidad, :frmUnidApren:growl" />
+                            <p:commandButton value="Cancelar" image="btnCancelar" oncomplete="dlg.hide()" />
+                        </div>
                     </p:dialog>
                     <!--update=":frmUnidad:unidad"-->
-                    <p:dialog header="Eliminar unidad de aprendizaje" widgetVar="dlg1" resizable="false" showEffect="fade" hideEffect="explode" modal="true">  
-                        <p:panelGrid id="display"> 
-                            <p:row>
-                                <p:column ><h:outputText value="Clave Unidad Aprendizaje:" /></p:column >
-                                <p:column ><h:outputText value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.selecUnidadaprendizaje.uapclave}" style="font-weight: bold"/></p:column>
-                            </p:row>
-                            <p:row>
-                                <p:column ><h:outputText value="Nombre Unidad Aprendizaje:" /></p:column >
-                                <p:column ><h:outputText value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.selecUnidadaprendizaje.uapnombre}" style="font-weight: bold"/></p:column>
-                            </p:row>
-                            <p:row>
-                                <p:column ><h:outputText value="Créditos:" /></p:column >
-                                <p:column ><h:outputText value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.selecUnidadaprendizaje.uapcreditos}" style="font-weight: bold"/></p:column>
-                            </p:row>
-                            <p:row>
-                                <p:column ><h:outputText value="Estapa:" /></p:column >
-                                <p:column ><h:outputText value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.selecUnidadaprendizaje.uapetapaFormacion}" style="font-weight: bold"/></p:column>
-                            </p:row>
-                            <p:row>
-                                <p:column ><h:outputText value="Tipo de carácter:" /></p:column >
-                                <p:column ><h:outputText value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.selecUnidadaprendizaje.uaptipoCaracter}" style="font-weight: bold"/></p:column>
-                            </p:row>
-                            <p:row>
-                                <p:column ><h:outputText value="HC:" /></p:column >
-                                <p:column ><h:outputText value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.selecUnidadaprendizaje.uaphorasClase}" style="font-weight: bold"/></p:column>
-                            </p:row>
-                            <p:row>
-                                <p:column ><h:outputText value="HT:" /></p:column >
-                                <p:column ><h:outputText value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.selecUnidadaprendizaje.uaphorasTaller}" style="font-weight: bold"/></p:column>
-                            </p:row>
-                            <p:row>
-                                <p:column ><h:outputText value="HL:" /></p:column >
-                                <p:column ><h:outputText value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.selecUnidadaprendizaje.uaphorasLaboratorio}" style="font-weight: bold"/></p:column>
-                            </p:row>
-                            <p:row>
-                                <p:column ><h:outputText value="HE:" /></p:column >
-                                <p:column ><h:outputText value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.selecUnidadaprendizaje.uaphorasExtraClase}" style="font-weight: bold"/></p:column>
-                            </p:row>
-                            <p:row>
-                                <p:column ><h:outputText value="Área de conocimiento:" /></p:column >
-                                <p:column ><h:outputText value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.selecUnidadaprendizaje.areaconocimiento.aconombre}" style="font-weight: bold"/></p:column>
-                            </p:row>
-                            <p:row>
-                                <p:column ><h:outputText value="Ciclo escolar:" /></p:column >
-                                <p:column ><h:outputText value="#{unidadAprendizajeBeanUI.unidadAprendizajeBeanHelper.selecUnidadaprendizaje.cicloescolar.cescicloEscolar}" style="font-weight: bold"/></p:column>
-                            </p:row>
-                        </p:panelGrid> 
-                        <p:commandButton value="Eliminar" icon="ui-icon-check" oncomplete="dlg1.hide()" actionListener="#{unidadAprendizajeBeanUI.eliminar}" update=":frmUnidApren:unidad"/> 
-                        <p:commandButton  value="Cancelar" icon="ui-icon-circle-close" oncomplete="dlg1.hide()"/> 
-                    </p:dialog>
+                    
                 </h:form>
-                                <h:form rendered="#{loginBean.formano}">
+                
+                <p:confirmDialog id="confirmdlgId" showEffect="fade" hideEffect="explode" 
+                                widgetVar="confirmdlg" header="Confirmación"
+                                message="#{unidadAprendizajeBeanUI.mensajeConfirm}"
+                                severity="alert" appendToBody="true">
+                   <h:form>
+                       <p:commandButton value="Aceptar" action="#{unidadAprendizajeBeanUI.confirmacionAceptada()}"                          
+                                            icon="ui-icon-check"
+                                            update=":frmUnidApren:growl,:frmUnidApren:unidad, :frmUnidApren:capdlg, :frmUnidApren:cap, :frmUnidApren:showEliminarButton, :frmUnidApren:showModificarButton">
+                           <p:ajax event="click" update=":frmUnidApren:" />
+                           
+                       </p:commandButton>
+                        <p:commandButton value="Cancelar" oncomplete="confirmdlg.hide()"
+                                         icon="ui-icon-close" update=":frmUnidApren:unidad"
+                                         rendered="#{unidadAprendizajeBeanUI.renderCancelar}"
+                                         />
+                   </h:form>  
+                </p:confirmDialog>                   
+                
+                
+                <h:form rendered="#{loginBean.formano}">
                     <center><h1>No tienes permisos para ver esto</h1></center>
 
                 </h:form>

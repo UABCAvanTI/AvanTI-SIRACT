@@ -40,6 +40,7 @@ import mx.avanti.siract.business.entity.Rol;
 import mx.avanti.siract.business.entity.Unidadacademica;
 import mx.avanti.siract.business.entity.Unidadaprendizaje;
 import mx.avanti.siract.business.entity.Usuario;
+import mx.avanti.siract.ui.BarChartCL;
 import mx.avanti.siract.ui.LoginBean;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
@@ -139,7 +140,7 @@ public class FiltrosBeanUI implements Serializable{
     private LoginBean loginBean;
     
     private Usuario usuario;
-    private String rolSeleccionado;
+    private Rol rolSeleccionado;
     
     public FiltrosBeanUI() {
         
@@ -194,7 +195,7 @@ public class FiltrosBeanUI implements Serializable{
         programaEducativoDelegate= new ProgramaEducativoDelegate();
         listaCatalogoReportes=null;
         usuario= new Usuario();
-        rolSeleccionado= "";
+        rolSeleccionado= new Rol();
         criterio = new String();
         CTRnombre = new String();
         CTRnombre= "";
@@ -207,11 +208,12 @@ public class FiltrosBeanUI implements Serializable{
    
     @PostConstruct
     public void postConstructor() {
-        //profesorBeanHelper.setRolSeleccionado(loginBean.getSeleccionado());
-        usuario=loginBean.getLogueado();
-        System.out.println("usuario(id): "+usuario.getUsuid());
-        rolSeleccionado=loginBean.getSeleccionado();
-        mostrarUsuario();
+//        //profesorBeanHelper.setRolSeleccionado(loginBean.getSeleccionado());
+//        usuario=loginBean.getLogueado();
+//        System.out.println("usuario(id): "+usuario.getUsuid());
+//        rolSeleccionado=loginBean.getSeleccionado();
+//        System.out.println("rolSeleccionado(tipo): "+rolSeleccionado.getRoltipo());
+//        mostrarUsuario();
     }
     
     //variables metodos Jesus Ruelas
@@ -1083,13 +1085,14 @@ public class FiltrosBeanUI implements Serializable{
         return disable;
     }
     
-    public void mostrarUsuario(){
-        usuario.getUsuid();
-        
-        if(rolSeleccionado.equalsIgnoreCase("Director")){            
-            unidadacademica.setUacclave(140);
-        }
-    }
+//    public void mostrarUsuario(){
+//        usuario.getUsuid();
+//        usuario=filtrosBeanHelper.mostrarUsuario(usuario, rolSeleccionado);
+//        
+//        if(rolSeleccionado.getRoltipo().equalsIgnoreCase("Director")){            
+//            unidadacademica.setUacclave(140);
+//        }
+//    }
     
     public void arreglarRactUnico(){
         
@@ -2767,53 +2770,117 @@ public MeterGaugeChartModel getGaugeModel() {
                                         for(int i=1;i<=11;i++){
                                             setStyleCell(sheet, borderstabla, currow, i);
                                         }
-                                        
-                                        //tienne que ser entregados/enviados
-                                        if(auxRacs.getStatusRact1()!=null){
-                                            
-                                            System.out.println("Entro a enviados 1");
-                                            setExDat(sheet, currow,(4 + (1*2)), auxRacs.getPorcentAvanceRact1() ); //% avance 7**
-                                            setExDat(sheet, currow,(4 + (1*2)+1), auxRacs.getFechaElaboracRact1().toString() ); //fecha elabora 8***
-                                            setStyleCell(sheet, borderstabla, currow, (4 + (1*2)));
-                                            setStyleCell(sheet, borderstabla, currow, (4 + (1*2)+1));
-                                            
-                                        }
-                                        else{
-                                            setExDat(sheet, currow,(4 + (1*2)), " " ); //% avance 7**
-                                            setExDat(sheet, currow,(4 + (1*2)+1), " " ); //fecha elabora 8***
-                                            setStyleCell(sheet, borderstabla, currow, (4 + (1*2)));
-                                            setStyleCell(sheet, borderstabla, currow, (4 + (1*2)+1));
-                                        }
-                                        
-                                        
-                                        if(auxRacs.getStatusRact2()!=null){
-                                           
-                                            setExDat(sheet, currow,(4 + (2*2)), auxRacs.getPorcentAvanceRact2() ); //% avance 7**
-                                            setExDat(sheet, currow,(4 + (2*2)+1), auxRacs.getFechaElaboracRact2().toString() ); //fecha elabora 8***
-                                            setStyleCell(sheet, borderstabla, currow, (4 + (2*2)));
-                                            setStyleCell(sheet, borderstabla, currow, (4 + (2*2)+1));
-                                            
-                                        }else{
-                                            setExDat(sheet, currow,(4 + (2*2)), " " ); //% avance 7**
-                                            setExDat(sheet, currow,(4 + (2*2)+1), " " ); //fecha elabora 8***
-                                            setStyleCell(sheet, borderstabla, currow, (4 + (2*2)));
-                                            setStyleCell(sheet, borderstabla, currow, (4 + (2*2)+1));
-                                        }
-                                        
-                                        if(auxRacs.getStatusRact3()!=null){
-                                            setExDat(sheet, currow,(4 + (3*2)), auxRacs.getPorcentAvanceRact3() ); //% avance 7**
-                                            setExDat(sheet, currow,(4 + (3*2)+1), auxRacs.getFechaElaboracRact3().toString() ); //fecha elabora 8***
-                                            setStyleCell(sheet, borderstabla, currow, (4 + (3*2)));
-                                            setStyleCell(sheet, borderstabla, currow, (4 + (3*2)+1));
-                                        }
-                                        else{
-                                            setExDat(sheet, currow,(4 + (3*2)), " "  ); //% avance 7**
-                                            setExDat(sheet, currow,(4 + (3*2)+1), " " ); //fecha elabora 8***
-                                            setStyleCell(sheet, borderstabla, currow, (4 + (3*2)));
-                                            setStyleCell(sheet, borderstabla, currow, (4 + (3*2)+1));   
-                                        }
-                                        
+
+                                        //hasta aqui comente Jesus Ruelas - 4 nov 2015
+//                                        //tienne que ser entregados/enviados
+//                                        if(auxRacs.getStatusRact1()!=null){
+//                                            
+//                                            System.out.println("Entro a enviados 1");
+//                                            setExDat(sheet, currow,(4 + (1*2)), auxRacs.getPorcentAvanceRact1() ); //% avance 7**
+//                                            setExDat(sheet, currow,(4 + (1*2)+1), auxRacs.getFechaElaboracRact1().toString() ); //fecha elabora 8***
+//                                            setStyleCell(sheet, borderstabla, currow, (4 + (1*2)));
+//                                            setStyleCell(sheet, borderstabla, currow, (4 + (1*2)+1));
+//                                            
+//                                        }
+//                                        else{
+//                                            setExDat(sheet, currow,(4 + (1*2)), " " ); //% avance 7**
+//                                            setExDat(sheet, currow,(4 + (1*2)+1), " " ); //fecha elabora 8***
+//                                            setStyleCell(sheet, borderstabla, currow, (4 + (1*2)));
+//                                            setStyleCell(sheet, borderstabla, currow, (4 + (1*2)+1));
+//                                        }
+//                                        
+//                                        
+//                                        if(auxRacs.getStatusRact2()!=null){
+//                                           
+//                                            setExDat(sheet, currow,(4 + (2*2)), auxRacs.getPorcentAvanceRact2() ); //% avance 7**
+//                                            setExDat(sheet, currow,(4 + (2*2)+1), auxRacs.getFechaElaboracRact2().toString() ); //fecha elabora 8***
+//                                            setStyleCell(sheet, borderstabla, currow, (4 + (2*2)));
+//                                            setStyleCell(sheet, borderstabla, currow, (4 + (2*2)+1));
+//                                            
+//                                        }else{
+//                                            setExDat(sheet, currow,(4 + (2*2)), " " ); //% avance 7**
+//                                            setExDat(sheet, currow,(4 + (2*2)+1), " " ); //fecha elabora 8***
+//                                            setStyleCell(sheet, borderstabla, currow, (4 + (2*2)));
+//                                            setStyleCell(sheet, borderstabla, currow, (4 + (2*2)+1));
+//                                        }
+//                                        
+//                                        if(auxRacs.getStatusRact3()!=null){
+//                                            setExDat(sheet, currow,(4 + (3*2)), auxRacs.getPorcentAvanceRact3() ); //% avance 7**
+//                                            setExDat(sheet, currow,(4 + (3*2)+1), auxRacs.getFechaElaboracRact3().toString() ); //fecha elabora 8***
+//                                            setStyleCell(sheet, borderstabla, currow, (4 + (3*2)));
+//                                            setStyleCell(sheet, borderstabla, currow, (4 + (3*2)+1));
+//                                        }
+//                                        else{
+//                                            setExDat(sheet, currow,(4 + (3*2)), " "  ); //% avance 7**
+//                                            setExDat(sheet, currow,(4 + (3*2)+1), " " ); //fecha elabora 8***
+//                                            setStyleCell(sheet, borderstabla, currow, (4 + (3*2)));
+//                                            setStyleCell(sheet, borderstabla, currow, (4 + (3*2)+1));   
+//                                        }
+                                        //hasta aqui comente Jesus Ruelas - 4 nov 2015
                      
+                                        //tienne que ser entregados/enviados
+                                if(auxRacs.getStatusRact1()!=null){
+
+                                        System.out.println("Entro a enviados 1");
+                                        setExDat(sheet, currow,(4 + (1*2)), auxRacs.getPorcentAvanceRact1() ); //% avance 7**
+
+                                        if(auxRacs.getFechaElaboracRact1()!=null){
+                                            setExDat(sheet, currow,(4 + (1*2)+1), auxRacs.getFechaElaboracRact1().toString() ); //fecha elabora 8***
+                                        }
+                                        else{
+                                            setExDat(sheet, currow,(4 + (1*2)+1), " " ); //fecha elabora 8***
+                                        }
+                                        setStyleCell(sheet, borderstabla, currow, (4 + (1*2)));
+                                        setStyleCell(sheet, borderstabla, currow, (4 + (1*2)+1));
+
+                                }
+                                else{
+                                    setExDat(sheet, currow,(4 + (1*2)), " " ); //% avance 7**
+                                    setExDat(sheet, currow,(4 + (1*2)+1), " " ); //fecha elabora 8***
+                                    setStyleCell(sheet, borderstabla, currow, (4 + (1*2)));
+                                    setStyleCell(sheet, borderstabla, currow, (4 + (1*2)+1));
+                                }
+
+
+                                if(auxRacs.getStatusRact2()!=null){
+
+                                        setExDat(sheet, currow,(4 + (2*2)), auxRacs.getPorcentAvanceRact2() ); //% avance 7**
+
+                                        if(auxRacs.getFechaElaboracRact2()!=null){
+                                            setExDat(sheet, currow,(4 + (2*2)+1), auxRacs.getFechaElaboracRact2().toString() ); //fecha elabora 8***
+                                        }
+                                        else{
+                                            setExDat(sheet, currow,(4 + (2*2)+1)," " ); //fecha elabora 8***
+                                        }
+                                        setStyleCell(sheet, borderstabla, currow, (4 + (2*2)));
+                                        setStyleCell(sheet, borderstabla, currow, (4 + (2*2)+1));
+
+                                }else{
+                                    setExDat(sheet, currow,(4 + (2*2)), " " ); //% avance 7**
+                                    setExDat(sheet, currow,(4 + (2*2)+1), " " ); //fecha elabora 8***
+                                    setStyleCell(sheet, borderstabla, currow, (4 + (2*2)));
+                                    setStyleCell(sheet, borderstabla, currow, (4 + (2*2)+1));
+                                }
+
+                                if(auxRacs.getStatusRact3()!=null){
+
+                                        setExDat(sheet, currow,(4 + (3*2)), auxRacs.getPorcentAvanceRact3() ); //% avance 7**
+                                        if(auxRacs.getFechaElaboracRact3()!=null){
+                                            setExDat(sheet, currow,(4 + (3*2)+1), auxRacs.getFechaElaboracRact3().toString() ); //fecha elabora 8***
+                                        }
+                                        else{
+                                            setExDat(sheet, currow,(4 + (3*2)+1), " " ); //fecha elabora 8***
+                                        }
+                                        setStyleCell(sheet, borderstabla, currow, (4 + (3*2)));
+                                        setStyleCell(sheet, borderstabla, currow, (4 + (3*2)+1));
+
+                                }
+                                else{
+                                    setExDat(sheet, currow,(4 + (3*2)), " "  ); //% avance 7**
+                                    setExDat(sheet, currow,(4 + (3*2)+1), " " ); //fecha elabora 8***
+                                    setStyleCell(sheet, borderstabla, currow, (4 + (3*2)));
+                                    setStyleCell(sheet, borderstabla, currow, (4 + (3*2)+1));   
+                                }
                                       
                                         currow++;
                                     }
@@ -4229,29 +4296,57 @@ public MeterGaugeChartModel getGaugeModel() {
                              if(ract.equalsIgnoreCase("1")||ract.equalsIgnoreCase("2")||ract.equalsIgnoreCase("3")){
                             setExDat(sheet, currow,1, "Fecha Corte" );
                             setExDat(sheet, currow,2, "Fecha Límite" );
+                            setStyleCell(sheet, headerTabla, currow, 1);
+                            setStyleCell(sheet, headerTabla, currow, 2);
                             currow++;                            
                             setExDat(sheet, currow,1, tempListAux.get(0).getFechaCorte().toString() );
                             setExDat(sheet, currow,2, tempListAux.get(0).getFechaLimite().toString() );                            
                             currow++;
                             currow++;
                              }else{
+                                 ReporteAux rep1 = new ReporteAux();
+                                 ReporteAux rep2 = new ReporteAux();
+                                 ReporteAux rep3 = new ReporteAux();
+                                 
+                                 rep1.setNumRact(1);
+                                 rep2.setNumRact(2);
+                                 rep3.setNumRact(3);
+                                 
+                                 rep1.setCescicloEscolar(tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getCicloescolar().getCescicloEscolar());
+                                 rep2.setCescicloEscolar(tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getCicloescolar().getCescicloEscolar());
+                                 rep3.setCescicloEscolar(tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getCicloescolar().getCescicloEscolar());
+                                 
+                                 ReporteAvanceAux ra1 = new ReporteAvanceAux();
+                                 ReporteAvanceAux ra2 = new ReporteAvanceAux();
+                                 ReporteAvanceAux ra3 = new ReporteAvanceAux();
+                                 
+                                 ra1=filtrosBeanHelper.TiempoLimiteYCorte(rep1);
+                                 ra2=filtrosBeanHelper.TiempoLimiteYCorte(rep2);
+                                 ra3=filtrosBeanHelper.TiempoLimiteYCorte(rep3);
+                                 
                               setExDat(sheet, currow,1, "Fecha Corte Ract 1" );
                               setExDat(sheet, currow,2, "Fecha Límite Ract 1" );
+                              setStyleCell(sheet, headerTabla, currow, 1);
+                              setStyleCell(sheet, headerTabla, currow, 2);
                               currow++;                            
-                              setExDat(sheet, currow,1, tempListAux.get(0).getFechaCorteRact1().toString() );
-                              setExDat(sheet, currow,2, tempListAux.get(0).getFechaLimiteRact1().toString() );
+                              setExDat(sheet, currow,1, ra1.getFechaCorte().toString() );
+                              setExDat(sheet, currow,2, ra1.getFechaLimite().toString() );
                               //currow++;                       
                               setExDat(sheet, currow-1,4, "Fecha Corte Ract 2" );
                               setExDat(sheet, currow-1,5, "Fecha Límite Ract 2" );
+                              setStyleCell(sheet, headerTabla, currow-1, 4);
+                              setStyleCell(sheet, headerTabla, currow-1, 5);
                               //currow++;                            
-                              setExDat(sheet, currow,4, tempListAux.get(0).getFechaCorteRact2().toString() );
-                              setExDat(sheet, currow,5, tempListAux.get(0).getFechaLimiteRact2().toString() );                            
+                              setExDat(sheet, currow,4, ra2.getFechaCorte().toString() );
+                              setExDat(sheet, currow,5, ra2.getFechaLimite().toString() );                            
                               //currow++;                       
                               setExDat(sheet, currow-1,7, "Fecha Corte Ract 3" );
                               setExDat(sheet, currow-1,8, "Fecha Límite Ract 3" );
+                              setStyleCell(sheet, headerTabla, currow-1, 7);
+                              setStyleCell(sheet, headerTabla, currow-1, 8);
                               //currow++;                            
-                              setExDat(sheet, currow,7, tempListAux.get(0).getFechaCorteRact3().toString() );
-                              setExDat(sheet, currow,8, tempListAux.get(0).getFechaLimiteRact3().toString() ); 
+                              setExDat(sheet, currow,7, ra3.getFechaCorte().toString() );
+                              setExDat(sheet, currow,8, ra3.getFechaLimite().toString() ); 
                             currow++;
                             currow++;   
                              }
@@ -4475,39 +4570,74 @@ public MeterGaugeChartModel getGaugeModel() {
                                 reporte.equalsIgnoreCase("entregadosdespueslimite")||
                                     reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues")){
                              if(ract.equalsIgnoreCase("1")||ract.equalsIgnoreCase("2")||ract.equalsIgnoreCase("3")){
+                            
                             setExDat(sheet, currow,1, "Fecha Corte" );
                             setExDat(sheet, currow,2, "Fecha Límite" );
+                            setStyleCell(sheet, headerTabla, currow, 1);
+                            setStyleCell(sheet, headerTabla, currow, 2);
                             currow++;                            
                             setExDat(sheet, currow,1, tempListAux.get(0).getFechaCorte().toString() );
                             setExDat(sheet, currow,2, tempListAux.get(0).getFechaLimite().toString() );                            
                             currow++;
                             currow++;
                              }else{
+                              ReporteAux rep1 = new ReporteAux();
+                                 ReporteAux rep2 = new ReporteAux();
+                                 ReporteAux rep3 = new ReporteAux();
+                                 
+                                 rep1.setNumRact(1);
+                                 rep2.setNumRact(2);
+                                 rep3.setNumRact(3);
+                                 
+                                 rep1.setCescicloEscolar(tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getCicloescolar().getCescicloEscolar());
+                                 rep2.setCescicloEscolar(tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getCicloescolar().getCescicloEscolar());
+                                 rep3.setCescicloEscolar(tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getCicloescolar().getCescicloEscolar());
+                                 
+                                 ReporteAvanceAux ra1 = new ReporteAvanceAux();
+                                 ReporteAvanceAux ra2 = new ReporteAvanceAux();
+                                 ReporteAvanceAux ra3 = new ReporteAvanceAux();
+                                 
+                                 ra1=filtrosBeanHelper.TiempoLimiteYCorte(rep1);
+                                 ra2=filtrosBeanHelper.TiempoLimiteYCorte(rep2);
+                                 ra3=filtrosBeanHelper.TiempoLimiteYCorte(rep3);
+                               
+                              
                               setExDat(sheet, currow,1, "Fecha Corte Ract 1" );
                               setExDat(sheet, currow,2, "Fecha Límite Ract 1" );
+                              setStyleCell(sheet, headerTabla, currow, 1);
+                              setStyleCell(sheet, headerTabla, currow, 2);
                               currow++;                            
-                              setExDat(sheet, currow,1, tempListAux.get(0).getFechaCorteRact1().toString() );
-                              setExDat(sheet, currow,2, tempListAux.get(0).getFechaLimiteRact1().toString() );
+                              setExDat(sheet, currow,1, ra1.getFechaCorte().toString() );
+                              setExDat(sheet, currow,2, ra1.getFechaLimite().toString() );
                               //currow++;                       
+                              
                               setExDat(sheet, currow-1,4, "Fecha Corte Ract 2" );
                               setExDat(sheet, currow-1,5, "Fecha Límite Ract 2" );
+                              setStyleCell(sheet, headerTabla, currow-1, 4);
+                              setStyleCell(sheet, headerTabla, currow-1, 5);
                               //currow++;                            
-                              setExDat(sheet, currow,4, tempListAux.get(0).getFechaCorteRact2().toString() );
-                              setExDat(sheet, currow,5, tempListAux.get(0).getFechaLimiteRact2().toString() );                            
+                              setExDat(sheet, currow,4, ra2.getFechaCorte().toString() );
+                              setExDat(sheet, currow,5, ra2.getFechaLimite().toString() );                            
                               //currow++;                       
+                              
                               setExDat(sheet, currow-1,7, "Fecha Corte Ract 3" );
                               setExDat(sheet, currow-1,8, "Fecha Límite Ract 3" );
+                              setStyleCell(sheet, headerTabla, currow-1, 7);
+                              setStyleCell(sheet, headerTabla, currow-1, 8);
                               //currow++;                            
-                              setExDat(sheet, currow,7, tempListAux.get(0).getFechaCorteRact3().toString() );
-                              setExDat(sheet, currow,8, tempListAux.get(0).getFechaLimiteRact3().toString() ); 
+                              setExDat(sheet, currow,7, ra3.getFechaCorte().toString() );
+                              setExDat(sheet, currow,8, ra3.getFechaLimite().toString() ); 
                             currow++;
                             currow++;   
                              }
                             }
                             //Aqui modifique Jesus Ruelas 26 oct 2015
                             
+                            
                             setExDat(sheet, currow,1, "Clave unidad de aprendizaje" );
                             setExDat(sheet, currow,2, "Unidad de aprendizaje" );
+                            setStyleCell(sheet, headerTabla, currow, 1);
+                            setStyleCell(sheet, headerTabla, currow, 2);
                             currow++;
                             int claveUnidadApren = tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapclave();
                             String nombreUnidad = tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getUapnombre();
@@ -4526,11 +4656,7 @@ public MeterGaugeChartModel getGaugeModel() {
                                 sheet.autoSizeColumn(11);
                                 autotam = false;
                             }
-                            // para formatear toda la linea
-                            for(int i=1;i<=9;i++){
-                              setStyleCell(sheet, headerTabla, currow, i);  
-                            }
-                            currow++;
+                            
 
                             setExDat(sheet, currow,1, "No. de empleado" );
                             setExDat(sheet, currow,2, "Nombre del profesor" );
@@ -4541,6 +4667,11 @@ public MeterGaugeChartModel getGaugeModel() {
                             setExDat(sheet, currow,7, "Fecha de elaboración 2do RACT" );
                             setExDat(sheet, currow,8, "% Avance 3er reporte" );
                             setExDat(sheet, currow,9, "Fecha de elaboración 3er RACT" );
+                            // para formatear toda la linea
+                            for(int i=1;i<=9;i++){
+                              setStyleCell(sheet, headerTabla, currow, i);  
+                            }
+                            //currow++;
                             currow++;
                             
                             for(ReporteAvanceAux auxRacs :tempListAux){
@@ -4732,31 +4863,63 @@ public MeterGaugeChartModel getGaugeModel() {
                                 reporte.equalsIgnoreCase("entregadosdespueslimite")||
                                     reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues")){
                              if(ract.equalsIgnoreCase("1")||ract.equalsIgnoreCase("2")||ract.equalsIgnoreCase("3")){
+                            
                             setExDat(sheet, currow,1, "Fecha Corte" );
                             setExDat(sheet, currow,2, "Fecha Límite" );
+                            setStyleCell(sheet, headerTabla, currow, 1);
+                            setStyleCell(sheet, headerTabla, currow, 2);
                             currow++;                            
                             setExDat(sheet, currow,1, tempListAux.get(0).getFechaCorte().toString() );
                             setExDat(sheet, currow,2, tempListAux.get(0).getFechaLimite().toString() );                            
                             currow++;
                             currow++;
                              }else{
+                              ReporteAux rep1 = new ReporteAux();
+                                 ReporteAux rep2 = new ReporteAux();
+                                 ReporteAux rep3 = new ReporteAux();
+                                 
+                                 rep1.setNumRact(1);
+                                 rep2.setNumRact(2);
+                                 rep3.setNumRact(3);
+                                 
+                                 rep1.setCescicloEscolar(tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getCicloescolar().getCescicloEscolar());
+                                 rep2.setCescicloEscolar(tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getCicloescolar().getCescicloEscolar());
+                                 rep3.setCescicloEscolar(tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getCicloescolar().getCescicloEscolar());
+                                 
+                                 ReporteAvanceAux ra1 = new ReporteAvanceAux();
+                                 ReporteAvanceAux ra2 = new ReporteAvanceAux();
+                                 ReporteAvanceAux ra3 = new ReporteAvanceAux();
+                                 
+                                 ra1=filtrosBeanHelper.TiempoLimiteYCorte(rep1);
+                                 ra2=filtrosBeanHelper.TiempoLimiteYCorte(rep2);
+                                 ra3=filtrosBeanHelper.TiempoLimiteYCorte(rep3);
+                            
+                              
                               setExDat(sheet, currow,1, "Fecha Corte Ract 1" );
                               setExDat(sheet, currow,2, "Fecha Límite Ract 1" );
+                              setStyleCell(sheet, headerTabla, currow, 1);
+                              setStyleCell(sheet, headerTabla, currow, 2);   
                               currow++;                            
-                              setExDat(sheet, currow,1, tempListAux.get(0).getFechaCorteRact1().toString() );
-                              setExDat(sheet, currow,2, tempListAux.get(0).getFechaLimiteRact1().toString() );
+                              setExDat(sheet, currow,1, ra1.getFechaCorte().toString() );
+                              setExDat(sheet, currow,2, ra1.getFechaLimite().toString() );
                               //currow++;                       
+                              
                               setExDat(sheet, currow-1,4, "Fecha Corte Ract 2" );
                               setExDat(sheet, currow-1,5, "Fecha Límite Ract 2" );
+                              setStyleCell(sheet, headerTabla, currow-1, 4);
+                              setStyleCell(sheet, headerTabla, currow-1, 5);
                               //currow++;                            
-                              setExDat(sheet, currow,4, tempListAux.get(0).getFechaCorteRact2().toString() );
-                              setExDat(sheet, currow,5, tempListAux.get(0).getFechaLimiteRact2().toString() );                            
+                              setExDat(sheet, currow,4, ra2.getFechaCorte().toString() );
+                              setExDat(sheet, currow,5, ra2.getFechaLimite().toString() );                            
                               //currow++;                       
+                              
                               setExDat(sheet, currow-1,7, "Fecha Corte Ract 3" );
                               setExDat(sheet, currow-1,8, "Fecha Límite Ract 3" );
+                              setStyleCell(sheet, headerTabla, currow-1, 7);
+                              setStyleCell(sheet, headerTabla, currow-1, 8);
                               //currow++;                            
-                              setExDat(sheet, currow,7, tempListAux.get(0).getFechaCorteRact3().toString() );
-                              setExDat(sheet, currow,8, tempListAux.get(0).getFechaLimiteRact3().toString() ); 
+                              setExDat(sheet, currow,7, ra3.getFechaCorte().toString() );
+                              setExDat(sheet, currow,8, ra3.getFechaLimite().toString() ); 
                             currow++;
                             currow++;   
                              }
@@ -4770,13 +4933,6 @@ public MeterGaugeChartModel getGaugeModel() {
                                 sheet.autoSizeColumn(11);
                                 autotam = false;
                             }
-                            // para formatear toda la linea
-                            for(int i=1;i<=9;i++){
-                              setStyleCell(sheet, headerTabla, currow, i);  
-                            }
-                            currow++;
-                            
-                            
                             
                             //reporteAvance.unidadaprendizajeImparteProfesor.profesor.pronumeroEmpleado
 //                                setExDat(sheet, currow,3, tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getPronumeroEmpleado() ); //numero empleado
@@ -4793,15 +4949,20 @@ public MeterGaugeChartModel getGaugeModel() {
                             setExDat(sheet, currow,8, "Fecha de elaboración 2do RACT" );
                             setExDat(sheet, currow,9, "% Avance 3er reporte" );
                             setExDat(sheet, currow,10, "Fecha de elaboración 3er RACT" );
+                            // para formatear toda la linea
+                            for(int i=1;i<=10;i++){
+                              setStyleCell(sheet, headerTabla, currow, i);  
+                            }
+                            //currow++;
                             currow++;
                             
                             for(ReporteAvanceAux auxRacs :tempListAux){
 
                                 //marcamos bordes
-                                for(int i=1;i<=11;i++){
+                                for(int i=1;i<=10;i++){
                                     setExDat(sheet, currow,i," ");
                                 }
-                                for(int i=1;i<=11;i++){
+                                for(int i=1;i<=10;i++){
                                     setStyleCell(sheet, borderstabla, currow, i);
                                 }
 
@@ -4998,31 +5159,63 @@ public MeterGaugeChartModel getGaugeModel() {
                                 reporte.equalsIgnoreCase("entregadosdespueslimite")||
                                     reporte.equalsIgnoreCase("entregadosatiempoenfechalimiteydespues")){
                              if(ract.equalsIgnoreCase("1")||ract.equalsIgnoreCase("2")||ract.equalsIgnoreCase("3")){
+                            
                             setExDat(sheet, currow,1, "Fecha Corte" );
                             setExDat(sheet, currow,2, "Fecha Límite" );
+                            setStyleCell(sheet, headerTabla, currow, 1);
+                            setStyleCell(sheet, headerTabla, currow, 2);
                             currow++;                            
                             setExDat(sheet, currow,1, tempListAux.get(0).getFechaCorte().toString() );
                             setExDat(sheet, currow,2, tempListAux.get(0).getFechaLimite().toString() );                            
                             currow++;
                             currow++;
                              }else{
+                              ReporteAux rep1 = new ReporteAux();
+                                 ReporteAux rep2 = new ReporteAux();
+                                 ReporteAux rep3 = new ReporteAux();
+                                 
+                                 rep1.setNumRact(1);
+                                 rep2.setNumRact(2);
+                                 rep3.setNumRact(3);
+                                 
+                                 rep1.setCescicloEscolar(tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getCicloescolar().getCescicloEscolar());
+                                 rep2.setCescicloEscolar(tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getCicloescolar().getCescicloEscolar());
+                                 rep3.setCescicloEscolar(tempListAux.get(0).getReporteAvance().getUnidadaprendizajeImparteProfesor().getUnidadaprendizaje().getCicloescolar().getCescicloEscolar());
+                                 
+                                 ReporteAvanceAux ra1 = new ReporteAvanceAux();
+                                 ReporteAvanceAux ra2 = new ReporteAvanceAux();
+                                 ReporteAvanceAux ra3 = new ReporteAvanceAux();
+                                 
+                                 ra1=filtrosBeanHelper.TiempoLimiteYCorte(rep1);
+                                 ra2=filtrosBeanHelper.TiempoLimiteYCorte(rep2);
+                                 ra3=filtrosBeanHelper.TiempoLimiteYCorte(rep3);
+                                 
+                              
                               setExDat(sheet, currow,1, "Fecha Corte Ract 1" );
                               setExDat(sheet, currow,2, "Fecha Límite Ract 1" );
+                              setStyleCell(sheet, headerTabla, currow, 1);
+                              setStyleCell(sheet, headerTabla, currow, 2);   
                               currow++;                            
-                              setExDat(sheet, currow,1, tempListAux.get(0).getFechaCorteRact1().toString() );
-                              setExDat(sheet, currow,2, tempListAux.get(0).getFechaLimiteRact1().toString() );
+                              setExDat(sheet, currow,1, ra1.getFechaCorte().toString() );
+                              setExDat(sheet, currow,2, ra1.getFechaLimite().toString() );
                               //currow++;                       
+                              
                               setExDat(sheet, currow-1,4, "Fecha Corte Ract 2" );
                               setExDat(sheet, currow-1,5, "Fecha Límite Ract 2" );
+                              setStyleCell(sheet, headerTabla, currow-1, 4);
+                              setStyleCell(sheet, headerTabla, currow-1, 5);
                               //currow++;                            
-                              setExDat(sheet, currow,4, tempListAux.get(0).getFechaCorteRact2().toString() );
-                              setExDat(sheet, currow,5, tempListAux.get(0).getFechaLimiteRact2().toString() );                            
+                              setExDat(sheet, currow,4, ra2.getFechaCorte().toString() );
+                              setExDat(sheet, currow,5, ra2.getFechaLimite().toString() );                            
                               //currow++;                       
+                              
                               setExDat(sheet, currow-1,7, "Fecha Corte Ract 3" );
                               setExDat(sheet, currow-1,8, "Fecha Límite Ract 3" );
+                              setStyleCell(sheet, headerTabla, currow-1, 7);
+                              setStyleCell(sheet, headerTabla, currow-1, 8);
                               //currow++;                            
-                              setExDat(sheet, currow,7, tempListAux.get(0).getFechaCorteRact3().toString() );
-                              setExDat(sheet, currow,8, tempListAux.get(0).getFechaLimiteRact3().toString() ); 
+                              setExDat(sheet, currow,7, ra3.getFechaCorte().toString() );
+                              setExDat(sheet, currow,8, ra3.getFechaLimite().toString() ); 
                             currow++;
                             currow++;   
                              }
@@ -5051,8 +5244,11 @@ public MeterGaugeChartModel getGaugeModel() {
                             if(!(CAAnombreActual.equalsIgnoreCase(auxRacs.getCAAnombre()))){    
                                 CAAnombreActual=auxRacs.getCAAnombre();
                            // currow=currow+2;
+                            
                             setExDat(sheet, currow,1, "Area de conocimiento" );
                             setExDat(sheet, currow,2, "Area administrativa" );
+                            setStyleCell(sheet, headerTabla, currow, 1);
+                            setStyleCell(sheet, headerTabla, currow, 2);
                             currow++;
                             setExDat(sheet, currow,1, auxRacs.getAreaConocimiento().getAconombre() ); //clave
                             setExDat(sheet, currow,2, auxRacs.getCAAnombre() ); //nombre unidad                            
@@ -5065,6 +5261,8 @@ public MeterGaugeChartModel getGaugeModel() {
                                 for(int i=1;i<=11;i++){
                                     setStyleCell(sheet, borderstabla, currow, i);
                                 }
+                                
+                                
 
                             setExDat(sheet, currow,1, "Clave unidad de aprendizaje" );
                             setExDat(sheet, currow,2, "Unidad de aprendizaje" );
@@ -5077,6 +5275,13 @@ public MeterGaugeChartModel getGaugeModel() {
                             setExDat(sheet, currow,9, "Fecha de elaboración 2do RACT" );
                             setExDat(sheet, currow,10, "% Avance 3er reporte" );
                             setExDat(sheet, currow,11, "Fecha de elaboración 3er RACT" );
+                            // para formatear toda la linea
+                                for(int i=1;i<=11;i++){
+                                    //tenemos qu aajustar texto
+                                    //tenemos que centrar el texto
+                                    //cambiar el color de fondo
+                                  setStyleCell(sheet, headerTabla, currow, i);  
+                                }
                             currow++;    
                             }
                                 String nompreP = auxRacs.getReporteAvance().getUnidadaprendizajeImparteProfesor().getProfesor().getPronombre();
@@ -10450,11 +10655,11 @@ public MeterGaugeChartModel getGaugeModel() {
         this.loginBean = loginBean;
     }
 
-    public String getRolSeleccionado() {
+    public Rol getRolSeleccionado() {
         return rolSeleccionado;
     }
 
-    public void setRolSeleccionado(String rolSeleccionado) {
+    public void setRolSeleccionado(Rol rolSeleccionado) {
         this.rolSeleccionado = rolSeleccionado;
     }        
     

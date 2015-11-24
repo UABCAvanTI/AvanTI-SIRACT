@@ -114,7 +114,7 @@ public class AsignarAreaAdministrativaBeanHelper implements Serializable {
         programaEducativo = new Programaeducativo();
         selecAGUAP = new UnidadaprendizajeImparteProfesor();
         imparteProfesor = new UnidadaprendizajeImparteProfesor();
-        AGUAP = new UnidadaprendizajeImparteProfesor(new Unidadaprendizaje(), new Profesor(), new Grupo());
+        AGUAP = new UnidadaprendizajeImparteProfesor(new Unidadaprendizaje(), new Profesor() ,new Grupo());
     }
     
     
@@ -290,6 +290,14 @@ public class AsignarAreaAdministrativaBeanHelper implements Serializable {
         this.programaEducativo = programaEducativo;
     }
 
+    public List<Programaeducativo> getListaProgEduc() {
+        return listaProgEduc;
+    }
+
+    public void setListaProgEduc(List<Programaeducativo> listaProgEduc) {
+        this.listaProgEduc = listaProgEduc;
+    }
+
     
 
     public Areaconocimiento getAreaConocimiento() {
@@ -364,37 +372,79 @@ public class AsignarAreaAdministrativaBeanHelper implements Serializable {
         this.usuario = usuario;
     }
     
-    public List<UnidadaprendizajeImparteProfesor> filtrado(String campo, String busqueda) {
+    public List<Coordinadorareaadministrativa> filtrado(String busqueda) {
+        List <Coordinadorareaadministrativa> listaFiltrada2 = careaAdministrativaDelegate.consultarAreaAdministrativa();
+        listaFiltrada2.clear();
+        
         String cambioBus = busqueda.toLowerCase();
         String cambioObj = "";
 
-        listaFiltrada = asignarGrupoUnidadAprendizajeProfesorDelegate.getListaimparteProfesors();
-        for (UnidadaprendizajeImparteProfesor uaip : listaFiltrada) {
-            uaip.setGrupo(grupoDelegate.findGrupoById(uaip.getGrupo().getGpoid()));
-            uaip.setProfesor(profesorDelegate.findProfesorById(uaip.getProfesor().getProid()));
-            uaip.setUnidadaprendizaje(unidadAprendizajeDelegate.findUAById(uaip.getUnidadaprendizaje().getUapid()));
+        cargarTodo();
+        if(programaEducativo.getPedid() != null && !programaEducativo.getPedid().equals(0)){
+            List<Areaadministrativa> areaadministrativas=areaAdministrativaDelegate.getAreaAdbyPE(programaEducativo.getPedid());
+                Areaadministrativa a=new Areaadministrativa();
+                cs=careaAdministrativaDelegate.consultarAreaAdministrativa();
+                List<Coordinadorareaadministrativa> coordinadorareaadministrativas=new ArrayList<Coordinadorareaadministrativa>();
+                for(Areaadministrativa a1 : areaadministrativas){
+                    for(int i=0; i<cs.size(); i++){
+                        if(cs.get(i).getAreaadministrativa().getAadid()==a1.getAadid()){
+                            a=areaAdministrativaDelegate.findAreaAdById(cs.get(i).getAreaadministrativa().getAadid());
+                            a.setProgramaeducativo(programaEducativoDelegate.findProgramaEducativoById(a.getProgramaeducativo().getPedid()));
+                            cs.get(i).setAreaadministrativa(a);
+                            cs.get(i).setProfesor(profesorDelegate.findProfesorById(cs.get(i).getProfesor().getProid()));
+                            cs.get(i).setUnidadaprendizaje(unidadAprendizajeDelegate.findUAById(cs.get(i).getUnidadaprendizaje().getUapid()));
+                            cs.set(i, cs.get(i));
+                            coordinadorareaadministrativas.add(cs.get(i));
+                            a=new Areaadministrativa();
+                        }else{
+                            a=new Areaadministrativa();
+                        }
+                    }
+                }
+                setCs(coordinadorareaadministrativas);
         }
         if (busqueda.trim().length() > 0) {
-            listaFiltrada.clear();
-            for (UnidadaprendizajeImparteProfesor uaip : asignarGrupoUnidadAprendizajeProfesorDelegate.getListaimparteProfesors()) {
-                uaip.setGrupo(grupoDelegate.findGrupoById(uaip.getGrupo().getGpoid()));
-                uaip.setProfesor(profesorDelegate.findProfesorById(uaip.getProfesor().getProid()));
-                uaip.setUnidadaprendizaje(unidadAprendizajeDelegate.findUAById(uaip.getUnidadaprendizaje().getUapid()));
+            listaFiltrada2.clear();
+            for (Coordinadorareaadministrativa caa : cs) {
+                caa.setAreaadministrativa(areaAdministrativaDelegate.findAreaAdById(caa.getAreaadministrativa().getAadid()));
+                caa.getAreaadministrativa().setProgramaeducativo(programaEducativoDelegate.findProgramaEducativoById(caa.getAreaadministrativa().getProgramaeducativo().getPedid()));
+                caa.setProfesor(profesorDelegate.findProfesorById(caa.getProfesor().getProid()));
+                caa.setUnidadaprendizaje(unidadAprendizajeDelegate.findUAById(caa.getUnidadaprendizaje().getUapid()));
 
-                cambioObj = uaip.getUiptipoSubgrupo().toLowerCase();
+                cambioObj = caa.getAreaadministrativa().getAadnombre().toLowerCase();
                 if (cambioObj.startsWith(cambioBus)) {
-                    listaFiltrada.add(uaip);
+                    listaFiltrada2.add(caa);
                 } else {
-                    cambioObj = uaip.getUipsubgrupo().toLowerCase();
+                    cambioObj = caa.getProfesor().getPronombre().toLowerCase();
                     if (cambioObj.startsWith(cambioBus)) {
-                        listaFiltrada.add(uaip);
+                        listaFiltrada2.add(caa);
+                    }
+                    else{
+                        cambioObj = Integer.toString(caa.getProfesor().getPronumeroEmpleado());
+                        if (cambioObj.startsWith(cambioBus)) {
+                            listaFiltrada2.add(caa);
+                        }else{
+                            cambioObj = caa.getUnidadaprendizaje().getUapnombre().toLowerCase();
+                            if(cambioObj.startsWith(cambioBus)){
+                                listaFiltrada2.add(caa);
+                            }else{
+                                cambioObj = Integer.toString(caa.getUnidadaprendizaje().getUapclave());
+                                if(cambioObj.startsWith(cambioBus)){
+                                    listaFiltrada2.add(caa);
+                                }
+                            }
+                        }
                     }
                 }
 
             }
+            cs = listaFiltrada2;
         }
+//        else{
+//            cargarTodo();
+//        }
 
-        return listaFiltrada;
+        return listaFiltrada2;
     }
 
     public void seleccionarRegistro() {
@@ -736,12 +786,10 @@ public class AsignarAreaAdministrativaBeanHelper implements Serializable {
 //    }
     
     public void consultarAreasAdministrativas(){ // este 
-        System.out.println("1");
         if(rolSeleccionado.equalsIgnoreCase("Director")||rolSeleccionado.equalsIgnoreCase("Subdirector")||rolSeleccionado.equalsIgnoreCase("Administrador")){
             System.out.println("Soy director, sub o admin");
             Areaadministrativa a=new Areaadministrativa();
             cs=careaAdministrativaDelegate.consultarAreaAdministrativa();
-        System.out.println("2");
             for(int i=0; i<cs.size(); i++){
                 a=areaAdministrativaDelegate.findAreaAdById(cs.get(i).getAreaadministrativa().getAadid());
                 a.setProgramaeducativo(programaEducativoDelegate.findProgramaEducativoById(a.getProgramaeducativo().getPedid()));
@@ -751,7 +799,6 @@ public class AsignarAreaAdministrativaBeanHelper implements Serializable {
                 cs.set(i, cs.get(i));
                 a=new Areaadministrativa();
             }
-        System.out.println("3");
         }else{
             if(rolSeleccionado.equalsIgnoreCase("Responsable de Programa Educativo")){
                 System.out.println("soy RPE :P");

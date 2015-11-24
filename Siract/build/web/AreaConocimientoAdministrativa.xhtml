@@ -20,7 +20,7 @@ and open the template in the editor.
                     <title>Asignar Área de Conocimiento Administrativa</title> 
                 </f:facet>
             </h:head>
-            <h:body onload="#{asignarAreaAdministrativaBeanUI.AAAHelper.cargarTodo()}"> 
+            <h:body onload="#{asignarAreaAdministrativaBeanUI.filtro()}"> 
                 <h:form id="frmAGUAP" rendered="#{loginBean.tienePermiso}">
                     <p:fieldset legend="Asignación de Coordinadores Área Administrativa">
                         <p:growl id="growl" showDetail="true" life="10000"/>
@@ -44,6 +44,34 @@ and open the template in the editor.
                                          disabled="#{asignarAreaAdministrativaBeanUI.botones}">
                             <p:ajax event="click" update="capdlg, cap"/>
                         </p:commandButton>
+                        <br/><br/>
+                        <div id="selecPE" style="display: inline-block" hidden="#{asignarAreaAdministrativaBeanUI.bolSelPed}">                        
+                            <p:outputLabel value="Seleccione un Programa Educativo " 
+                                       style="margin-top: 40%;" rendered="#{asignarAreaAdministrativaBeanUI.bolSelPed}"/><br/>   
+                            <p:selectOneMenu value="#{asignarAreaAdministrativaBeanUI.AAAHelper.programaEducativo.pedid}"
+                                                  style="width: 100%"
+                                                  id="idSelecPE" rendered="#{asignarAreaAdministrativaBeanUI.bolSelPed}"> 
+                                <p:ajax event="valueChange" update="asignar" 
+                                        listener="#{asignarAreaAdministrativaBeanUI.filtro()}"></p:ajax>
+                                     
+                                     <f:selectItem itemLabel="--Seleccionar todos--" itemValue="#{0}" />
+                                     <f:selectItems value="#{asignarAreaAdministrativaBeanUI.AAAHelper.programaeducativos}"
+                                                   var="pe"
+                                                   itemLabel="#{pe.pednombre}"
+                                                   itemValue="#{pe.pedid}"/>   
+                                </p:selectOneMenu>                    
+                        </div>  
+                        <div id="divFiltro" style="text-align: right;">       
+                            <p:outputLabel style="font-size: 19px" value="Búsqueda específica de asignación "/>
+
+                            <p:inputText id="filtro" 
+                                         value="#{asignarAreaAdministrativaBeanUI.busqueda}" 
+                                         autocomplete="off"
+                                         label="filtrado">
+                                <p:ajax event="keyup"  listener="#{asignarAreaAdministrativaBeanUI.filtro()}" 
+                                        update="asignar" />
+                            </p:inputText>
+                        </div>
 
                         <p:dataTable id="asignar" var="aa"
                                      value="#{asignarAreaAdministrativaBeanUI.AAAHelper.cs}"
@@ -66,8 +94,14 @@ and open the template in the editor.
                             <p:column headerText="Programa Educativo">
                                 <h:outputText value="#{aa.areaadministrativa.programaeducativo.pednombre}" />
                             </p:column>
+                            <p:column headerText="Numero de Empleado">
+                                <h:outputText value="#{aa.profesor.pronumeroEmpleado}" />
+                            </p:column>
                             <p:column headerText="Coordinador de Área ">
                                 <h:outputText value="#{aa.profesor.pronombre} #{aa.profesor.proapellidoPaterno} #{aa.profesor.proapellidoMaterno}" />
+                            </p:column>
+                            <p:column headerText="Clave Unidad de Aprendizaje ">
+                                <h:outputText value="#{aa.unidadaprendizaje.uapclave}" />
                             </p:column>
                             <p:column headerText="Unidad de Aprendizaje ">
                                 <h:outputText value="#{aa.unidadaprendizaje.uapnombre}" />

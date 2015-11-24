@@ -43,7 +43,7 @@ public class AsignarAreaAdministrativaBeanUI implements Serializable {
 
     private AsignarAreaAdministrativaBeanHelper asignarAreaAdministrativaBeanHelper;
     private AsignarAreaAdministrativaBeanHelper AAAHelper;
-    private List<UnidadaprendizajeImparteProfesor> listaFiltrada;
+    private List<Coordinadorareaadministrativa> listaFiltrada;
     private PlanEstudioBeanHelper planEstudioBeanHelper;
     private ProgramaEducativoBeanHelper programaEducativoBeanHelper;
 
@@ -103,11 +103,11 @@ public class AsignarAreaAdministrativaBeanUI implements Serializable {
         this.mostrarPE = mostrarPE;
     }
     
-    public List<UnidadaprendizajeImparteProfesor> getListaFiltrada() {
+    public List<Coordinadorareaadministrativa> getListaFiltrada() {
         return listaFiltrada;
     }
 
-    public void setListaFiltrada(List<UnidadaprendizajeImparteProfesor> listaFiltrada) {
+    public void setListaFiltrada(List<Coordinadorareaadministrativa> listaFiltrada) {
         this.listaFiltrada = listaFiltrada;
     }
 
@@ -462,8 +462,18 @@ public class AsignarAreaAdministrativaBeanUI implements Serializable {
                 try{
                     System.out.println(q);
                     for(int i=0;i<cs.size(); i++){
+//                        if(Integer.parseInt(AAAHelper.getUnidadesAp().get(q))==cs.get(i).getUnidadaprendizaje().getUapid()){
+//                            bandera2=false;
+//                        }else{
+//                            
+//                        }
+                        if(AAAHelper.getProgramaEducativo().getPedid()==cs.get(i).getAreaadministrativa().getProgramaeducativo().getPedid()){
+                            
                         if(Integer.parseInt(AAAHelper.getUnidadesAp().get(q))==cs.get(i).getUnidadaprendizaje().getUapid()){
                             bandera2=false;
+                        }else{
+                            
+                        }
                         }else{
                             
                         }
@@ -574,8 +584,18 @@ public class AsignarAreaAdministrativaBeanUI implements Serializable {
         }
     }
 
+    boolean bolSelPED = false;
+    public boolean getBolSelPed(){
+        return bolSelPED;
+    }
+    public void setBolSelPED(boolean  bolSelPED){
+        this.bolSelPED=bolSelPED;
+    }
     public void filtro() {
-        listaFiltrada = AAAHelper.filtrado("Nombre", busqueda);
+        if(loginBean.getSeleccionado().equalsIgnoreCase("Director")||loginBean.getSeleccionado().equalsIgnoreCase("Subdirector")||loginBean.getSeleccionado().equalsIgnoreCase("Administrador")){
+            bolSelPED=true;
+        }
+        listaFiltrada = AAAHelper.filtrado(busqueda);
     }
 
     public String toolTip(int i) {
